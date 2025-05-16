@@ -1,2 +1,4 @@
 .env
 .idea/
+.venv/
+tempo_sql_reset/commands.txt
