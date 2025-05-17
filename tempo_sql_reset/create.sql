@@ -4,8 +4,7 @@ CREATE SCHEMA crm;
 CREATE TABLE auth.users (
     user_id SERIAL NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    superuser BOOLEAN NOT NULL DEFAULT FALSE
+    password VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE crm.role (
@@ -19,7 +18,6 @@ CREATE TABLE crm.collaborator (
     first_name VARCHAR(255),
     email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(20),
-    activated BOOLEAN NOT NULL DEFAULT FALSE,
     role INT REFERENCES crm.role(role_id),
     linked_user INT NOT NULL UNIQUE REFERENCES auth.users(user_id) ON DELETE CASCADE
 );
