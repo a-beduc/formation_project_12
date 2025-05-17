@@ -9,10 +9,9 @@ mapper_registry = registry()
 user_table = Table(
     'users',
     mapper_registry.metadata,
-    Column('user_id', Integer, primary_key=True),
+    Column('user_id', Integer, primary_key=True, nullable=False),
     Column('username', String(255), unique=True, nullable=False),
     Column('password', String(255), nullable=False),
-    Column('superuser', Boolean, nullable=False, default=False),
     schema='auth'
 )
 
