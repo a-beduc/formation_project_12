@@ -2,13 +2,21 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from infra.orm import user_table
-from infra.orm import mapper_registry, start_mappers
+from adapters.orm import (user_table, role_table, collaborator_table,
+                          client_table, contract_table, event_table)
+from adapters.orm import mapper_registry, start_user_mapper
 
 
 @pytest.fixture(scope="session")
-def in_memory_db():
+def db_engine():
+    # remove the schema because SQLite doesn't accept 'auth.users' only 'users'
     user_table.schema = None
+    role_table.schema = None
+    collaborator_table.schema = None
+    client_table.schema = None
+    contract_table.schema = None
+    event_table.schema = None
+
     engine = create_engine('sqlite:///:memory:')
     mapper_registry.metadata.create_all(engine)
     yield engine
