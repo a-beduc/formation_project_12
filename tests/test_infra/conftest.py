@@ -15,26 +15,24 @@ def in_memory_db():
 
 
 @pytest.fixture
-def session(in_memory_db):
-    start_mappers()
-    connection = in_memory_db.connect()
-    transaction_savepoint = connection.begin()
-    session = sessionmaker(bind=connection)()
+def session(db_engine):
+    start_user_mapper()
+    with db_engine.connect() as connection:
+        transaction_savepoint = connection.begin()
 
-    yield session
+        with sessionmaker(bind=connection)() as session:
+            yield session
 
-    session.close()
-    transaction_savepoint.rollback()
-    connection.close()
+        transaction_savepoint.rollback()
     clear_mappers()
 
 
 @pytest.fixture
 def init_db_table_users(session):
-    session.execute(text(
-        "INSERT INTO users (username, password, superuser) VALUES "
-        "('user_one', 'password_one', false), "
-        "('user_two', 'password_two', false), "
-        "('user_three', 'password_three', false)")
-    ),
+    stmt = text(
+        "INSERT INTO users (username, password) VALUES "
+        "('user_one', 'password_one'), "
+        "('user_two', 'password_two'), "
+        "('user_three', 'password_three')")
+    session.execute(stmt)
     session.commit()
