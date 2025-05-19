@@ -1,15 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 
-@dataclass
+@dataclass(kw_only=True)
 class AuthUser:
-    def __init__(self, user_id, username, password, superuser=False):
-        self.id = user_id
-        self.username = username
-        self.password = password
-        self.superuser = superuser
-    id: int
+    id: int | None = field(init=False, default=None)
     username: str
     password: str
 
