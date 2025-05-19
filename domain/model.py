@@ -1,18 +1,62 @@
+from dataclasses import dataclass, field
+from datetime import datetime
+
+
+@dataclass(kw_only=True)
 class AuthUser:
-    def __init__(self, user_id, username, password, superuser=False):
-        self.id = user_id
-        self.username = username
-        self.password = password
-        self.superuser = superuser
+    id: int | None = field(init=False, default=None)
+    username: str
+    password: str
 
-    def __repr__(self):
-        return f"<AuthUser {self.id} {self.username}>"
 
-    def __eq__(self, other):
-        return (
-            isinstance(other, AuthUser)
-            and self.id == other.id
-            and self.username == other.username
-            and self.password == other.password
-            and self.superuser == other.superuser
-        )
+@dataclass(kw_only=True)
+class Role:
+    id: int | None = field(init=False, default=None)
+    role: str
+
+
+@dataclass(kw_only=True)
+class Collaborator:
+    id: int | None = field(init=False, default=None)
+    last_name: str | None = None
+    first_name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+    role_id: int = 0
+    user_id: int
+
+
+@dataclass(kw_only=True)
+class Client:
+    id: int | None = field(init=False, default=None)
+    last_name: str | None = None
+    first_name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+    company: str | None = None
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+    salesman_id: int
+
+
+@dataclass(kw_only=True)
+class Contract:
+    id: int | None = field(init=False, default=None)
+    total_amount: float
+    paid_amount: float = 0.0
+    created_at: datetime = datetime.now()
+    signed: bool = False
+    client_id: int
+
+
+@dataclass(kw_only=True)
+class Event:
+    id: int | None = field(init=False, default=None)
+    title: str | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    location: str | None = None
+    attendee: int | None = None
+    notes: str | None = None
+    supporter_id: int | None = None
+    contract_id: int
