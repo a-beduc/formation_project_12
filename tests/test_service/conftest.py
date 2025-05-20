@@ -1,3 +1,4 @@
+import pytest
 from adapters.repositories import AbstractRepository, AbstractUserRepository
 from domain.model import AuthUser
 from services.unit_of_work import AbstractUnitOfWork
@@ -39,7 +40,6 @@ class FakeUserRepository(FakeRepository, AbstractUserRepository):
              isinstance(user, AuthUser) and user.username == username), None
         )
 
-
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
         self.commited = False
@@ -56,3 +56,8 @@ class FakeUnitOfWork(AbstractUnitOfWork):
 
     def _commit(self):
         self.commited = True
+
+
+@pytest.fixture(scope='function')
+def uow():
+    return FakeUnitOfWork()
