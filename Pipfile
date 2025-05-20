@@ -8,6 +8,7 @@ sqlalchemy = "*"
 python-dotenv = "*"
 psycopg2 = "*"
 pytest = "*"
+argon2-cffi = "*"
 
 [dev-packages]
 
