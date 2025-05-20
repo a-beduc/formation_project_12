@@ -9,6 +9,7 @@ python-dotenv = "*"
 psycopg2 = "*"
 pytest = "*"
 argon2-cffi = "*"
+pytest-mock = "*"
 
 [dev-packages]
 
