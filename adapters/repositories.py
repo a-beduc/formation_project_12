@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
 
 
 class AbstractRepository(ABC):
@@ -9,14 +10,14 @@ class AbstractRepository(ABC):
     def add(self, model_obj):
         self._add(model_obj)
 
-    def get(self, model_cls, obj_pk):
-        return self._get(model_cls, obj_pk)
+    def get(self, obj_pk):
+        return self._get(obj_pk)
 
-    def delete(self, model_cls, obj_pk):
-        self._delete(model_cls, obj_pk)
+    def delete(self, obj_pk):
+        self._delete(obj_pk)
 
-    def list(self, model_cls):
-        return self._list(model_cls)
+    def list(self):
+        return self._list()
 
     def update(self, model_obj):
         self._update(model_obj)
@@ -26,15 +27,15 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get(self, model_cls, obj_pk):
+    def _get(self, obj_pk):
         raise NotImplementedError
 
     @abstractmethod
-    def _delete(self, model_cls, obj_pk):
+    def _delete(self, obj_pk):
         raise NotImplementedError
 
     @abstractmethod
-    def _list(self, model_cls):
+    def _list(self):
         raise NotImplementedError
 
     @abstractmethod
@@ -42,7 +43,15 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
 
+class AbstractUserRepository(AbstractRepository):
+    @abstractmethod
+    def get_by_username(self, username):
+        raise NotImplementedError
+
+
 class SqlAlchemyRepository(AbstractRepository):
+    model_cls = None
+
     def __init__(self, session):
         super().__init__()
         self.session = session
@@ -50,15 +59,43 @@ class SqlAlchemyRepository(AbstractRepository):
     def _add(self, model_obj):
         self.session.add(model_obj)
 
-    def _get(self, model_cls, obj_pk):
-        return self.session.get(model_cls, obj_pk)
+    def _get(self, obj_pk):
+        return self.session.get(self.model_cls, obj_pk)
 
-    def _delete(self, model_cls, obj_pk):
-        obj = self.session.get(model_cls, obj_pk)
+    def _delete(self, obj_pk):
+        obj = self.session.get(self.model_cls, obj_pk)
         self.session.delete(obj)
 
-    def _list(self, model_cls):
-        return self.session.query(model_cls).all()
+    def _list(self):
+        return self.session.query(self.model_cls).all()
 
     def _update(self, model_obj):
         self.session.merge(model_obj)
+
+
+class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
+    model_cls = AuthUser
+
+    def get_by_username(self, username):
+        return (self.session.query(self.model_cls)
+                .filter_by(username=username).one_or_none())
+
+
+class SqlAlchemyRoleRepository(SqlAlchemyRepository):
+    model_cls = Role
+
+
+class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):
+    model_cls = Collaborator
+
+
+class SqlAlchemyClientRepository(SqlAlchemyRepository):
+    model_cls = Client
+
+
+class SqlAlchemyContractRepository(SqlAlchemyRepository):
+    model_cls = Contract
+
+
+class SqlAlchemyEventRepository(SqlAlchemyRepository):
+    model_cls = Event

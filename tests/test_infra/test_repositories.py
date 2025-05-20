@@ -6,8 +6,8 @@ def test_repository_can_retrieve_user(session, init_db_table_users):
     expected = AuthUser(username='user_one', password='password_one')
     expected.id = 1
 
-    repo = repository.SqlAlchemyRepository(session)
-    retrieved = repo.get(AuthUser, 1)
+    repo = repository.SqlAlchemyUserRepository(session)
+    retrieved = repo.get(1)
     assert retrieved == expected
 
 
@@ -20,8 +20,8 @@ def test_repository_can_retrieve_list_users(session, init_db_table_users):
     for elem, user in enumerate(expected):
         user.id = elem + 1
 
-    repo = repository.SqlAlchemyRepository(session)
-    retrieved = repo.list(AuthUser)
+    repo = repository.SqlAlchemyUserRepository(session)
+    retrieved = repo.list()
     assert retrieved == expected
 
 
@@ -30,10 +30,10 @@ def test_repository_can_save_user(session, init_db_table_users):
     expected.id = 4
 
     user = AuthUser(username='user_fou', password='password_fou')
-    repo = repository.SqlAlchemyRepository(session)
+    repo = repository.SqlAlchemyUserRepository(session)
     repo.add(user)
 
-    assert repo.get(AuthUser, 4) == expected
+    assert repo.get(4) == expected
 
 
 def test_repository_can_delete_user(session, init_db_table_users):
@@ -46,10 +46,10 @@ def test_repository_can_delete_user(session, init_db_table_users):
     user = AuthUser(username="user_two", password="password_two")
     user.id = 2
 
-    repo = repository.SqlAlchemyRepository(session)
-    repo.delete(AuthUser, 2)
+    repo = repository.SqlAlchemyUserRepository(session)
+    repo.delete(2)
 
-    assert repo.list(AuthUser) == expected
+    assert repo.list() == expected
 
 
 def test_repository_can_update_user(session, init_db_table_users):
@@ -57,24 +57,24 @@ def test_repository_can_update_user(session, init_db_table_users):
                         password="modified_password")
     expected.id = 2
 
-    repo = repository.SqlAlchemyRepository(session)
-    user = repo.get(AuthUser, 2)
+    repo = repository.SqlAlchemyUserRepository(session)
+    user = repo.get(2)
     user.username = "modified_username"
     user.password = "modified_password"
     repo.update(user)
 
-    assert repo.get(AuthUser, 2) == expected
+    assert repo.get(2) == expected
 
 
 def test_user_saved_and_loaded_are_equals(session, init_db_table_users):
     in_memory_user = AuthUser(username='user_fou', password='password_fou')
-    repo = repository.SqlAlchemyRepository(session)
+    repo = repository.SqlAlchemyUserRepository(session)
     repo.add(in_memory_user)
 
     in_memory_user.id = 4
 
-    assert repo.get(AuthUser, 4) == in_memory_user
-    assert id(repo.get(AuthUser, 4)) == id(in_memory_user)
+    assert repo.get(4) == in_memory_user
+    assert id(repo.get(4)) == id(in_memory_user)
 
 
 def test_repository_can_retrieve_collaborator(session,
@@ -87,8 +87,8 @@ def test_repository_can_retrieve_collaborator(session,
                             user_id=1)
     expected.id = 1
 
-    repo = repository.SqlAlchemyRepository(session)
-    retrieved = repo.get(Collaborator, 1)
+    repo = repository.SqlAlchemyCollaboratorRepository(session)
+    retrieved = repo.get(1)
     assert retrieved == expected
 
 
@@ -96,9 +96,9 @@ def test_collaborator_saved_and_loaded_are_equals(session, init_db_table_users):
     in_memory_collaborator = Collaborator(
         last_name='col_ln_fou', first_name='col_fn_fou',
         email='col_email@fou', phone_number='0000000004', user_id=4)
-    repo = repository.SqlAlchemyRepository(session)
+    repo = repository.SqlAlchemyCollaboratorRepository(session)
     repo.add(in_memory_collaborator)
 
     in_memory_collaborator.id = 4
 
-    assert repo.get(Collaborator, 4) == in_memory_collaborator
+    assert repo.get(4) == in_memory_collaborator
