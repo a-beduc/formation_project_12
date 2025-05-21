@@ -7,7 +7,7 @@ from adapters.orm import (user_table, role_table, collaborator_table,
 from adapters.orm import mapper_registry, start_mappers
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def db_engine():
     # remove the schema because SQLite doesn't accept 'auth.users' only 'users'
     user_table.schema = None
@@ -23,16 +23,24 @@ def db_engine():
 
 
 @pytest.fixture
-def session(db_engine):
+def connection(db_engine):
     start_mappers()
     with db_engine.connect() as connection:
         transaction_savepoint = connection.begin()
-
-        with sessionmaker(bind=connection)() as session:
-            yield session
-
+        yield connection
         transaction_savepoint.rollback()
     clear_mappers()
+
+
+@pytest.fixture
+def session_factory(connection):
+    return sessionmaker(bind=connection)
+
+
+@pytest.fixture
+def session(session_factory):
+    with session_factory() as session:
+        yield session
 
 
 @pytest.fixture

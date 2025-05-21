@@ -77,6 +77,16 @@ def test_user_saved_and_loaded_are_equals(session, init_db_table_users):
     assert id(repo.get(4)) == id(in_memory_user)
 
 
+def test_repository_can_get_user_from_username(session,
+                                               init_db_table_users):
+    username = "user_one"
+    repo = repository.SqlAlchemyUserRepository(session)
+    user = repo.get_by_username(username)
+
+    assert user is not None
+    assert user.username == username
+
+
 def test_repository_can_retrieve_collaborator(session,
                                               init_db_table_collaborator):
     expected = Collaborator(last_name='col_ln_one',
