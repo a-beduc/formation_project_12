@@ -1,6 +1,6 @@
 import pytest
-from adapters.repositories import AbstractRepository, AbstractUserRepository
-from domain.model import AuthUser
+from adapters.repositories import AbstractRepository, AbstractUserRepository, AbstractCollaboratorRepository
+from domain.model import AuthUser, Collaborator
 from services.unit_of_work import AbstractUnitOfWork
 
 
@@ -40,10 +40,20 @@ class FakeUserRepository(FakeRepository, AbstractUserRepository):
              isinstance(user, AuthUser) and user.username == username), None
         )
 
+
+class FakeCollaboratorRepository(FakeRepository, AbstractCollaboratorRepository):
+    def get_by_user_id(self, user_id):
+        return next(
+            (collaborator for collaborator in self._store.values() if
+             isinstance(collaborator, Collaborator) and collaborator.user_id == user_id), None
+        )
+
+
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
         self.commited = False
         self.users = FakeUserRepository()
+        self.collaborators = FakeCollaboratorRepository()
 
     def __enter__(self):
         return self
