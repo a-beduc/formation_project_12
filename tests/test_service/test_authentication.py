@@ -1,8 +1,8 @@
 import argon2
 import pytest
 
-from domain.model import AuthUser
-from services import authentication
+from domain.model import AuthUser, Collaborator
+from services import jwt_handler, authentication
 
 
 def test_valid_password_success():
@@ -39,24 +39,44 @@ def test_create_user(uow):
 
 
 def test_login_success(uow, mocker):
-    user = AuthUser(username="Bob", password="hashed_password")
+    user = AuthUser(username="user_b", password="hashed_password")
     user.id = 1
-
+    collaborator = Collaborator(user_id=user.id, last_name="Ross", first_name="Bobby")
+    collaborator.id = 1
+    expected_payload = {
+        "sub": "user_b",
+        "c_id": 1,
+        "role": 0,
+        "name": "Bobby Ross",
+    }
     mocker.patch.object(uow.users, "get_by_username", return_value=user)
     mocker.patch.object(argon2.PasswordHasher, "verify", return_value=True)
-    assert authentication.login(uow, "Bob", "Password1") == user
+    mocker.patch.object(uow.collaborators, "get_by_user_id",
+                        return_value=collaborator)
+
+    spy_get_by_username = mocker.spy(uow.users, "get_by_username")
+    spy_verify = mocker.spy(argon2.PasswordHasher, "verify")
+    spy_get_by_user_id = mocker.spy(uow.collaborators, "get_by_user_id")
+
+    assert authentication.authenticate(uow, "user_b",
+                                       "Password1") == expected_payload
+
+    assert spy_get_by_username.call_count == 1
+    assert spy_verify.call_count == 1
+    assert spy_get_by_user_id.call_count == 1
 
 
 def test_login_fail_wrong_username(uow):
     with pytest.raises(authentication.AuthError,
                        match="User not found with not_bob"):
-        authentication.login(uow, "not_bob", "pwd")
+        authentication.authenticate(uow, "not_bob", "pwd")
 
 
 def test_login_fail_wrong_pwd(uow, mocker):
     user = AuthUser(username="Bob", password="hashed_password")
     mocker.patch.object(uow.users, "get_by_username", return_value=user)
-    mocker.patch.object(argon2.PasswordHasher, "verify",
-                        side_effect=argon2.exceptions.VerifyMismatchError)
+    mock_argon = mocker.patch.object(argon2.PasswordHasher, "verify")
+    mock_argon.side_effect = argon2.exceptions.VerifyMismatchError
+
     with pytest.raises(authentication.AuthError, match="Password mismatch"):
-        authentication.login(uow, "Bob", "not_pwd")
+        authentication.authenticate(uow, "Bob", "not_pwd")
