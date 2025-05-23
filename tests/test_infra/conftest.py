@@ -32,9 +32,12 @@ def connection(db_engine):
     clear_mappers()
 
 
+# see (https://docs.sqlalchemy.org/en/20/orm/session_transaction.html
+# #joining-a-session-into-an-external-transaction-such-as-for-test-suites)
 @pytest.fixture
 def session_factory(connection):
-    return sessionmaker(bind=connection)
+    return sessionmaker(bind=connection,
+                        join_transaction_mode="create_savepoint")
 
 
 @pytest.fixture
