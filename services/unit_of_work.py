@@ -11,7 +11,7 @@ from adapters import repositories as repo
 class AbstractUnitOfWork(ABC):
     users: repo.AbstractUserRepository
     roles: repo.AbstractRepository
-    collaborators: repo.AbstractRepository
+    collaborators: repo.AbstractCollaboratorRepository
     clients: repo.AbstractRepository
     contracts: repo.AbstractRepository
     events: repo.AbstractRepository

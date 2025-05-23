@@ -49,6 +49,12 @@ class AbstractUserRepository(AbstractRepository):
         raise NotImplementedError
 
 
+class AbstractCollaboratorRepository(AbstractRepository):
+    @abstractmethod
+    def get_by_user_id(self, user_id):
+        raise NotImplementedError
+
+
 class SqlAlchemyRepository(AbstractRepository):
     model_cls = None
 
@@ -77,8 +83,7 @@ class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
     model_cls = AuthUser
 
     def get_by_username(self, username):
-        return (self.session.query(self.model_cls)
-                .filter_by(username=username).one_or_none())
+        return self.session.query(self.model_cls).filter_by(username=username).one_or_none()
 
 
 class SqlAlchemyRoleRepository(SqlAlchemyRepository):
@@ -87,6 +92,10 @@ class SqlAlchemyRoleRepository(SqlAlchemyRepository):
 
 class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):
     model_cls = Collaborator
+
+    def get_by_user_id(self, user_id):
+        return (self.session.query(self.model_cls)
+                .filter_by(user_id=user_id).one_or_none())
 
 
 class SqlAlchemyClientRepository(SqlAlchemyRepository):

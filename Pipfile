@@ -10,6 +10,7 @@ psycopg2 = "*"
 pytest = "*"
 argon2-cffi = "*"
 pytest-mock = "*"
+pyjwt = "*"
 
 [dev-packages]
 

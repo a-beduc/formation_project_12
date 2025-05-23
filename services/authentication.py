@@ -2,7 +2,6 @@ import argon2
 import re
 from domain.model import AuthUser
 
-
 ph = argon2.PasswordHasher()
 
 
@@ -37,15 +36,29 @@ def create_user(uow, username, plain_password):
         uow.commit()
 
 
-def login(uow, username, plain_password):
+def authenticate(uow, username, plain_password):
     with uow:
         user = uow.users.get_by_username(username)
         if user is None:
             raise AuthError(f"User not found with {username}")
 
-        password_hash = user.password
         try:
-            ph.verify(password_hash, plain_password)
-            return user
+            ph.verify(user.password, plain_password)
         except argon2.exceptions.VerifyMismatchError:
             raise AuthError(f"Password mismatch")
+
+        collaborator = uow.collaborators.get_by_user_id(user.id)
+        return {
+            "sub": user.username,
+            "c_id": collaborator.id,
+            "role": collaborator.role_id,
+            "name": f"{collaborator.first_name} {collaborator.last_name}"
+        }
+
+
+def get_collaborator_from_user(uow, user):
+    with uow:
+        collaborator = uow.collaborators.get_by_user_id(user.id)
+        if collaborator is None:
+            raise AuthError(f"Collaborator not found")
+    return collaborator
