@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.session import Session
 
 from config import get_postgres_uri
 from adapters import repositories as repo
@@ -13,7 +12,7 @@ class AbstractUnitOfWork(ABC):
     roles: repo.AbstractRepository
     collaborators: repo.AbstractCollaboratorRepository
     clients: repo.AbstractRepository
-    contracts: repo.AbstractRepository
+    contracts: repo.AbstractContractRepository
     events: repo.AbstractRepository
 
     def __enter__(self):
