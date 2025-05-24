@@ -55,6 +55,12 @@ class AbstractCollaboratorRepository(AbstractRepository):
         raise NotImplementedError
 
 
+class AbstractContractRepository(AbstractRepository):
+    @abstractmethod
+    def get_client_from_contract(self, contract_id):
+        raise NotImplementedError
+
+
 class SqlAlchemyRepository(AbstractRepository):
     model_cls = None
 
@@ -83,14 +89,16 @@ class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
     model_cls = AuthUser
 
     def get_by_username(self, username):
-        return self.session.query(self.model_cls).filter_by(username=username).one_or_none()
+        return self.session.query(self.model_cls).filter_by(
+            username=username).one_or_none()
 
 
 class SqlAlchemyRoleRepository(SqlAlchemyRepository):
     model_cls = Role
 
 
-class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):
+class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository,
+                                       AbstractCollaboratorRepository):
     model_cls = Collaborator
 
     def get_by_user_id(self, user_id):
@@ -102,8 +110,14 @@ class SqlAlchemyClientRepository(SqlAlchemyRepository):
     model_cls = Client
 
 
-class SqlAlchemyContractRepository(SqlAlchemyRepository):
+class SqlAlchemyContractRepository(SqlAlchemyRepository,
+                                   AbstractContractRepository):
     model_cls = Contract
+
+    def get_client_from_contract(self, contract_id):
+        contract = self._get(contract_id)
+        return self.session.query(Client).filter_by(
+            id=contract.client_id).one_or_none()
 
 
 class SqlAlchemyEventRepository(SqlAlchemyRepository):
