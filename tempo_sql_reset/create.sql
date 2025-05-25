@@ -18,10 +18,9 @@ CREATE TABLE crm.collaborator (
     first_name VARCHAR(255),
     email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(20),
-    role_id INT DEFAULT 0 REFERENCES crm.role(role_id),
+    role_id INT DEFAULT 1 REFERENCES crm.role(role_id),
     user_id INT NOT NULL UNIQUE REFERENCES auth.users(user_id)
 );
-
 
 CREATE TABLE crm.client (
     client_id SERIAL NOT NULL PRIMARY KEY,

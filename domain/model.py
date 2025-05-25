@@ -22,7 +22,7 @@ class Collaborator:
     first_name: str | None = None
     email: str | None = None
     phone_number: str | None = None
-    role_id: int = 0
+    role_id: int = 1
     user_id: int
 
 
@@ -47,6 +47,9 @@ class Contract:
     created_at: datetime = datetime.now()
     signed: bool = False
     client_id: int
+
+    def calculate_due_amount(self):
+        return round(self.total_amount - self.paid_amount, 2)
 
 
 @dataclass(kw_only=True)
