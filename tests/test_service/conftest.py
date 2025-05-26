@@ -51,6 +51,10 @@ class FakeCollaboratorRepository(FakeRepository,
              collaborator.user_id == user_id),
             None)
 
+    def filter_by_role(self, role_id):
+        return [collaborator for collaborator in self._store.values() if
+                isinstance(collaborator, Collaborator) and
+                collaborator.role_id == role_id]
 
 
 # init empty interface, add tuples of objects to FakeRepos to init with datas

@@ -112,3 +112,20 @@ def test_collaborator_saved_and_loaded_are_equals(session, init_db_table_users):
     in_memory_collaborator.id = 4
 
     assert repo.get(4) == in_memory_collaborator
+
+
+def test_collaborator_can_be_filter_by_role(session,
+                                            init_db_table_users,
+                                            init_db_table_role,
+                                            init_db_table_collaborator):
+    collaborator = Collaborator(last_name='col_ln_one',
+                                first_name='col_fn_one',
+                                email='col_email@one',
+                                phone_number='0000000001',
+                                role_id=3,
+                                user_id=1)
+    collaborator.id = 1
+    expected = [collaborator]
+    repo = repository.SqlAlchemyCollaboratorRepository(session)
+    retrieved = repo.filter_by_role(3)
+    assert retrieved == expected

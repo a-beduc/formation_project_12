@@ -54,6 +54,10 @@ class AbstractCollaboratorRepository(AbstractRepository):
     def get_by_user_id(self, user_id):
         raise NotImplementedError
 
+    @abstractmethod
+    def filter_by_role(self, role):
+        raise NotImplementedError
+
 
 class AbstractContractRepository(AbstractRepository):
     @abstractmethod
@@ -104,6 +108,10 @@ class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository,
     def get_by_user_id(self, user_id):
         return (self.session.query(self.model_cls)
                 .filter_by(user_id=user_id).one_or_none())
+
+    def filter_by_role(self, role_id):
+        return (self.session.query(self.model_cls)
+                .filter_by(role_id=role_id).all())
 
 
 class SqlAlchemyClientRepository(SqlAlchemyRepository):
