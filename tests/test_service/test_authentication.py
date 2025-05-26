@@ -2,7 +2,7 @@ import argon2
 import pytest
 
 from domain.model import AuthUser, Collaborator
-from services import jwt_handler, authentication
+from services.auth import authentication
 
 
 def test_valid_password_success():
@@ -46,7 +46,7 @@ def test_login_success(uow, mocker):
     expected_payload = {
         "sub": "user_b",
         "c_id": 1,
-        "role": 0,
+        "role": 1,
         "name": "Bobby Ross",
     }
     mocker.patch.object(uow.users, "get_by_username", return_value=user)

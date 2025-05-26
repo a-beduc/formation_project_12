@@ -4,7 +4,7 @@ import json
 import pytest
 import services
 
-from services import jwt_handler
+from services.auth import jwt_handler
 
 # 2025-01-01 01:01:01
 FAKE_TIME = datetime.datetime(2025, 1, 1, 1, 1, 1)
@@ -16,29 +16,29 @@ SECRET_KEY = 'mysecretkeyissupersecretandnooneknowsit'
 
 @pytest.fixture
 def patch_lifetimes(mocker):
-    mocker.patch("services.jwt_handler.get_token_access_lifetime",
+    mocker.patch("services.auth.jwt_handler.get_token_access_lifetime",
                  return_value=ACCESS_LIFETIME)
-    mocker.patch("services.jwt_handler.get_token_refresh_lifetime",
+    mocker.patch("services.auth.jwt_handler.get_token_refresh_lifetime",
                  return_value=REFRESH_LIFETIME)
 
 
 @pytest.fixture
 def patch_past_time(mocker, patch_lifetimes):
-    mocker.patch("services.jwt_handler._now",
+    mocker.patch("services.auth.jwt_handler._now",
                  return_value=int(FAKE_TIME.timestamp()))
 
 
 @pytest.fixture
 def patch_storage(tmp_path, mocker):
     storage = tmp_path / "tokens.json"
-    mocker.patch('services.jwt_handler.get_token_store_path',
+    mocker.patch('services.auth.jwt_handler.get_token_store_path',
                  return_value=str(storage))
     return storage
 
 
 @pytest.fixture
 def patch_secret(mocker):
-    mocker.patch('services.jwt_handler.get_secret_key',
+    mocker.patch('services.auth.jwt_handler.get_secret_key',
                  return_value=SECRET_KEY)
 
 
@@ -131,8 +131,8 @@ def test_create_and_store_tokens(mocker, patch_past_time, patch_storage,
         "name": "Bob ross"
     }
 
-    spy_storage = mocker.spy(services.jwt_handler, '_write_storage')
-    spy_encode = mocker.spy(services.jwt_handler, '_encode')
+    spy_storage = mocker.spy(services.auth.jwt_handler, '_write_storage')
+    spy_encode = mocker.spy(services.auth.jwt_handler, '_encode')
 
     jwt_handler.create_and_store_tokens(data)
 
@@ -150,8 +150,8 @@ def test_create_and_store_tokens(mocker, patch_past_time, patch_storage,
 
 def test_verify_token_happy_path(mocker, patch_secret, patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     data = {
         "sub": "username",
@@ -163,7 +163,7 @@ def test_verify_token_happy_path(mocker, patch_secret, patch_lifetimes):
 
     storage.update({'access-token': access, 'refresh-token': refresh})
 
-    spy_decode = mocker.spy(services.jwt_handler, '_decode')
+    spy_decode = mocker.spy(services.auth.jwt_handler, '_decode')
 
     payload = jwt_handler.verify_token()
 
@@ -173,8 +173,8 @@ def test_verify_token_happy_path(mocker, patch_secret, patch_lifetimes):
 
 def test_verify_token_access_expired_refresh_ok(mocker, patch_secret, patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     data = {
         "sub": "username",
@@ -186,7 +186,7 @@ def test_verify_token_access_expired_refresh_ok(mocker, patch_secret, patch_life
 
     storage.update({'access-token': access, 'refresh-token': refresh})
 
-    spy_decode = mocker.spy(services.jwt_handler, '_decode')
+    spy_decode = mocker.spy(services.auth.jwt_handler, '_decode')
 
     payload = jwt_handler.verify_token()
     payload = {k: v for k, v in payload.items() if k not in ["exp", "iat"]}
@@ -198,8 +198,8 @@ def test_verify_token_access_expired_refresh_ok(mocker, patch_secret, patch_life
 def test_verify_token_access_expired_refresh_expired(mocker, patch_secret,
                                                      patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     data = {
         "sub": "username",
@@ -212,7 +212,7 @@ def test_verify_token_access_expired_refresh_expired(mocker, patch_secret,
 
     storage.update({'access-token': access, 'refresh-token': refresh})
 
-    spy_decode = mocker.spy(services.jwt_handler, '_decode')
+    spy_decode = mocker.spy(services.auth.jwt_handler, '_decode')
 
     with pytest.raises(jwt_handler.BadToken, match="Invalid refresh token"):
         jwt_handler.verify_token()
@@ -222,8 +222,8 @@ def test_verify_token_access_expired_refresh_expired(mocker, patch_secret,
 
 def test_verify_token_access_bad(mocker, patch_secret, patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     data = {
         "sub": "username",
@@ -236,7 +236,7 @@ def test_verify_token_access_bad(mocker, patch_secret, patch_lifetimes):
     storage.update({'access-token': f"{access}modifiedsignature",
                     'refresh-token': refresh})
 
-    spy_decode = mocker.spy(services.jwt_handler, '_decode')
+    spy_decode = mocker.spy(services.auth.jwt_handler, '_decode')
 
     with pytest.raises(jwt_handler.BadToken, match="Bad token"):
         jwt_handler.verify_token()
@@ -247,8 +247,8 @@ def test_verify_token_access_bad(mocker, patch_secret, patch_lifetimes):
 def test_verify_token_access_expired_refresh_bad(mocker, patch_secret,
                                                  patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     data = {
         "sub": "username",
@@ -261,7 +261,7 @@ def test_verify_token_access_expired_refresh_bad(mocker, patch_secret,
     storage.update({'access-token': access,
                     'refresh-token': f"{refresh}modifiedsignature"})
 
-    spy_decode = mocker.spy(services.jwt_handler, '_decode')
+    spy_decode = mocker.spy(services.auth.jwt_handler, '_decode')
 
     with pytest.raises(jwt_handler.BadToken, match="Invalid refresh token"):
         jwt_handler.verify_token()
@@ -271,8 +271,8 @@ def test_verify_token_access_expired_refresh_bad(mocker, patch_secret,
 
 def test_verify_token_access_missing(mocker, patch_secret, patch_lifetimes):
     storage = {}
-    mocker.patch("services.jwt_handler._wipe_storage", return_value={})
-    mocker.patch("services.jwt_handler._read_storage", return_value=storage)
+    mocker.patch("services.auth.jwt_handler._wipe_storage", return_value={})
+    mocker.patch("services.auth.jwt_handler._read_storage", return_value=storage)
 
     with pytest.raises(jwt_handler.BadToken, match="No access token"):
         jwt_handler.verify_token()

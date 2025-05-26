@@ -1,5 +1,5 @@
 from services.unit_of_work import SqlAlchemyUnitOfWork
-from services import jwt_handler, authentication
+from services.auth import authentication, jwt_handler
 
 
 def login(username, plain_password):

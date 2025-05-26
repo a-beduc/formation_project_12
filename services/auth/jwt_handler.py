@@ -129,8 +129,6 @@ def verify_token():
         raise BadToken("Invalid refresh token")
 
     old_access_token_payload = _decode(access_token, verify_exp=False)
-    old_access_token_payload.pop("iat", None)
-    old_access_token_payload.pop("exp", None)
     new_access_token_payload = (
         _prepare_access_payload(old_access_token_payload))
     new_access_token = _encode(new_access_token_payload)
