@@ -1,5 +1,16 @@
-from dataclasses import dataclass, field
+from re import search
+from argon2 import PasswordHasher, exceptions
+
+from dataclasses import dataclass, field, fields
 from datetime import datetime
+
+
+class DomainError(Exception):
+    pass
+
+
+class AuthUserError(DomainError):
+    pass
 
 
 @dataclass(kw_only=True)
@@ -7,6 +18,47 @@ class AuthUser:
     id: int | None = field(init=False, default=None)
     username: str
     password: str
+
+    @staticmethod
+    def validate_username(username):
+        if len(username) <= 3:
+            raise AuthUserError("username too short")
+
+    @staticmethod
+    def validate_password(plain_password):
+        if not (
+                len(plain_password) >= 8 and
+                search(r"[A-Z]", plain_password) and
+                search(r"[a-z]", plain_password) and
+                search(r"\d", plain_password)
+        ):
+            raise AuthUserError(
+                "password too weak, need 8 char, 1 number, 1 upper, 1 lower"
+            )
+
+    @staticmethod
+    def hash_plain_password(plain_password):
+        ph = PasswordHasher()
+        return ph.hash(plain_password)
+
+    def set_password(self, plain_password):
+        self.validate_password(plain_password)
+        self.password = self.hash_plain_password(plain_password)
+
+    def verify_password(self, plain_password):
+        ph = PasswordHasher()
+        try:
+            ph.verify(self.password, plain_password)
+        except exceptions.VerifyMismatchError:
+            raise AuthUserError(f"Password mismatch")
+
+    @classmethod
+    def build_user(cls, username, plain_password):
+        hash_password = cls.hash_plain_password(plain_password)
+        return cls(
+            username=username,
+            password=hash_password
+        )
 
 
 @dataclass(kw_only=True)
