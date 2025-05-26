@@ -1,64 +1,45 @@
-import argon2
-import re
-from domain.model import AuthUser
-
-ph = argon2.PasswordHasher()
+from domain.model import AuthUserError
 
 
-class AuthError(Exception):
+class AuthenticationError(Exception):
     pass
 
 
-def valid_password(plain_password):
-    return (
-        len(plain_password) >= 8 and
-        re.search(r"[A-Z]", plain_password) and
-        re.search(r"[a-z]", plain_password) and
-        re.search(r"\d", plain_password)
-    )
+class AuthenticationService:
+    def __init__(self, uow):
+        self.uow = uow
 
+    def authenticate(self, username, plain_password):
+        with self.uow:
+            user = self.uow.users.get_by_username(username)
+            if user is None:
+                raise AuthenticationError(f"User not found with {username}")
 
-def valid_username(uow, username):
-    return len(username) >= 3 and not uow.users.get_by_username(username)
+            try:
+                user.verify_password(plain_password)
+            except AuthUserError:
+                raise AuthenticationError("Password mismatch")
 
+            collaborator = self.uow.collaborators.get_by_user_id(user.id)
+            return {
+                "sub": user.username,
+                "c_id": collaborator.id,
+                "role": collaborator.role_id,
+                "name": f"{collaborator.first_name} {collaborator.last_name}"
+            }
 
-def create_user(uow, username, plain_password):
-    if not valid_password(plain_password):
-        raise AuthError("weak password")
+    def change_password(self, username, old_plain_password,
+                        new_plain_password):
+        with self.uow:
+            user = self.uow.users.get_by_username(username)
+            if user is None:
+                raise AuthenticationError(f"User not found with {username}")
 
-    with uow:
-        if not valid_username(uow, username):
-            raise AuthError("username too short or already in use")
+            try:
+                user.verify_password(old_plain_password)
+            except AuthUserError:
+                raise AuthenticationError("Password mismatch")
 
-        password_hash = ph.hash(plain_password)
-        user = AuthUser(username=username, password=password_hash)
-        uow.users.add(user)
-        uow.commit()
+            user.set_password(new_plain_password)
 
-
-def authenticate(uow, username, plain_password):
-    with uow:
-        user = uow.users.get_by_username(username)
-        if user is None:
-            raise AuthError(f"User not found with {username}")
-
-        try:
-            ph.verify(user.password, plain_password)
-        except argon2.exceptions.VerifyMismatchError:
-            raise AuthError(f"Password mismatch")
-
-        collaborator = uow.collaborators.get_by_user_id(user.id)
-        return {
-            "sub": user.username,
-            "c_id": collaborator.id,
-            "role": collaborator.role_id,
-            "name": f"{collaborator.first_name} {collaborator.last_name}"
-        }
-
-
-def get_collaborator_from_user(uow, user):
-    with uow:
-        collaborator = uow.collaborators.get_by_user_id(user.id)
-        if collaborator is None:
-            raise AuthError(f"Collaborator not found")
-    return collaborator
+            self.uow.commit()
