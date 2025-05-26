@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Table, Column, Boolean, Integer, String, ForeignKey, DateTime, Float, Text)
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import registry, relationship
 
 from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
 
@@ -34,7 +34,7 @@ collaborator_table = Table(
     Column('phone_number', String(20)),
     Column('role_id', Integer, ForeignKey('crm.role.role_id')),
     Column('user_id', Integer, ForeignKey('auth.users.user_id'),
-           unique=True, nullable=False),
+           unique=True),
     schema='crm'
 )
 
@@ -87,6 +87,11 @@ def start_user_mapper():
         user_table,
         properties={
             "id": user_table.c.user_id,
+            "collaborator": relationship(
+                Collaborator,
+                back_populates="user",
+                uselist=False,
+            )
         },
     )
 
@@ -97,6 +102,10 @@ def start_role_mapper():
         role_table,
         properties={
             "id": role_table.c.role_id,
+            "collaborators": relationship(
+                Collaborator,
+                back_populates="role"
+            )
         },
     )
 
@@ -107,6 +116,26 @@ def start_collaborator_mapper():
         collaborator_table,
         properties={
             "id": collaborator_table.c.collaborator_id,
+            "user": relationship(
+                AuthUser,
+                back_populates="collaborator",
+                uselist=False
+            ),
+            "role": relationship(
+                Role,
+                back_populates="collaborators",
+                uselist=False
+            ),
+            "clients": relationship(
+                Client,
+                back_populates="salesman",
+                order_by=client_table.c.client_id
+            ),
+            "events": relationship(
+                Event,
+                back_populates="supporter",
+                order_by=event_table.c.event_id
+            )
         },
     )
 
@@ -117,6 +146,16 @@ def start_client_mapper():
         client_table,
         properties={
             "id": client_table.c.client_id,
+            "salesman": relationship(
+                Collaborator,
+                back_populates="clients",
+                uselist=False
+            ),
+            "contracts": relationship(
+                Contract,
+                back_populates="client",
+                order_by=contract_table.c.contract_id
+            )
         },
     )
 
@@ -127,6 +166,16 @@ def start_contract_mapper():
         contract_table,
         properties={
             "id": contract_table.c.contract_id,
+            "client": relationship(
+                Client,
+                back_populates="contracts",
+                uselist=False
+            ),
+            "event": relationship(
+                Event,
+                back_populates="contract",
+                uselist=False
+            )
         },
     )
 
@@ -137,6 +186,16 @@ def start_event_mapper():
         event_table,
         properties={
             "id": event_table.c.event_id,
+            "contract": relationship(
+                Contract,
+                back_populates="event",
+                uselist=False
+            ),
+            "supporter": relationship(
+                Collaborator,
+                back_populates="events",
+                uselist=False
+            )
         },
     )
 
