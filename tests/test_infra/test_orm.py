@@ -1,4 +1,5 @@
 from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
+import datetime
 
 
 class TestAuthUserOrm:
@@ -43,7 +44,8 @@ class TestAuthUserOrm:
 
     def test_auth_user_mapper_can_update_row(self, session,
                                              init_db_table_users):
-        expected = AuthUser(username="modified_username", password="modified_password")
+        expected = AuthUser(username="modified_username",
+                            password="modified_password")
         expected.id = 2
 
         user_to_update = session.get(AuthUser, 2)
@@ -181,5 +183,126 @@ class TestCollaboratorOrm:
         session.commit()
         assert session.get(Collaborator, 2) is None
 
+
+class TestRelationship:
+    def test_user_to_collaborator_and_back(self, session,
+                                           init_db_table_users,
+                                           init_db_table_role,
+                                           init_db_table_collaborator):
+        user = session.get(AuthUser, 1)
+        collaborator = session.get(Collaborator, 1)
+
+        assert user.collaborator == collaborator
+        assert collaborator.user == user
+
+    def test_update_collaborator_user_update_collaborator_user_id(
+            self, session,
+            init_db_table_users,
+            init_db_table_role,
+            init_db_table_collaborator):
+        new_user = AuthUser(username="test_user", password="test_password")
+        session.add(new_user)
+        session.commit()
+
+        user_four = session.get(AuthUser, 4)
+        assert user_four.username == new_user.username
+
+        collaborator = session.get(Collaborator, 1)
+        assert collaborator.user_id == 1
+
+        collaborator.user = user_four
+        # if collaborator.user is modified session.commit() is needed to update
+        session.commit()
+        assert collaborator.user_id == 4
+
+    def test_update_collaborator_user_id_update_collaborator_user(
+            self, session,
+            init_db_table_users,
+            init_db_table_role,
+            init_db_table_collaborator):
+        new_user = AuthUser(username="test_user", password="test_password")
+        session.add(new_user)
+
+        user_four = session.get(AuthUser, 4)
+        assert user_four == new_user
+
+        collaborator = session.get(Collaborator, 1)
+        assert collaborator.user_id == 1
+
+        collaborator.user_id = new_user.id
+        # if collaborator.user_id is modified, session.commit isn't needed
+        assert collaborator.user == user_four
+
+    def test_delete_user_and_get_collaborator_user(self, session,
+                                                   init_db_table_users,
+                                                   init_db_table_role,
+                                                   init_db_table_collaborator):
+        collaborator = session.get(Collaborator, 1)
+        user = session.get(AuthUser, 1)
+        session.delete(user)
+        session.commit()
+
+        assert collaborator.user_id is None
+        assert collaborator.user is None
+
+    def test_delete_collaborator_and_get_user_collaborator(
+            self, session, init_db_table_users, init_db_table_role,
+            init_db_table_collaborator):
+        collaborator = session.get(Collaborator, 1)
+        user = session.get(AuthUser, 1)
+        session.delete(collaborator)
+        session.commit()
+
+        assert user.collaborator is None
+
+    def test_collaborator_to_client_and_back(self, session,
+                                             init_db_table_users,
+                                             init_db_table_role,
+                                             init_db_table_collaborator,
+                                             init_db_table_client):
+        collaborator_2 = session.get(Collaborator, 2)
+        collaborator_3 = session.get(Collaborator, 3)
+        client_2 = session.get(Client, 2)
+        client_3 = session.get(Client, 3)
+
+        assert collaborator_2.clients == [client_2, client_3]
+        assert collaborator_3.clients == []
+
+        assert client_2.salesman == collaborator_2
+        assert client_3.salesman == collaborator_2
+
+    def test_add_client_to_salesman(self, session,
+                                    init_db_table_users,
+                                    init_db_table_role,
+                                    init_db_table_collaborator,
+                                    init_db_table_client):
+        collaborator_2 = session.get(Collaborator, 2)
+        client_4 = Client(last_name='col_ln_four',
+                          first_name='col_fn_four',
+                          email='col_email@four',
+                          phone_number='0000000004',
+                          company='company_four',
+                          created_at=datetime.datetime.fromisoformat(
+                              '2025-01-01 00:00:04'),
+                          updated_at=datetime.datetime.fromisoformat(
+                              '2025-02-01 00:00:04'),
+                          salesman_id=None)
+        session.add(client_4)
+        collaborator_2.clients.append(client_4)
+
+        client_2 = session.get(Client, 2)
+        client_3 = session.get(Client, 3)
+
+        assert collaborator_2.clients == [client_2, client_3, client_4]
+
+        assert client_2.salesman == collaborator_2
+        assert client_3.salesman == collaborator_2
+        assert client_4.salesman == collaborator_2
+
+        # commit necessary to update salesman_id in client_4
+        session.commit()
+        assert client_2.salesman_id == collaborator_2.id
+        assert client_3.salesman_id == collaborator_2.id
+        assert client_4.salesman_id == collaborator_2.id
 
 # see later if it's useful to test other tables
