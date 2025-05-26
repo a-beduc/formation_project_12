@@ -77,6 +77,10 @@ class Collaborator:
     role_id: int = 1
     user_id: int
 
+    @staticmethod
+    def get_updatable_fields():
+        return {"last_name", "first_name", "email", "phone_number", "role_id"}
+
 
 @dataclass(kw_only=True)
 class Client:
