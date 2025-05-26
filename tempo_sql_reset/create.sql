@@ -19,7 +19,7 @@ CREATE TABLE crm.collaborator (
     email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(20),
     role_id INT DEFAULT 1 REFERENCES crm.role(role_id),
-    user_id INT NOT NULL UNIQUE REFERENCES auth.users(user_id)
+    user_id INT UNIQUE REFERENCES auth.users(user_id)
 );
 
 CREATE TABLE crm.client (
@@ -31,7 +31,7 @@ CREATE TABLE crm.client (
     company VARCHAR(255),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    salesman_id INT NOT NULL REFERENCES crm.collaborator(collaborator_id)
+    salesman_id INT REFERENCES crm.collaborator(collaborator_id)
 );
 
 CREATE TABLE crm.contract (
@@ -40,7 +40,7 @@ CREATE TABLE crm.contract (
     paid_amount DECIMAL(10, 2),
     created_at TIMESTAMP,
     signed BOOLEAN NOT NULL DEFAULT FALSE,
-    client_id INT NOT NULL REFERENCES crm.client(client_id)
+    client_id INT REFERENCES crm.client(client_id)
 );
 
 CREATE TABLE crm.event (
@@ -52,5 +52,5 @@ CREATE TABLE crm.event (
     attendee INT,
     notes TEXT,
     supporter_id INT REFERENCES crm.collaborator(collaborator_id),
-    contract_id INT NOT NULL REFERENCES crm.contract(contract_id)
+    contract_id INT REFERENCES crm.contract(contract_id)
 );
