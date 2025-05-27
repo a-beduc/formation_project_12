@@ -1,7 +1,8 @@
 import pytest
 from adapters.repositories import (AbstractRepository, AbstractUserRepository,
-                                   AbstractCollaboratorRepository)
-from domain.model import AuthUser, Collaborator
+                                   AbstractCollaboratorRepository,
+                                   AbstractClientRepository)
+from domain.model import AuthUser, Collaborator, Client
 from services.unit_of_work import AbstractUnitOfWork
 
 
@@ -9,6 +10,7 @@ class FakeRepository(AbstractRepository):
     def __init__(self, init=()):
         super().__init__()
         self._store = {}
+        
         self._pk = 0
         for obj in init:
             self._add(obj)
@@ -27,11 +29,6 @@ class FakeRepository(AbstractRepository):
 
     def _list(self):
         return list(self._store.values())
-
-    def _update(self, model_obj):
-        if getattr(model_obj, "id", None) is None:
-            raise ValueError('The object id is not found')
-        self._store[model_obj.id] = model_obj
 
 
 class FakeUserRepository(FakeRepository, AbstractUserRepository):
@@ -55,6 +52,13 @@ class FakeCollaboratorRepository(FakeRepository,
         return [collaborator for collaborator in self._store.values() if
                 isinstance(collaborator, Collaborator) and
                 collaborator.role_id == role_id]
+
+
+class FakeClientRepository(FakeRepository, AbstractClientRepository):
+    def filter_by_col_id(self, salesman_id):
+        return [client for client in self._store.values() if
+                isinstance(client, Client) and
+                client.salesman_id == salesman_id]
 
 
 # init empty interface, add tuples of objects to FakeRepos to init with datas

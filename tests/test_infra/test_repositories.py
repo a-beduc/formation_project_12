@@ -61,7 +61,6 @@ def test_repository_can_update_user(session, init_db_table_users):
     user = repo.get(2)
     user.username = "modified_username"
     user.password = "modified_password"
-    repo.update(user)
 
     assert repo.get(2) == expected
 

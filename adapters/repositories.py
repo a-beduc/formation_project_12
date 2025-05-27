@@ -19,9 +19,6 @@ class AbstractRepository(ABC):
     def list(self):
         return self._list()
 
-    def update(self, model_obj):
-        self._update(model_obj)
-
     @abstractmethod
     def _add(self, model_obj):
         raise NotImplementedError
@@ -38,10 +35,6 @@ class AbstractRepository(ABC):
     def _list(self):
         raise NotImplementedError
 
-    @abstractmethod
-    def _update(self, model_obj):
-        raise NotImplementedError
-
 
 class AbstractUserRepository(AbstractRepository):
     @abstractmethod
@@ -56,6 +49,12 @@ class AbstractCollaboratorRepository(AbstractRepository):
 
     @abstractmethod
     def filter_by_role(self, role):
+        raise NotImplementedError
+
+
+class AbstractClientRepository(AbstractRepository):
+    @abstractmethod
+    def filter_by_col_id(self, salesman_id):
         raise NotImplementedError
 
 
@@ -85,9 +84,6 @@ class SqlAlchemyRepository(AbstractRepository):
     def _list(self):
         return self.session.query(self.model_cls).all()
 
-    def _update(self, model_obj):
-        self.session.merge(model_obj)
-
 
 class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
     model_cls = AuthUser
@@ -114,8 +110,13 @@ class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository,
                 .filter_by(role_id=role_id).all())
 
 
-class SqlAlchemyClientRepository(SqlAlchemyRepository):
+class SqlAlchemyClientRepository(SqlAlchemyRepository,
+                                 AbstractClientRepository):
     model_cls = Client
+
+    def filter_by_col_id(self, salesman_id):
+        return (self.session.query(self.model_cls)
+                .filter_by(salesman_id=salesman_id).all())
 
 
 class SqlAlchemyContractRepository(SqlAlchemyRepository,
