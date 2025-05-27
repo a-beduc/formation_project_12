@@ -164,6 +164,7 @@ class TestCollaboratorCRUD:
         assert service.get_collaborator_by_id(1).first_name == "fn_a"
 
         service.delete_collaborator(1)
+        assert uow.commited is True
 
         with pytest.raises(CollaboratorServiceError,
                            match="Collaborator not found"):
@@ -175,5 +176,6 @@ class TestCollaboratorCRUD:
         update_input = {"user_id": 10, "last_name": "new_last_name"}
         service.update_collaborator(1, **update_input)
 
+        assert uow.commited is True
         assert service.get_collaborator_by_id(1).last_name == "new_last_name"
         assert service.get_collaborator_by_id(1).user_id == 1

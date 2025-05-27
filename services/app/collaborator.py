@@ -77,12 +77,14 @@ class CollaboratorService:
     def delete_collaborator(self, collaborator_id):
         with self.uow:
             self.uow.collaborators.delete(collaborator_id)
+            self.uow.commit()
 
     def update_collaborator(self, collaborator_id, **kwargs):
         updatable_fields = Collaborator.get_updatable_fields()
         with self.uow:
             collaborator = self.uow.collaborators.get(collaborator_id)
-            for key in updatable_fields:
-                update_value = kwargs.get(key, None)
-                if update_value is not None:
-                    setattr(collaborator, key, update_value)
+            update_value = {k: kwargs.get(k, None) for k in updatable_fields}
+            for k, v in update_value.items():
+                if v is not None:
+                    setattr(collaborator, k, v)
+            self.uow.commit()

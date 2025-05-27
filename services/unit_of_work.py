@@ -34,9 +34,8 @@ class AbstractUnitOfWork(ABC):
 
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
-    bind=create_engine(
-        get_postgres_uri()
-    )
+    bind=create_engine(get_postgres_uri()),
+    autoflush=False,
 )
 
 
