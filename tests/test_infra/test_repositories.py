@@ -1,4 +1,4 @@
-from domain.model import AuthUser, Collaborator
+from domain.model import AuthUser, Collaborator, Client
 import adapters.repositories as repository
 
 
@@ -80,7 +80,7 @@ def test_repository_can_get_user_from_username(session,
                                                init_db_table_users):
     username = "user_one"
     repo = repository.SqlAlchemyUserRepository(session)
-    user = repo.get_by_username(username)
+    user = repo.filter_one(username=username)
 
     assert user is not None
     assert user.username == username
@@ -113,10 +113,10 @@ def test_collaborator_saved_and_loaded_are_equals(session, init_db_table_users):
     assert repo.get(4) == in_memory_collaborator
 
 
-def test_collaborator_can_be_filter_by_role(session,
-                                            init_db_table_users,
-                                            init_db_table_role,
-                                            init_db_table_collaborator):
+def test_collaborator_can_be_filtered_by_role(session,
+                                              init_db_table_users,
+                                              init_db_table_role,
+                                              init_db_table_collaborator):
     collaborator = Collaborator(last_name='col_ln_one',
                                 first_name='col_fn_one',
                                 email='col_email@one',
@@ -126,5 +126,21 @@ def test_collaborator_can_be_filter_by_role(session,
     collaborator.id = 1
     expected = [collaborator]
     repo = repository.SqlAlchemyCollaboratorRepository(session)
-    retrieved = repo.filter_by_role(3)
+    retrieved = repo.filter(role_id=3)
+    assert retrieved == expected
+
+
+def test_collaborator_can_be_filtered_with_multiple_fields(
+        session, init_db_table_users, init_db_table_role,
+        init_db_table_collaborator):
+    collaborator = Collaborator(last_name='col_ln_one',
+                                first_name='col_fn_one',
+                                email='col_email@one',
+                                phone_number='0000000001',
+                                role_id=3,
+                                user_id=1)
+    collaborator.id = 1
+    expected = collaborator
+    repo = repository.SqlAlchemyCollaboratorRepository(session)
+    retrieved = repo.filter_one(role_id=3, user_id=1)
     assert retrieved == expected

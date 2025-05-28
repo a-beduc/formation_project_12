@@ -3,10 +3,6 @@ from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
 
 
 class AbstractRepository(ABC):
-    def __init__(self):
-        # implement caching later to reduce redundant DB queries
-        self.cached = set()
-
     def add(self, model_obj):
         self._add(model_obj)
 
@@ -18,6 +14,12 @@ class AbstractRepository(ABC):
 
     def list(self):
         return self._list()
+
+    def filter(self, **filters):
+        return self._filter(**filters)
+
+    def filter_one(self, **filters):
+        return self._filter_one(**filters)
 
     @abstractmethod
     def _add(self, model_obj):
@@ -35,26 +37,12 @@ class AbstractRepository(ABC):
     def _list(self):
         raise NotImplementedError
 
-
-class AbstractUserRepository(AbstractRepository):
     @abstractmethod
-    def get_by_username(self, username):
-        raise NotImplementedError
-
-
-class AbstractCollaboratorRepository(AbstractRepository):
-    @abstractmethod
-    def get_by_user_id(self, user_id):
+    def _filter(self, **filters):
         raise NotImplementedError
 
     @abstractmethod
-    def filter_by_role(self, role):
-        raise NotImplementedError
-
-
-class AbstractClientRepository(AbstractRepository):
-    @abstractmethod
-    def filter_by_col_id(self, salesman_id):
+    def _filter_one(self, **filters):
         raise NotImplementedError
 
 
@@ -84,39 +72,28 @@ class SqlAlchemyRepository(AbstractRepository):
     def _list(self):
         return self.session.query(self.model_cls).all()
 
+    def _filter(self, **filters):
+        return self.session.query(self.model_cls).filter_by(**filters).all()
 
-class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
+    def _filter_one(self, **filters):
+        return (self.session.query(self.model_cls).filter_by(**filters).
+                one_or_none())
+
+
+class SqlAlchemyUserRepository(SqlAlchemyRepository):
     model_cls = AuthUser
-
-    def get_by_username(self, username):
-        return self.session.query(self.model_cls).filter_by(
-            username=username).one_or_none()
 
 
 class SqlAlchemyRoleRepository(SqlAlchemyRepository):
     model_cls = Role
 
 
-class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository,
-                                       AbstractCollaboratorRepository):
+class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):
     model_cls = Collaborator
 
-    def get_by_user_id(self, user_id):
-        return (self.session.query(self.model_cls)
-                .filter_by(user_id=user_id).one_or_none())
 
-    def filter_by_role(self, role_id):
-        return (self.session.query(self.model_cls)
-                .filter_by(role_id=role_id).all())
-
-
-class SqlAlchemyClientRepository(SqlAlchemyRepository,
-                                 AbstractClientRepository):
+class SqlAlchemyClientRepository(SqlAlchemyRepository):
     model_cls = Client
-
-    def filter_by_col_id(self, salesman_id):
-        return (self.session.query(self.model_cls)
-                .filter_by(salesman_id=salesman_id).all())
 
 
 class SqlAlchemyContractRepository(SqlAlchemyRepository,

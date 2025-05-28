@@ -11,7 +11,7 @@ class AuthenticationService:
 
     def authenticate(self, username, plain_password):
         with self.uow:
-            user = self.uow.users.get_by_username(username)
+            user = self.uow.users.filter_one(username=username)
             if user is None:
                 raise AuthenticationError(f"User not found with {username}")
 
@@ -20,7 +20,7 @@ class AuthenticationService:
             except AuthUserError:
                 raise AuthenticationError("Password mismatch")
 
-            collaborator = self.uow.collaborators.get_by_user_id(user.id)
+            collaborator = self.uow.collaborators.filter_one(user_id=user.id)
             return {
                 "sub": user.username,
                 "c_id": collaborator.id,
@@ -31,7 +31,7 @@ class AuthenticationService:
     def change_password(self, username, old_plain_password,
                         new_plain_password):
         with self.uow:
-            user = self.uow.users.get_by_username(username)
+            user = self.uow.users.filter_one(username=username)
             if user is None:
                 raise AuthenticationError(f"User not found with {username}")
 

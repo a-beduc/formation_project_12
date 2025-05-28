@@ -1,24 +1,22 @@
 import pytest
 
-from tests.test_service.conftest import (FakeUserRepository,
-                                         FakeCollaboratorRepository)
+from tests.test_service.conftest import FakeRepository
 
 from domain.model import AuthUser, Collaborator, AuthUserError
-from services.auth import authentication as auth
 from services.auth.authentication import (
-    AuthenticationService, AuthenticationError)
-from services.dto import AuthUserDTO
+    AuthenticationService,
+    AuthenticationError)
 
 
 class TestAuthenticate:
     def test_authenticate_success(self, mocker, uow):
         user = AuthUser(username="user_b",
                         password="Password1")
-        uow.users = FakeUserRepository(init=(user,))
+        uow.users = FakeRepository(init=(user,))
         collaborator = Collaborator(user_id=1,
                                     last_name="Ross",
                                     first_name="Bobby")
-        uow.collaborators = FakeCollaboratorRepository(init=(collaborator,))
+        uow.collaborators = FakeRepository(init=(collaborator,))
 
         service = AuthenticationService(uow)
         expected_payload = {
@@ -27,54 +25,54 @@ class TestAuthenticate:
             "role": 1,
             "name": "Bobby Ross",
         }
-        mocker.patch.object(uow.users, "get_by_username", return_value=user)
+        mocker.patch.object(uow.users, "filter_one", return_value=user)
         mocker.patch.object(user, "verify_password")
         mocker.patch.object(uow.collaborators,
-                            "get_by_user_id",
+                            "filter_one",
                             return_value=collaborator)
 
-        spy_get_by_username = mocker.spy(uow.users, "get_by_username")
+        spy_filter_by_username = mocker.spy(uow.users, "filter_one")
         spy_verify = mocker.spy(user, "verify_password")
-        spy_get_by_user_id = mocker.spy(uow.collaborators, "get_by_user_id")
+        spy_filter_by_user_id = mocker.spy(uow.collaborators, "filter_one")
 
         assert service.authenticate("user_b", "Password1") == expected_payload
 
-        assert spy_get_by_username.call_count == 1
+        assert spy_filter_by_username.call_count == 1
         assert spy_verify.call_count == 1
-        assert spy_get_by_user_id.call_count == 1
+        assert spy_filter_by_user_id.call_count == 1
 
     def test_authenticate_fail_wrong_username(self, uow):
-        with pytest.raises(auth.AuthenticationError,
+        with pytest.raises(AuthenticationError,
                            match="User not found with not_bob"):
-            service = auth.AuthenticationService(uow)
+            service = AuthenticationService(uow)
             service.authenticate("not_bob", "pwd")
 
     def test_authenticate_fail_wrong_password(self, uow, mocker):
         user = AuthUser(username="user_b",
                         password="Password1")
-        uow.users = FakeUserRepository(init=(user,))
+        uow.users = FakeRepository(init=(user,))
         collaborator = Collaborator(user_id=1,
                                     last_name="Ross",
                                     first_name="Bobby")
-        uow.collaborators = FakeCollaboratorRepository(init=(collaborator,))
+        uow.collaborators = FakeRepository(init=(collaborator,))
 
         service = AuthenticationService(uow)
 
-        mocker.patch.object(uow.users, "get_by_username", return_value=user)
+        mocker.patch.object(uow.users, "filter_one", return_value=user)
         mock_vp = mocker.patch.object(user, "verify_password")
         mock_vp.side_effect = AuthUserError
 
-        with pytest.raises(auth.AuthenticationError, match="Password mismatch"):
+        with pytest.raises(AuthenticationError, match="Password mismatch"):
             service.authenticate("user_b", "not_pwd")
 
 
 def test_change_password_success(uow, mocker):
     user = AuthUser(username="user_b",
                     password="Password1")
-    uow.users = FakeUserRepository(init=(user,))
+    uow.users = FakeRepository(init=(user,))
     service = AuthenticationService(uow)
 
-    mocker.patch.object(uow.users, "get_by_username", return_value=user)
+    mocker.patch.object(uow.users, "filter_one", return_value=user)
     verify = mocker.patch.object(user, 'verify_password')
     pwd_update = mocker.patch.object(user, 'set_password')
 
@@ -86,29 +84,30 @@ def test_change_password_success(uow, mocker):
 
 def test_change_password_wrong_username(uow):
     service = AuthenticationService(uow)
-    with pytest.raises(auth.AuthenticationError, match="User not found with not_bob"):
+    with pytest.raises(AuthenticationError,
+                       match="User not found with not_bob"):
         service.change_password("not_bob", "Password1", "new_pwd")
 
 
 def test_change_password_fail_wrong_password(mocker, uow):
     user = AuthUser(username="user_b",
                     password="Password1")
-    uow.users = FakeUserRepository(init=(user,))
+    uow.users = FakeRepository(init=(user,))
     service = AuthenticationService(uow)
-    mocker.patch.object(uow.users, "get_by_username", return_value=user)
+    mocker.patch.object(uow.users, "filter_one", return_value=user)
     verify = mocker.patch.object(user, "verify_password")
     verify.side_effect = AuthUserError
 
-    with pytest.raises(auth.AuthenticationError, match="Password mismatch"):
+    with pytest.raises(AuthenticationError, match="Password mismatch"):
         service.change_password("user_b", "wrong_pwd", "new_pwd")
 
 
 def test_change_password_fail_new_pwd_too_short(mocker, uow):
     user = AuthUser(username="user_b",
                     password="Password1")
-    uow.users = FakeUserRepository(init=(user,))
+    uow.users = FakeRepository(init=(user,))
     service = AuthenticationService(uow)
-    mocker.patch.object(uow.users, "get_by_username", return_value=user)
+    mocker.patch.object(uow.users, "filter_one", return_value=user)
     mocker.patch.object(user, 'verify_password')
 
     with pytest.raises(AuthUserError, match="password too weak, need 8 char, "

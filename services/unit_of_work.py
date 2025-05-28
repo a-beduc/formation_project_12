@@ -8,9 +8,9 @@ from adapters import repositories as repo
 
 
 class AbstractUnitOfWork(ABC):
-    users: repo.AbstractUserRepository
+    users: repo.AbstractRepository
     roles: repo.AbstractRepository
-    collaborators: repo.AbstractCollaboratorRepository
+    collaborators: repo.AbstractRepository
     clients: repo.AbstractRepository
     contracts: repo.AbstractContractRepository
     events: repo.AbstractRepository
