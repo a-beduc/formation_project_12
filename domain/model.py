@@ -41,6 +41,10 @@ class AuthUser:
         ph = PasswordHasher()
         return ph.hash(plain_password)
 
+    @staticmethod
+    def get_filterable_fields():
+        return {'id', 'username'}
+
     def set_password(self, plain_password):
         self.validate_password(plain_password)
         self.password = self.hash_plain_password(plain_password)
@@ -81,6 +85,11 @@ class Collaborator:
     def get_updatable_fields():
         return {"last_name", "first_name", "email", "phone_number", "role_id"}
 
+    @staticmethod
+    def get_filterable_fields():
+        return {'id', "last_name", "first_name", "email", "phone_number",
+                "role_id", 'user_id'}
+
 
 @dataclass(kw_only=True)
 class Client:
@@ -94,18 +103,37 @@ class Client:
     updated_at: datetime = datetime.now()
     salesman_id: int
 
+    @staticmethod
+    def get_updatable_fields():
+        return {"last_name", "first_name", "email", "phone_number", "company",
+                "salesman_id"}
+
+    @staticmethod
+    def get_filterable_fields():
+        return {'id', "last_name", "first_name", "email", "phone_number",
+                "company", "created_at", "updated_at", "salesman_id"}
+
 
 @dataclass(kw_only=True)
 class Contract:
     id: int | None = field(init=False, default=None)
-    total_amount: float
-    paid_amount: float = 0.0
+    total_amount: float | None = 0.0
+    paid_amount: float | None = 0.0
     created_at: datetime = datetime.now()
-    signed: bool = False
+    signed: bool | None = False
     client_id: int
 
     def calculate_due_amount(self):
         return round(self.total_amount - self.paid_amount, 2)
+
+    @staticmethod
+    def get_updatable_fields():
+        return {"total_amount", "paid_amount", "signed"}
+
+    @staticmethod
+    def get_filterable_fields():
+        return {"id", "total_amount", "paid_amount", "created_at", "signed",
+                "client_id"}
 
 
 @dataclass(kw_only=True)
@@ -119,3 +147,13 @@ class Event:
     notes: str | None = None
     supporter_id: int | None = None
     contract_id: int
+
+    @staticmethod
+    def get_updatable_fields():
+        return {"title", "start_time", "end_time", "location", "attendee",
+                "notes", "supporter_id"}
+
+    @staticmethod
+    def get_filterable_fields():
+        return {"id", "title", "start_time", "end_time", "location", "attendee",
+                "notes", "supporter_id", "contract_id"}
