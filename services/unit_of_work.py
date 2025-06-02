@@ -9,7 +9,6 @@ from adapters import repositories as repo
 
 class AbstractUnitOfWork(ABC):
     users: repo.AbstractRepository
-    roles: repo.AbstractRepository
     collaborators: repo.AbstractRepository
     clients: repo.AbstractRepository
     contracts: repo.AbstractContractRepository
@@ -46,7 +45,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()
         self.users = repo.SqlAlchemyUserRepository(self.session)
-        self.roles = repo.SqlAlchemyRoleRepository(self.session)
         self.collaborators = repo.SqlAlchemyCollaboratorRepository(self.session)
         self.clients = repo.SqlAlchemyClientRepository(self.session)
         self.contracts = repo.SqlAlchemyContractRepository(self.session)

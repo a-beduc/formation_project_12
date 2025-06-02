@@ -2,7 +2,7 @@ from sqlalchemy import (
     Table, Column, Boolean, Integer, String, ForeignKey, DateTime, Float, Text)
 from sqlalchemy.orm import registry, relationship
 
-from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
+from domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 
 mapper_registry = registry()
@@ -87,24 +87,12 @@ def start_user_mapper():
         user_table,
         properties={
             "id": user_table.c.user_id,
+            "_username":user_table.c.username,
+            "_password": user_table.c.password,
             "collaborator": relationship(
                 Collaborator,
                 back_populates="user",
                 uselist=False,
-            )
-        },
-    )
-
-
-def start_role_mapper():
-    mapper_registry.map_imperatively(
-        Role,
-        role_table,
-        properties={
-            "id": role_table.c.role_id,
-            "collaborators": relationship(
-                Collaborator,
-                back_populates="role"
             )
         },
     )
@@ -116,14 +104,11 @@ def start_collaborator_mapper():
         collaborator_table,
         properties={
             "id": collaborator_table.c.collaborator_id,
+            "_role_id": collaborator_table.c.role_id,
+            "_user_id": collaborator_table.c.user_id,
             "user": relationship(
                 AuthUser,
                 back_populates="collaborator",
-                uselist=False
-            ),
-            "role": relationship(
-                Role,
-                back_populates="collaborators",
                 uselist=False
             ),
             "clients": relationship(
@@ -146,6 +131,9 @@ def start_client_mapper():
         client_table,
         properties={
             "id": client_table.c.client_id,
+            "_created_at": client_table.c.created_at,
+            "_updated_at": client_table.c.updated_at,
+            "_salesman_id": client_table.c.salesman_id,
             "salesman": relationship(
                 Collaborator,
                 back_populates="clients",
@@ -166,6 +154,10 @@ def start_contract_mapper():
         contract_table,
         properties={
             "id": contract_table.c.contract_id,
+            "_total_amount": contract_table.c.total_amount,
+            "_paid_amount": contract_table.c.paid_amount,
+            "_signed": contract_table.c.signed,
+            "_client_id": contract_table.c.client_id,
             "client": relationship(
                 Client,
                 back_populates="contracts",
@@ -186,6 +178,7 @@ def start_event_mapper():
         event_table,
         properties={
             "id": event_table.c.event_id,
+            "_contract_id": event_table.c.contract_id,
             "contract": relationship(
                 Contract,
                 back_populates="event",
@@ -202,7 +195,6 @@ def start_event_mapper():
 
 def start_mappers():
     start_user_mapper()
-    start_role_mapper()
     start_collaborator_mapper()
     start_client_mapper()
     start_contract_mapper()

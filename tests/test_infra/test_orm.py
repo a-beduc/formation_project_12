@@ -1,4 +1,4 @@
-from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
+from domain.model import AuthUser, Collaborator, Client, Contract, Event
 import datetime
 
 
@@ -6,9 +6,9 @@ class TestAuthUserOrm:
     def test_auth_user_mapper_can_load_rows(self, session,
                                             init_db_table_users):
         expected = [
-            AuthUser(username="user_one", password="password_one"),
-            AuthUser(username="user_two", password="password_two"),
-            AuthUser(username="user_thr", password="password_thr")
+            AuthUser(_username="user_one", _password="password_one"),
+            AuthUser(_username="user_two", _password="password_two"),
+            AuthUser(_username="user_thr", _password="password_thr")
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
@@ -17,40 +17,40 @@ class TestAuthUserOrm:
 
     def test_auth_user_mapper_can_select_row(self, session,
                                              init_db_table_users):
-        expected = AuthUser(username="user_one", password="password_one")
+        expected = AuthUser(_username="user_one", _password="password_one")
         expected.id = 1
         user_id_1 = 1
         assert session.get(AuthUser, user_id_1) == expected
 
-        expected = AuthUser(username="user_two", password="password_two")
+        expected = AuthUser(_username="user_two", _password="password_two")
         expected.id = 2
         user_id_2 = 2
         assert session.get(AuthUser, user_id_2) == expected
 
     def test_auth_user_mapper_can_add_row(self, session, init_db_table_users):
         expected = [
-            AuthUser(username="user_one", password="password_one"),
-            AuthUser(username="user_two", password="password_two"),
-            AuthUser(username="user_thr", password="password_thr"),
-            AuthUser(username="user_fou", password="password_fou")
+            AuthUser(_username="user_one", _password="password_one"),
+            AuthUser(_username="user_two", _password="password_two"),
+            AuthUser(_username="user_thr", _password="password_thr"),
+            AuthUser(_username="user_fou", _password="password_fou")
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
 
-        new_user = AuthUser(username="user_fou", password="password_fou")
+        new_user = AuthUser(_username="user_fou", _password="password_fou")
         session.add(new_user)
         session.commit()
         assert session.query(AuthUser).all() == expected
 
     def test_auth_user_mapper_can_update_row(self, session,
                                              init_db_table_users):
-        expected = AuthUser(username="modified_username",
-                            password="modified_password")
+        expected = AuthUser(_username="modified_username",
+                            _password="modified_password")
         expected.id = 2
 
         user_to_update = session.get(AuthUser, 2)
         user_to_update.username = "modified_username"
-        user_to_update.password = "modified_password"
+        user_to_update._password = "modified_password"
         session.commit()
 
         assert session.get(AuthUser, 2) == expected
@@ -58,8 +58,8 @@ class TestAuthUserOrm:
     def test_auth_user_mapper_can_delete_row(self, session,
                                              init_db_table_users):
         expected = [
-            AuthUser(username="user_one", password="password_one"),
-            AuthUser(username="user_two", password="password_two"),
+            AuthUser(_username="user_one", _password="password_one"),
+            AuthUser(_username="user_two", _password="password_two"),
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
@@ -70,29 +70,6 @@ class TestAuthUserOrm:
         assert session.query(AuthUser).all() == expected
 
 
-class TestRoleOrm:
-    def test_role_mapper_can_load_rows(self, session,
-                                       init_db_table_role):
-        expected = [
-            Role(role="Deactivated"),
-            Role(role="Admin"),
-            Role(role="Management"),
-            Role(role="Sales"),
-            Role(role="Support")
-        ]
-        for elem, role in enumerate(expected):
-            role.id = elem + 1
-
-        assert session.query(Role).all() == expected
-
-    def test_role_mapper_can_select_row(self, session,
-                                        init_db_table_role):
-        expected = Role(role="Deactivated")
-        expected.id = 1
-
-        assert session.get(Role, 1) == expected
-
-
 class TestCollaboratorOrm:
     def test_collaborator_mapper_can_load_rows(self, session,
                                                init_db_table_users,
@@ -101,16 +78,13 @@ class TestCollaboratorOrm:
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
                          email='col_email@one', phone_number='0000000001',
-                         role_id=3,
-                         user_id=1),
+                         _role_id=3, _user_id=1),
             Collaborator(last_name='col_ln_two', first_name='col_fn_two',
                          email='col_email@two', phone_number='0000000002',
-                         role_id=4,
-                         user_id=2),
+                         _role_id=4, _user_id=2),
             Collaborator(last_name='col_ln_thr', first_name='col_fn_thr',
                          email='col_email@thr', phone_number='0000000003',
-                         role_id=5,
-                         user_id=3),
+                         _role_id=5, _user_id=3),
         ]
         for elem, collaborator in enumerate(expected):
             collaborator.id = elem + 1
@@ -123,16 +97,13 @@ class TestCollaboratorOrm:
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
                          email='col_email@one', phone_number='0000000001',
-                         role_id=3,
-                         user_id=1),
+                         _role_id=3, _user_id=1),
             Collaborator(last_name='col_ln_two', first_name='col_fn_two',
                          email='col_email@two', phone_number='0000000002',
-                         role_id=4,
-                         user_id=2),
+                         _role_id=4, _user_id=2),
             Collaborator(last_name='col_ln_thr', first_name='col_fn_thr',
                          email='col_email@thr', phone_number='0000000003',
-                         role_id=5,
-                         user_id=3),
+                         _role_id=5, _user_id=3),
         ]
         for elem, collaborator in enumerate(expected):
             collaborator.id = elem + 1
@@ -148,7 +119,7 @@ class TestCollaboratorOrm:
 
         new_collaborator = Collaborator(
             last_name='col_ln_fou', first_name='col_fn_fou',
-            email='col_email@fou', phone_number='0000000004', user_id=4)
+            email='col_email@fou', phone_number='0000000004', _user_id=4)
 
         session.add(new_collaborator)
         session.commit()
@@ -163,8 +134,7 @@ class TestCollaboratorOrm:
                                     first_name='col_fn_two',
                                     email='col_email@two',
                                     phone_number='0000000002',
-                                    role_id=4,
-                                    user_id=2)
+                                    _role_id=4, _user_id=2)
         collaborator.id = 2
 
         collaborator.last_name = 'new_col_ln_two'
@@ -200,7 +170,7 @@ class TestRelationship:
             init_db_table_users,
             init_db_table_role,
             init_db_table_collaborator):
-        new_user = AuthUser(username="test_user", password="test_password")
+        new_user = AuthUser(_username="test_user", _password="test_password")
         session.add(new_user)
         session.commit()
 
@@ -220,7 +190,7 @@ class TestRelationship:
             init_db_table_users,
             init_db_table_role,
             init_db_table_collaborator):
-        new_user = AuthUser(username="test_user", password="test_password")
+        new_user = AuthUser(_username="test_user", _password="test_password")
         session.add(new_user)
 
         user_four = session.get(AuthUser, 4)
@@ -229,7 +199,7 @@ class TestRelationship:
         collaborator = session.get(Collaborator, 1)
         assert collaborator.user_id == 1
 
-        collaborator.user_id = new_user.id
+        collaborator._user_id = new_user.id
         # if collaborator.user_id is modified, session.commit isn't needed
         assert collaborator.user == user_four
 
@@ -282,11 +252,11 @@ class TestRelationship:
                           email='col_email@four',
                           phone_number='0000000004',
                           company='company_four',
-                          created_at=datetime.datetime.fromisoformat(
+                          _created_at=datetime.datetime.fromisoformat(
                               '2025-01-01 00:00:04'),
-                          updated_at=datetime.datetime.fromisoformat(
+                          _updated_at=datetime.datetime.fromisoformat(
                               '2025-02-01 00:00:04'),
-                          salesman_id=None)
+                          _salesman_id=None)
         session.add(client_4)
         collaborator_2.clients.append(client_4)
 

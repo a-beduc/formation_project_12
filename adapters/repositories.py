@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
+from domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 
 class AbstractRepository(ABC):
+
     def add(self, model_obj):
         self._add(model_obj)
 
@@ -59,6 +60,10 @@ class SqlAlchemyRepository(AbstractRepository):
         super().__init__()
         self.session = session
 
+    def _translate_filters(self, filters):
+        aliases = getattr(self.model_cls, "_private_aliases", {})
+        return {aliases.get(k, k): v for k, v in filters.items()}
+
     def _add(self, model_obj):
         self.session.add(model_obj)
 
@@ -73,19 +78,17 @@ class SqlAlchemyRepository(AbstractRepository):
         return self.session.query(self.model_cls).all()
 
     def _filter(self, **filters):
-        return self.session.query(self.model_cls).filter_by(**filters).all()
+        orm_filters = self._translate_filters(filters)
+        return self.session.query(self.model_cls).filter_by(**orm_filters).all()
 
     def _filter_one(self, **filters):
-        return (self.session.query(self.model_cls).filter_by(**filters).
+        orm_filters = self._translate_filters(filters)
+        return (self.session.query(self.model_cls).filter_by(**orm_filters).
                 one_or_none())
 
 
 class SqlAlchemyUserRepository(SqlAlchemyRepository):
     model_cls = AuthUser
-
-
-class SqlAlchemyRoleRepository(SqlAlchemyRepository):
-    model_cls = Role
 
 
 class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):

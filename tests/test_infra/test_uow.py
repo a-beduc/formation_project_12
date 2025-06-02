@@ -24,7 +24,7 @@ def test_uow_can_retrieve_a_user_modify_it_and_save_it(session_factory,
 def test_uow_can_save_a_user(session_factory, init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        user = AuthUser(username='user_fou', password='Password4')
+        user = AuthUser(_username='user_fou', _password='Password4')
         uow.users.add(user)
         uow.commit()
 
@@ -46,7 +46,7 @@ def test_uow_add_without_commit_trigger_rollback(session_factory,
                                                  init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        user = AuthUser(username='user_fou', password='Password4')
+        user = AuthUser(_username='user_fou', _password='Password4')
         uow.users.add(user)
 
     with uow:
@@ -81,7 +81,7 @@ def test_uow_rollback_on_error(session_factory, init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with pytest.raises(MyException):
         with uow:
-            user = AuthUser(username='user_fou', password='Password4')
+            user = AuthUser(_username='user_fou', _password='Password4')
             uow.users.add(user)
             raise MyException()
 
