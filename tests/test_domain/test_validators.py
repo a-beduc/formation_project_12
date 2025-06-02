@@ -161,7 +161,7 @@ def test_validate_password_fail(password, err_msg):
     ]
 )
 def test_validate_role_success(role):
-    v.CollaboratorValidator.validate_role(role, Role)
+    v.CollaboratorValidator.validate_role(role)
 
 
 @pytest.mark.parametrize(
@@ -174,7 +174,7 @@ def test_validate_role_success(role):
 )
 def test_validate_role_fail(role, err_msg):
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
-        v.CollaboratorValidator.validate_role(role, Role)
+        v.CollaboratorValidator.validate_role(role)
 
 
 @pytest.mark.parametrize(

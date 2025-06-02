@@ -95,8 +95,8 @@ class CollaboratorValidator(BaseValidator):
     cls_error = CollaboratorValidatorError
 
     @classmethod
-    def validate_role(cls, role, role_types):
-        if role not in role_types:
+    def validate_role(cls, role):
+        if role not in {1, 2, 3, 4, 5}:
             cls._raise("Invalid role")
 
 
@@ -127,7 +127,7 @@ class EventValidator(BaseValidator):
     def validate_attendee(cls, attendee):
         if not isinstance(attendee, int) or attendee <= 0:
             cls._raise("Invalid attendee value, "
-                                "must be a positive integer")
+                       "must be a positive integer")
 
     @classmethod
     def validate_notes(cls, notes):
