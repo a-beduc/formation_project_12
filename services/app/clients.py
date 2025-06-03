@@ -17,8 +17,10 @@ class ClientService(BaseService):
             "clients"
         )
 
-    def create(self, salesman_id, **kwargs):
+    def create(self, salesman_id=None, **kwargs):
         with self.uow:
-            if self.uow.collaborators.get(salesman_id).role_id != 4:
+            if self.uow.collaborators.get(salesman_id).role != 4:
                 raise self.error_cls("Only sales people can create clients")
-        return super().create(salesman_id=salesman_id, **kwargs)
+        obj_value = {k: v for k, v in kwargs.items()
+                     if k in self.model_cls.updatable_fields()}
+        return super().create(salesman_id=salesman_id, **obj_value)

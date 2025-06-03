@@ -1,5 +1,5 @@
-from domain.model import AuthUser, Collaborator, AuthUserError
-from services.dto import CollaboratorDTO, AuthUserDTO
+from domain.model import AuthUser, Collaborator, AuthUserError, Role
+from services.dto import CollaboratorDTO
 from services.app.base import BaseService, ServiceError
 
 
@@ -18,27 +18,33 @@ class CollaboratorService(BaseService):
             "collaborators"
         )
 
-    def create(self, username, plain_password, **kwargs):
-        AuthUser.validate_password(plain_password)
-        AuthUser.validate_username(username)
-        user = AuthUser.build_user(username, plain_password)
-
-        if kwargs.get("role_id", None) is None:
-            kwargs["role_id"] = 1
-        obj_value = {k: kwargs.get(k, None) for k in self.updatable_fields}
-
-        collaborator = Collaborator(user_id=None, **obj_value)
-
+    def create(self, username, plain_password, role=1, **kwargs):
         with self.uow:
             if self.uow.users.filter_one(username=username):
                 raise AuthUserError("username taken")
-
+            AuthUser.builder(username, plain_password)
+            user = AuthUser.builder(username, plain_password)
             self.uow.users.add(user)
 
-            collaborator.user_id = user.id
-            self.uow.collaborators.add(collaborator)
+            obj_value = {k: v for k, v in kwargs.items()
+                         if k in self.model_cls.updatable_fields()}
+            collaborator = Collaborator.builder(user_id=user.id, role=role,
+                                                **obj_value)
+            self._repo.add(collaborator)
             self.uow.commit()
 
-            user_dto = AuthUserDTO.from_domain(user)
-            collaborator_dto = CollaboratorDTO.from_domain(collaborator)
-        return user_dto, collaborator_dto
+    def remove(self, collaborator_id=None):
+        with self.uow:
+            collaborator = self._repo.get(collaborator_id)
+            user = self.uow.users.get(collaborator.user_id)
+            self._repo.delete(collaborator_id)
+            self.uow.users.delete(user.id)
+            self.uow.commit()
+
+    def assign_role(self, collaborator_id, role):
+        # need to decide how to handle resources linked to certain roles when
+        # user change role (clients of a sales person becoming management ?)
+        with self.uow:
+            collaborator = self._repo.get(collaborator_id)
+            collaborator.role = Role(role)
+            self.uow.commit()
