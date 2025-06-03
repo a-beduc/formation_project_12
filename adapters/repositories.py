@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
-from domain.model import AuthUser, Role, Collaborator, Client, Contract, Event
+from domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 
 class AbstractRepository(ABC):
-    def __init__(self):
-        # implement caching later to reduce redundant DB queries
-        self.cached = set()
 
     def add(self, model_obj):
         self._add(model_obj)
@@ -19,8 +16,11 @@ class AbstractRepository(ABC):
     def list(self):
         return self._list()
 
-    def update(self, model_obj):
-        self._update(model_obj)
+    def filter(self, **filters):
+        return self._filter(**filters)
+
+    def filter_one(self, **filters):
+        return self._filter_one(**filters)
 
     @abstractmethod
     def _add(self, model_obj):
@@ -39,19 +39,11 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _update(self, model_obj):
+    def _filter(self, **filters):
         raise NotImplementedError
 
-
-class AbstractUserRepository(AbstractRepository):
     @abstractmethod
-    def get_by_username(self, username):
-        raise NotImplementedError
-
-
-class AbstractCollaboratorRepository(AbstractRepository):
-    @abstractmethod
-    def get_by_user_id(self, user_id):
+    def _filter_one(self, **filters):
         raise NotImplementedError
 
 
@@ -68,6 +60,10 @@ class SqlAlchemyRepository(AbstractRepository):
         super().__init__()
         self.session = session
 
+    def _translate_filters(self, filters):
+        aliases = getattr(self.model_cls, "_private_aliases", {})
+        return {aliases.get(k, k): v for k, v in filters.items()}
+
     def _add(self, model_obj):
         self.session.add(model_obj)
 
@@ -81,29 +77,22 @@ class SqlAlchemyRepository(AbstractRepository):
     def _list(self):
         return self.session.query(self.model_cls).all()
 
-    def _update(self, model_obj):
-        self.session.merge(model_obj)
+    def _filter(self, **filters):
+        orm_filters = self._translate_filters(filters)
+        return self.session.query(self.model_cls).filter_by(**orm_filters).all()
+
+    def _filter_one(self, **filters):
+        orm_filters = self._translate_filters(filters)
+        return (self.session.query(self.model_cls).filter_by(**orm_filters).
+                one_or_none())
 
 
-class SqlAlchemyUserRepository(SqlAlchemyRepository, AbstractUserRepository):
+class SqlAlchemyUserRepository(SqlAlchemyRepository):
     model_cls = AuthUser
 
-    def get_by_username(self, username):
-        return self.session.query(self.model_cls).filter_by(
-            username=username).one_or_none()
 
-
-class SqlAlchemyRoleRepository(SqlAlchemyRepository):
-    model_cls = Role
-
-
-class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository,
-                                       AbstractCollaboratorRepository):
+class SqlAlchemyCollaboratorRepository(SqlAlchemyRepository):
     model_cls = Collaborator
-
-    def get_by_user_id(self, user_id):
-        return (self.session.query(self.model_cls)
-                .filter_by(user_id=user_id).one_or_none())
 
 
 class SqlAlchemyClientRepository(SqlAlchemyRepository):

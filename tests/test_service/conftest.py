@@ -1,6 +1,7 @@
 import pytest
-from adapters.repositories import AbstractRepository, AbstractUserRepository, AbstractCollaboratorRepository
-from domain.model import AuthUser, Collaborator
+from adapters.repositories import (AbstractRepository,
+                                   AbstractContractRepository)
+from domain.model import Client
 from services.unit_of_work import AbstractUnitOfWork
 
 
@@ -8,6 +9,7 @@ class FakeRepository(AbstractRepository):
     def __init__(self, init=()):
         super().__init__()
         self._store = {}
+        
         self._pk = 0
         for obj in init:
             self._add(obj)
@@ -27,33 +29,37 @@ class FakeRepository(AbstractRepository):
     def _list(self):
         return list(self._store.values())
 
-    def _update(self, model_obj):
-        if getattr(model_obj, "id", None) is None:
-            raise ValueError('The object id is not found')
-        self._store[model_obj.id] = model_obj
+    def _filter(self, **filters):
+        return [obj for obj in self._store.values()
+                if all(getattr(obj, attr, None) == value
+                for attr, value in filters.items())
+                ]
 
-
-class FakeUserRepository(FakeRepository, AbstractUserRepository):
-    def get_by_username(self, username):
+    def _filter_one(self, **filters):
         return next(
-            (user for user in self._store.values() if
-             isinstance(user, AuthUser) and user.username == username), None
+            (obj for obj in self._store.values()
+             if all(getattr(obj, attr, None) == value
+             for attr, value in filters.items())),
+            None
         )
 
 
-class FakeCollaboratorRepository(FakeRepository, AbstractCollaboratorRepository):
-    def get_by_user_id(self, user_id):
-        return next(
-            (collaborator for collaborator in self._store.values() if
-             isinstance(collaborator, Collaborator) and collaborator.user_id == user_id), None
-        )
+class FakeClientRepository(FakeRepository, AbstractContractRepository):
+    def get_client_from_contract(self, salesman_id):
+        return [client for client in self._store.values() if
+                isinstance(client, Client) and
+                client.salesman_id == salesman_id]
 
 
+# init empty interface, add tuples of objects to FakeRepos to init with datas
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
         self.commited = False
-        self.users = FakeUserRepository()
-        self.collaborators = FakeCollaboratorRepository()
+        self.users = FakeRepository()
+        self.collaborators = FakeRepository()
+        self.clients = FakeClientRepository()
+        self.contracts = FakeRepository()
+        self.events = FakeRepository()
 
     def __enter__(self):
         return self

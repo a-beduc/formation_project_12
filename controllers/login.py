@@ -1,15 +1,18 @@
 from services.unit_of_work import SqlAlchemyUnitOfWork
-from services import jwt_handler, authentication
+from services.auth.authentication import AuthenticationService
+from services.auth.jwt_handler import (
+    create_and_store_tokens, verify_token, BadToken)
 
 
 def login(username, plain_password):
     uow = SqlAlchemyUnitOfWork()
-    data = authentication.authenticate(uow, username, plain_password)
-    jwt_handler.create_and_store_tokens(data)
+    service = AuthenticationService(uow)
+    payload = service.authenticate(username, plain_password)
+    create_and_store_tokens(payload)
 
 
 def check_token():
     try:
-        return jwt_handler.verify_token()
-    except jwt_handler.BadToken:
+        return verify_token()
+    except BadToken:
         return None

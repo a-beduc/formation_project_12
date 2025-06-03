@@ -3,3 +3,4 @@
 .venv/
 tempo_sql_reset/commands.txt
 .storage/
+z_manual/

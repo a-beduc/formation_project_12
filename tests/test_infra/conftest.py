@@ -90,7 +90,7 @@ def init_db_table_client(session):
         "INSERT INTO client (last_name, first_name, email, phone_number, company, created_at, updated_at, salesman_id) VALUES "
         "('cli_ln_one', 'cli_fn_one', 'cli_email@one', '0000000001', 'comp_one', '2025-01-01 00:00:01', '2025-02-01 00:00:01', '1'), "
         "('cli_ln_two', 'cli_fn_two', 'cli_email@two', '0000000002', 'comp_two', '2025-01-01 00:00:02', '2025-02-01 00:00:02', '2'), "
-        "('cli_ln_thr', 'cli_fn_thr', 'cli_email@thr', '0000000003', 'comp_thr', '2025-01-01 00:00:03', '2025-02-01 00:00:03', '3')"
+        "('cli_ln_thr', 'cli_fn_thr', 'cli_email@thr', '0000000003', 'comp_thr', '2025-01-01 00:00:03', '2025-02-01 00:00:03', '2')"
     )
     session.execute(stmt)
     session.commit()

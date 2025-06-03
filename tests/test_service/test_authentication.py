@@ -1,82 +1,66 @@
-import argon2
 import pytest
 
-from domain.model import AuthUser, Collaborator
-from services import jwt_handler, authentication
+from tests.test_service.conftest import FakeRepository
+
+from domain.model import AuthUser, Collaborator, AuthUserError
+from services.auth.authentication import (
+    AuthenticationService,
+    AuthenticationError)
 
 
-def test_valid_password_success():
-    plain_password = "Password1"
-    assert authentication.valid_password(plain_password)
+class TestAuthenticate:
+    def test_authenticate_success(self, mocker, uow):
+        user = AuthUser(_username="user_b",
+                        _password="Password1")
+        uow.users = FakeRepository(init=(user,))
+        collaborator = Collaborator(_user_id=1,
+                                    last_name="Ross",
+                                    first_name="Bobby")
+        uow.collaborators = FakeRepository(init=(collaborator,))
 
+        service = AuthenticationService(uow)
+        expected_payload = {
+            "sub": "user_b",
+            "c_id": 1,
+            "role": 1,
+            "name": "Bobby Ross",
+        }
+        mocker.patch.object(uow.users, "filter_one", return_value=user)
+        mocker.patch.object(user, "verify_password")
+        mocker.patch.object(uow.collaborators,
+                            "filter_one",
+                            return_value=collaborator)
 
-def test_valid_password_fail():
-    short_password = "Pwd1"
-    no_cap_password = "password1"
-    no_min_password = "PASSWORD1"
-    no_num_password = "Password"
+        spy_filter_by_username = mocker.spy(uow.users, "filter_one")
+        spy_verify = mocker.spy(user, "verify_password")
+        spy_filter_by_user_id = mocker.spy(uow.collaborators, "filter_one")
 
-    assert not authentication.valid_password(short_password)
-    assert not authentication.valid_password(no_cap_password)
-    assert not authentication.valid_password(no_min_password)
-    assert not authentication.valid_password(no_num_password)
+        assert service.authenticate("user_b", "Password1") == expected_payload
 
+        assert spy_filter_by_username.call_count == 1
+        assert spy_verify.call_count == 1
+        assert spy_filter_by_user_id.call_count == 1
 
-def test_valid_username_success(uow):
-    assert authentication.valid_username(uow, "Bobby")
+    def test_authenticate_fail_wrong_username(self, uow):
+        with pytest.raises(AuthenticationError,
+                           match="User not found with not_bob"):
+            service = AuthenticationService(uow)
+            service.authenticate("not_bob", "pwd")
 
+    def test_authenticate_fail_wrong_password(self, uow, mocker):
+        user = AuthUser(_username="user_b",
+                        _password="Password1")
+        uow.users = FakeRepository(init=(user,))
+        collaborator = Collaborator(_user_id=1,
+                                    last_name="Ross",
+                                    first_name="Bobby")
+        uow.collaborators = FakeRepository(init=(collaborator,))
 
-def test_valid_username_fail(uow):
-    uow.users.add(AuthUser(username="Bobby", password="pwd"))
-    assert not authentication.valid_username(uow, "Bobby")
-    assert not authentication.valid_username(uow, "Bo")
+        service = AuthenticationService(uow)
 
+        mocker.patch.object(uow.users, "filter_one", return_value=user)
+        mock_vp = mocker.patch.object(user, "verify_password")
+        mock_vp.side_effect = AuthUserError
 
-def test_create_user(uow):
-    authentication.create_user(uow, "Bobby", "Password1")
-
-    assert uow.users.get_by_username("Bobby") is not None
-
-
-def test_login_success(uow, mocker):
-    user = AuthUser(username="user_b", password="hashed_password")
-    user.id = 1
-    collaborator = Collaborator(user_id=user.id, last_name="Ross", first_name="Bobby")
-    collaborator.id = 1
-    expected_payload = {
-        "sub": "user_b",
-        "c_id": 1,
-        "role": 0,
-        "name": "Bobby Ross",
-    }
-    mocker.patch.object(uow.users, "get_by_username", return_value=user)
-    mocker.patch.object(argon2.PasswordHasher, "verify", return_value=True)
-    mocker.patch.object(uow.collaborators, "get_by_user_id",
-                        return_value=collaborator)
-
-    spy_get_by_username = mocker.spy(uow.users, "get_by_username")
-    spy_verify = mocker.spy(argon2.PasswordHasher, "verify")
-    spy_get_by_user_id = mocker.spy(uow.collaborators, "get_by_user_id")
-
-    assert authentication.authenticate(uow, "user_b",
-                                       "Password1") == expected_payload
-
-    assert spy_get_by_username.call_count == 1
-    assert spy_verify.call_count == 1
-    assert spy_get_by_user_id.call_count == 1
-
-
-def test_login_fail_wrong_username(uow):
-    with pytest.raises(authentication.AuthError,
-                       match="User not found with not_bob"):
-        authentication.authenticate(uow, "not_bob", "pwd")
-
-
-def test_login_fail_wrong_pwd(uow, mocker):
-    user = AuthUser(username="Bob", password="hashed_password")
-    mocker.patch.object(uow.users, "get_by_username", return_value=user)
-    mock_argon = mocker.patch.object(argon2.PasswordHasher, "verify")
-    mock_argon.side_effect = argon2.exceptions.VerifyMismatchError
-
-    with pytest.raises(authentication.AuthError, match="Password mismatch"):
-        authentication.authenticate(uow, "Bob", "not_pwd")
+        with pytest.raises(AuthenticationError, match="Password mismatch"):
+            service.authenticate("user_b", "not_pwd")

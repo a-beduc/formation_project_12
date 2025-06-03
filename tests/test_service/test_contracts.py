@@ -1,0 +1,140 @@
+import pytest
+
+from tests.test_service.conftest import FakeRepository, FakeClientRepository
+from domain.model import Collaborator, Client, Contract, Role, ContractError
+from domain.validators import ContractValidatorError
+
+from services.app.contracts import ContractService
+
+@pytest.fixture
+def init_uow(uow):
+    coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
+                          _role_id=Role.SALES, _user_id=1)
+    coll_b = Collaborator(first_name="fn_b", last_name="ln_b",
+                          _role_id=Role.SALES, _user_id=2)
+    coll_c = Collaborator(first_name="fn_c", last_name="ln_c",
+                          _role_id=Role.MANAGEMENT, _user_id=3)
+    uow.collaborators = FakeRepository(init=(coll_a, coll_b, coll_c))
+
+    cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
+    cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", _salesman_id=1)
+    cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", _salesman_id=2)
+    cli_d = Client(last_name="cl_ln_d", first_name="cl_fn_d", _salesman_id=2)
+    cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
+    uow.clients = FakeClientRepository(
+        init=(cli_a, cli_b, cli_c, cli_d, cli_e))
+
+    con_a = Contract(_total_amount=100.00, _client_id=1)
+    con_b = Contract(_total_amount=200.00, _client_id=1)
+    con_c = Contract(_total_amount=300.00, _client_id=2)
+    con_d = Contract(_total_amount=400.00, _client_id=2, _signed=True)
+    con_e = Contract(_total_amount=500.00, _client_id=4, _signed=True,
+                     _paid_amount=200.00)
+
+    uow.contracts = FakeRepository(
+        init=(con_a, con_b, con_c, con_d, con_e)
+    )
+    return uow
+
+
+def test_create_contract_success(init_uow):
+    data = {
+        "client_id": 1,
+        "total_amount": 600
+    }
+    service = ContractService(init_uow)
+    service.create(**data)
+
+    contract = init_uow.contracts.get(6)
+
+    assert contract.calculate_due_amount() == 600.00
+
+
+def test_create_contract_failure(init_uow):
+    data = {
+        "client_id": 1,
+        "total_amount": -600
+    }
+    service = ContractService(init_uow)
+
+    with pytest.raises(ContractValidatorError,
+                       match="Invalid price value, must be positive"):
+        service.create(**data)
+
+
+def test_sign_contract(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(1)
+    assert contract.signed is False
+
+    service.sign_contract(1)
+
+    # does nothing
+    service.sign_contract(1)
+
+    contract = service.retrieve(1)
+    assert contract.signed is True
+
+
+def test_change_total_amount_success(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(1)
+    assert contract.total_amount == 100.00
+
+    service.modify_total_amount(1, 200)
+    contract = service.retrieve(1)
+    assert contract.total_amount == 200.00
+
+
+def test_change_total_amount_after_signed_fail(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(4)
+    assert contract.total_amount == 400.00
+
+    with pytest.raises(ContractError, match="Total amount cannot be changed "
+                                            "for signed contract"):
+        service.modify_total_amount(4, 200)
+
+
+def test_pay_amount_success(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(4)
+    assert contract.total_amount == 400.00
+    assert contract.due_amount == 400.00
+
+    service.pay_amount(4, 400.00)
+    contract = service.retrieve(4)
+    assert contract.total_amount == 400.00
+    assert contract.due_amount == 0.00
+
+
+def test_pay_amount_not_signed_fail(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(1)
+    assert contract.total_amount == 100.00
+    assert contract.due_amount == 100.00
+
+    with pytest.raises(ContractError, match="Payment can't be registered "
+                                            "before signature"):
+        service.pay_amount(1, 100.00)
+
+
+def test_paid_amount_negative_fail(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(4)
+    assert contract.total_amount == 400.00
+    assert contract.due_amount == 400.00
+
+    with pytest.raises(ContractError, match="Payment amount must be positive"):
+        service.pay_amount(4, -100.00)
+
+
+def test_paid_amount_exceed_total_fail(init_uow):
+    service = ContractService(init_uow)
+    contract = service.retrieve(4)
+    assert contract.total_amount == 400.00
+    assert contract.due_amount == 400.00
+
+    with pytest.raises(ContractError, match="Payment : 500.0 exceed due. "
+                                            "Still due : 400.0"):
+        service.pay_amount(4, 500.00)

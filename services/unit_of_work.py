@@ -8,9 +8,8 @@ from adapters import repositories as repo
 
 
 class AbstractUnitOfWork(ABC):
-    users: repo.AbstractUserRepository
-    roles: repo.AbstractRepository
-    collaborators: repo.AbstractCollaboratorRepository
+    users: repo.AbstractRepository
+    collaborators: repo.AbstractRepository
     clients: repo.AbstractRepository
     contracts: repo.AbstractContractRepository
     events: repo.AbstractRepository
@@ -34,9 +33,8 @@ class AbstractUnitOfWork(ABC):
 
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
-    bind=create_engine(
-        get_postgres_uri()
-    )
+    bind=create_engine(get_postgres_uri()),
+    autoflush=False,
 )
 
 
@@ -47,7 +45,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()
         self.users = repo.SqlAlchemyUserRepository(self.session)
-        self.roles = repo.SqlAlchemyRoleRepository(self.session)
         self.collaborators = repo.SqlAlchemyCollaboratorRepository(self.session)
         self.clients = repo.SqlAlchemyClientRepository(self.session)
         self.contracts = repo.SqlAlchemyContractRepository(self.session)
