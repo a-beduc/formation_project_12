@@ -12,21 +12,17 @@ class BaseService(ABC):
         self.dto_cls = dto_cls
         self.error_cls = error_cls
         self.repo_attr = repo_attr
-        self.updatable_fields = self.model_cls.get_updatable_fields()
-        self.filterable_fields = self.model_cls.get_filterable_fields()
 
     @property
     def _repo(self):
         return getattr(self.uow, self.repo_attr)
 
-    def create(self, **kwargs):
-        obj_value = {k: kwargs.get(k, None) for k in self.updatable_fields}
-        obj = self.model_cls(**obj_value)
-
+    def create(self, **obj_value):
+        # need to prepare **obj_value in children classes
+        obj = self.model_cls.builder(**obj_value)
         with self.uow:
             self._repo.add(obj)
             self.uow.commit()
-            return self.dto_cls.from_domain(obj)
 
     def retrieve(self, obj_id):
         with self.uow:
@@ -50,13 +46,13 @@ class BaseService(ABC):
             if obj is None:
                 raise self.error_cls(f'{self.model_cls.__name__} not found')
             for k, v in kwargs.items():
-                if k in self.updatable_fields and v is not None:
+                if v is not None and k in self.model_cls.updatable_fields():
                     setattr(obj, k, v)
             self.uow.commit()
 
     def filter(self, **kwargs):
         filters = {k: v for k, v in kwargs.items()
-                   if k in self.filterable_fields}
+                   if k in self.model_cls.filterable_fields()}
         if filters == {}:
             raise self.error_cls(f'No valid filters for '
                                  f'{self.model_cls.__name__} in {kwargs}')
@@ -65,7 +61,7 @@ class BaseService(ABC):
             return [self.dto_cls.from_domain(obj) for obj in objs]
 
     def sort(self, *dto_objects, key, reverse=False):
-        if key not in self.filterable_fields:
+        if key not in self.model_cls.filterable_fields():
             raise self.error_cls(f'Unknown sort key: {key}')
         return sorted(dto_objects, key=lambda d: getattr(d, key),
                       reverse=reverse)
