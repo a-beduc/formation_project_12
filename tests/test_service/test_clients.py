@@ -7,20 +7,20 @@ from domain.model import Collaborator, Client
 
 @pytest.fixture
 def init_uow(uow):
-    coll_a = Collaborator(first_name="fn_a", last_name="ln_a", role_id=4,
-                          user_id=1)
-    coll_b = Collaborator(first_name="fn_b", last_name="ln_b", role_id=4,
-                          user_id=2)
-    coll_c = Collaborator(first_name="fn_c", last_name="ln_c", role_id=3,
-                          user_id=3)
+    coll_a = Collaborator(first_name="fn_a", last_name="ln_a", _role_id=4,
+                          _user_id=1)
+    coll_b = Collaborator(first_name="fn_b", last_name="ln_b", _role_id=4,
+                          _user_id=2)
+    coll_c = Collaborator(first_name="fn_c", last_name="ln_c", _role_id=3,
+                          _user_id=3)
     uow.collaborators = FakeRepository(
         init=(coll_a, coll_b, coll_c))
 
-    cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", salesman_id=1)
-    cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", salesman_id=1)
-    cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", salesman_id=2)
-    cli_d = Client(last_name="cl_ln_d", first_name="cl_fn_d", salesman_id=2)
-    cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", salesman_id=2)
+    cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
+    cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", _salesman_id=1)
+    cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", _salesman_id=2)
+    cli_d = Client(last_name="cl_ln_d", first_name="cl_fn_d", _salesman_id=2)
+    cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
     uow.clients = FakeClientRepository(
         init=(cli_a, cli_b, cli_c, cli_d, cli_e))
     return uow
@@ -35,11 +35,14 @@ class TestClientCRUD:
         }
 
         service = ClientService(init_uow)
-        client_dto = service.create(**client_data)
-
+        service.create(**client_data)
         assert init_uow.commited is True
-        assert client_dto.salesman_id == 1
-        assert client_dto.id == 6
+
+        client = init_uow.clients.get(6)
+        assert client.salesman_id == 1
+        assert client.last_name == "new_last_name"
+        assert client.first_name == "new_first_name"
+        assert client.id == 6
 
     def test_client_creation_failure_not_salesman(self, mocker, init_uow):
         client_data = {

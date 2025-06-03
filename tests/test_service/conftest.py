@@ -57,7 +57,6 @@ class FakeUnitOfWork(AbstractUnitOfWork):
         self.commited = False
         self.users = FakeRepository()
         self.collaborators = FakeRepository()
-        self.roles = FakeRepository()
         self.clients = FakeClientRepository()
         self.contracts = FakeRepository()
         self.events = FakeRepository()
