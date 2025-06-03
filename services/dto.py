@@ -33,7 +33,7 @@ class CollaboratorDTO:
             first_name=collaborator.first_name,
             email=collaborator.email,
             phone_number=collaborator.phone_number,
-            role_id=collaborator.role_id,
+            role_id=collaborator.role,
             user_id=collaborator.user_id,
         )
 

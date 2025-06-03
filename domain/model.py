@@ -60,7 +60,7 @@ class AuthUser:
         return ph.hash(plain_password)
 
     @staticmethod
-    def get_filterable_fields():
+    def filterable_fields():
         return {'id', 'username'}
 
     def set_password(self, plain_password):
@@ -122,11 +122,11 @@ class Collaborator:
         self._role_id = int(value)
 
     @staticmethod
-    def get_updatable_fields():
-        return {"last_name", "first_name", "email", "phone_number", "role"}
+    def updatable_fields():
+        return {"last_name", "first_name", "email", "phone_number"}
 
     @staticmethod
-    def get_filterable_fields():
+    def filterable_fields():
         return {'id', "last_name", "first_name", "email", "phone_number",
                 "role", 'user_id'}
 
@@ -136,7 +136,7 @@ class Collaborator:
                 first_name=None,
                 email=None,
                 phone_number=None,
-                role_id=1,
+                role=1,
                 user_id=None):
 
         if not user_id:
@@ -147,7 +147,7 @@ class Collaborator:
             "first_name": first_name,
             "email": email,
             "phone_number": phone_number,
-            "role_id": role_id,
+            "role": role,
             "user_id": user_id
         }
 
@@ -156,7 +156,7 @@ class Collaborator:
             "first_name": ColVal.validate_str,
             "email": ColVal.validate_email,
             "phone_number": ColVal.validate_phone_number,
-            "role_id": ColVal.validate_role,
+            "role": ColVal.validate_role,
             "user_id": ColVal.validate_id
         }
 
@@ -168,7 +168,7 @@ class Collaborator:
                    first_name=data["first_name"],
                    email=data["email"],
                    phone_number=data["phone_number"],
-                   _role_id=data["role_id"],
+                   _role_id=data["role"],
                    _user_id=data["user_id"])
 
 
@@ -206,11 +206,11 @@ class Client:
             super().__setattr__("_updated_at", datetime.now())
 
     @staticmethod
-    def get_updatable_fields():
+    def updatable_fields():
         return {"last_name", "first_name", "email", "phone_number", "company"}
 
     @staticmethod
-    def get_filterable_fields():
+    def filterable_fields():
         return {'id', "last_name", "first_name", "email", "phone_number",
                 "company", "created_at", "updated_at", "salesman_id"}
 
@@ -316,13 +316,13 @@ class Contract:
     def calculate_due_amount(self):
         return round(self._total_amount - self._paid_amount, 2)
 
-    def get_updatable_fields(self):
+    def updatable_fields(self):
         if self._signed:
             return {"paid_amount"}
         return {"total_amount", "paid_amount", "signed"}
 
     @staticmethod
-    def get_filterable_fields():
+    def filterable_fields():
         return {"id", "total_amount", "paid_amount", "created_at", "signed",
                 "client_id"}
 
@@ -371,20 +371,19 @@ class Event:
         return self._contract_id
 
     @staticmethod
-    def get_updatable_fields():
+    def updatable_fields():
         return {"title", "start_time", "end_time", "location", "attendee",
                 "notes"}
 
     @staticmethod
-    def get_filterable_fields():
+    def filterable_fields():
         return {"id", "title", "start_time", "end_time", "location",
                 "attendee",
                 "notes", "supporter_id", "contract_id"}
 
     @classmethod
     def builder(cls, title=None, start_time=None, end_time=None, location=None,
-                attendee=None, notes=None, supporter_id=None,
-                contract_id=None):
+                attendee=None, notes=None, contract_id=None):
         if not contract_id:
             raise EventError("Contract must have a linked client")
 
@@ -395,7 +394,6 @@ class Event:
             "location": location,
             "attendee": attendee,
             "notes": notes,
-            "supporter_id": supporter_id,
             "contract_id": contract_id
         }
 
@@ -406,7 +404,6 @@ class Event:
             "location": EveVal.validate_str,
             "attendee": EveVal.validate_str,
             "notes": EveVal.validate_notes,
-            "supporter_id": EveVal.validate_id,
             "contract_id": EveVal.validate_id,
         }
 
@@ -420,5 +417,4 @@ class Event:
                    location=data["location"],
                    attendee=data["attendee"],
                    notes=data["notes"],
-                   supporter_id=data["supporter_id"],
                    _contract_id=data["contract_id"])
