@@ -22,7 +22,7 @@ class CollaboratorDTO:
     first_name: str | None = None
     email: str | None = None
     phone_number: str | None = None
-    role_id: int | None = None
+    role: int | None = None
     user_id: int | None = None
 
     @classmethod
@@ -33,7 +33,7 @@ class CollaboratorDTO:
             first_name=collaborator.first_name,
             email=collaborator.email,
             phone_number=collaborator.phone_number,
-            role_id=collaborator.role,
+            role=collaborator.role,
             user_id=collaborator.user_id,
         )
 

@@ -45,6 +45,13 @@ class CollaboratorService(BaseService):
         # need to decide how to handle resources linked to certain roles when
         # user change role (clients of a sales person becoming management ?)
         with self.uow:
+            role_map = {
+                "DEACTIVATED": Role.DEACTIVATED,
+                "ADMIN": Role.ADMIN,
+                "MANAGEMENT": Role.MANAGEMENT,
+                "SALES": Role.SALES,
+                "SUPPORT": Role.SUPPORT
+            }
             collaborator = self._repo.get(collaborator_id)
-            collaborator.role = Role(role)
+            collaborator.role = role_map.get(role, None)
             self.uow.commit()

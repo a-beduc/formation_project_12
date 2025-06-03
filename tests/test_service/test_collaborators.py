@@ -3,7 +3,8 @@ import pytest
 from services.app.collaborators import (CollaboratorService,
                                         CollaboratorServiceError)
 from services.dto import CollaboratorDTO
-from domain.model import AuthUserError, AuthUser, Collaborator, Role
+from domain.model import (AuthUserError, AuthUser, Collaborator, Role,
+                          CollaboratorError)
 from domain.validators import AuthUserValidatorError
 from tests.test_service.conftest import FakeRepository
 
@@ -17,16 +18,16 @@ def init_uow(uow):
     user_e = AuthUser.builder("user_e", "Password5")
     uow.users = FakeRepository(init=(user_a, user_b, user_c, user_d, user_e))
 
-    coll_a = Collaborator(first_name="fn_a", last_name="ln_a", _role_id=3,
-                          _user_id=1)
-    coll_b = Collaborator(first_name="fn_b", last_name="ln_b", _role_id=4,
-                          _user_id=2)
-    coll_c = Collaborator(first_name="fn_c", last_name="ln_c", _role_id=4,
-                          _user_id=3)
-    coll_d = Collaborator(first_name="fn_d", last_name="ln_d", _role_id=5,
-                          _user_id=4)
-    coll_e = Collaborator(first_name="fn_e", last_name="ln_e", _role_id=5,
-                          _user_id=5)
+    coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
+                          _role_id=Role.MANAGEMENT, _user_id=1)
+    coll_b = Collaborator(first_name="fn_b", last_name="ln_b",
+                          _role_id=Role.SALES, _user_id=2)
+    coll_c = Collaborator(first_name="fn_c", last_name="ln_c",
+                          _role_id=Role.SALES, _user_id=3)
+    coll_d = Collaborator(first_name="fn_d", last_name="ln_d",
+                          _role_id=Role.SUPPORT, _user_id=4)
+    coll_e = Collaborator(first_name="fn_e", last_name="ln_e",
+                          _role_id=Role.SUPPORT, _user_id=5)
     uow.collaborators = FakeRepository(init=(coll_a, coll_b, coll_c, coll_d,
                                              coll_e))
 
@@ -163,3 +164,18 @@ class TestCollaboratorCRUD:
         assert service.retrieve(1).last_name == "new_last_name"
         # user_id is a protected field, no update authorized.
         assert service.retrieve(1).user_id == 1
+
+    def test_assign_role_success(self, init_uow):
+        service = CollaboratorService(init_uow)
+        user_1_dto_before = service.retrieve(1)
+        assert user_1_dto_before.role == Role.MANAGEMENT
+
+        service.assign_role(1, role="ADMIN")
+        user_1_dto_after = service.retrieve(1)
+        assert user_1_dto_after.role == Role.ADMIN
+
+    def test_assign_role_fail(self, init_uow):
+        service = CollaboratorService(init_uow)
+        with pytest.raises(CollaboratorError,
+                           match="Role must be an instance of RoleType"):
+            service.assign_role(1, role="UNKNOWN")

@@ -118,7 +118,7 @@ class Collaborator:
     @role.setter
     def role(self, value):
         if not isinstance(value, Role):
-            raise ValueError("Role must be an instance of RoleType")
+            raise CollaboratorError("Role must be an instance of RoleType")
         self._role_id = int(value)
 
     @staticmethod
