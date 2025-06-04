@@ -11,6 +11,7 @@ pytest = "*"
 argon2-cffi = "*"
 pytest-mock = "*"
 pyjwt = "*"
+click = "*"
 
 [dev-packages]
 
