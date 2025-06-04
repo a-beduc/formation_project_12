@@ -104,6 +104,7 @@ class SqlAlchemyContractRepository(SqlAlchemyRepository,
     model_cls = Contract
 
     def get_client_from_contract(self, contract_id):
+        # since orm is better now, i should be using contract.client
         contract = self._get(contract_id)
         return self.session.query(Client).filter_by(
             id=contract.client_id).one_or_none()

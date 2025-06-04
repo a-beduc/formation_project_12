@@ -8,7 +8,6 @@ from services.auth import jwt_handler
 
 # 2025-01-01 01:01:01
 FAKE_TIME = datetime.datetime(2025, 1, 1, 1, 1, 1)
-print(FAKE_TIME.timestamp())
 ACCESS_LIFETIME = 30
 REFRESH_LIFETIME = 300
 SECRET_KEY = 'mysecretkeyissupersecretandnooneknowsit'
