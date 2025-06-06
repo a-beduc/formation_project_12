@@ -1,10 +1,10 @@
 import pytest
 from datetime import datetime
 
-from domain.model import Collaborator, Role, Contract, Event
-from tests.test_service.conftest import FakeRepository
+from ee_crm.domain.model import Collaborator, Role, Contract, Event
+from ee_crm.services.app.events import EventService, EventServiceError
 
-from services.app.events import EventService, EventServiceError
+from tests.test_service.conftest import FakeRepository
 
 
 @pytest.fixture

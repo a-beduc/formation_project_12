@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from math import trunc
 
-from domain.validators import (
+from ee_crm.domain.validators import (
     AuthUserValidator as AuthVal,
     CollaboratorValidator as ColVal,
     ClientValidator as CliVal,
@@ -100,11 +100,10 @@ class Collaborator:
     first_name: str | None = None
     email: str | None = None
     phone_number: str | None = None
-    _role_id: int = 1
+    _role_id: Role = Role.DEACTIVATED
     _user_id: int
 
-    _private_aliases = {"role_id": "_role_id",
-                        "user_id": "_user_id",
+    _private_aliases = {"user_id": "_user_id",
                         "role": "_role_id"}
 
     @property
@@ -136,7 +135,7 @@ class Collaborator:
                 first_name=None,
                 email=None,
                 phone_number=None,
-                role=1,
+                role=Role.DEACTIVATED,
                 user_id=None):
 
         if not user_id:
@@ -364,7 +363,7 @@ class Event:
     supporter_id: int | None = None
     _contract_id: int
 
-    filter_aliases = {"contract_id": "_contract_id"}
+    _private_aliases = {"contract_id": "_contract_id"}
 
     @property
     def contract_id(self):

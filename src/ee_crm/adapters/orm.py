@@ -2,7 +2,7 @@ from sqlalchemy import (
     Table, Column, Boolean, Integer, String, ForeignKey, DateTime, Float, Text)
 from sqlalchemy.orm import registry, relationship
 
-from domain.model import AuthUser, Collaborator, Client, Contract, Event
+from ee_crm.domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 
 mapper_registry = registry()

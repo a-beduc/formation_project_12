@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: ee-crm
+Version: 0.1.0
+Summary: Epic Event CRM Project CLI
+Requires-Python: >=3.12
+Provides-Extra: dev

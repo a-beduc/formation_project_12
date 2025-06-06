@@ -3,7 +3,7 @@ from pathlib import Path
 import jwt
 import json
 
-from config import (
+from src.ee_crm.config import (
     get_secret_key,
     get_token_store_path,
     get_token_access_lifetime,

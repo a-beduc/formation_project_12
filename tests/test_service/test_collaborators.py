@@ -1,11 +1,12 @@
 import pytest
 
-from services.app.collaborators import (CollaboratorService,
-                                        CollaboratorServiceError)
-from services.dto import CollaboratorDTO
-from domain.model import (AuthUserError, AuthUser, Collaborator, Role,
-                          CollaboratorError)
-from domain.validators import AuthUserValidatorError
+from ee_crm.services.app.collaborators import (CollaboratorService,
+                                               CollaboratorServiceError)
+from ee_crm.services.dto import CollaboratorDTO
+from ee_crm.domain.model import (AuthUserError, AuthUser, Collaborator, Role,
+                                 CollaboratorError)
+from ee_crm.domain.validators import AuthUserValidatorError
+
 from tests.test_service.conftest import FakeRepository
 
 

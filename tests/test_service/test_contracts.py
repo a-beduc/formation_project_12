@@ -1,10 +1,12 @@
 import pytest
 
-from tests.test_service.conftest import FakeRepository, FakeClientRepository
-from domain.model import Collaborator, Client, Contract, Role, ContractError
-from domain.validators import ContractValidatorError
+from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
+                                 ContractError)
+from ee_crm.domain.validators import ContractValidatorError
+from ee_crm.services.app.contracts import ContractService
 
-from services.app.contracts import ContractService
+from tests.test_service.conftest import FakeRepository, FakeClientRepository
+
 
 @pytest.fixture
 def init_uow(uow):

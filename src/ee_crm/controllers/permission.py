@@ -1,9 +1,11 @@
-from controllers.login import check_token
+from ee_crm.controllers.login import check_token
 from functools import wraps
 from inspect import signature, Parameter
 
 
 def is_authenticated():
+    # let badtoken go up instead of raise permissionerror, let controller deal
+    # with it ?
     payload = check_token()
     if payload is None:
         raise PermissionError('Authentication invalid')

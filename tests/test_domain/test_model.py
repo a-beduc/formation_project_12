@@ -3,7 +3,7 @@
 
 import pytest
 
-import domain.model as dm
+import ee_crm.domain.model as dm
 
 
 def test_auth_user_builder_success():
@@ -48,6 +48,9 @@ def test_client_builder_success():
 
 def test_contract_builder_success():
     contract = dm.Contract.builder(total_amount=100, client_id=1)
+
+    # verify if created_at is not empty and type datetime and verify if it's
+    # not older than a few minutes
 
     assert isinstance(contract, dm.Contract)
     assert contract.total_amount == 100.00

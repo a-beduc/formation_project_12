@@ -2,8 +2,8 @@ import pytest
 
 from tests.test_service.conftest import FakeRepository
 
-from domain.model import AuthUser, Collaborator, AuthUserError
-from services.auth.authentication import (
+from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError
+from ee_crm.services.auth.authentication import (
     AuthenticationService,
     AuthenticationError)
 

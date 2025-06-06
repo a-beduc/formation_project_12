@@ -1,0 +1,10 @@
+click>=8
+sqlalchemy>=2
+python-dotenv>=1
+psycopg[binary]>=3.1
+argon2-cffi>=25
+pyjwt>=2
+
+[dev]
+pytest
+pytest-mock

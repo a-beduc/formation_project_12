@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 
-from domain import validators as v
-from domain.model import Role
+from ee_crm.domain import validators as v
+from ee_crm.domain.model import Role
 
 
 @pytest.mark.parametrize(
