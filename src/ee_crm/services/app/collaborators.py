@@ -1,6 +1,6 @@
-from domain.model import AuthUser, Collaborator, AuthUserError, Role
-from services.dto import CollaboratorDTO
-from services.app.base import BaseService, ServiceError
+from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError, Role
+from ee_crm.services.dto import CollaboratorDTO
+from ee_crm.services.app.base import BaseService, ServiceError
 
 
 class CollaboratorServiceError(ServiceError):

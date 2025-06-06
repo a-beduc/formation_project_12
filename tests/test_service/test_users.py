@@ -1,11 +1,12 @@
 import pytest
 
-from services.auth.authentication import AuthenticationError
-from services.app.users import UserServiceError, UserService
-from domain.model import AuthUser, AuthUserError
-from domain.validators import AuthUserValidatorError
+from ee_crm.services.auth.authentication import AuthenticationError
+from ee_crm.services.app.users import UserServiceError, UserService
+from ee_crm.domain.model import AuthUser, AuthUserError
+from ee_crm.domain.validators import AuthUserValidatorError
+from ee_crm.services.dto import AuthUserDTO
+
 from tests.test_service.conftest import FakeRepository
-from services.dto import AuthUserDTO
 
 
 def test_retrieve_user_success(uow):
@@ -97,5 +98,6 @@ def test_change_username_fail(mocker, uow):
     service = UserService(uow)
 
     mocker.patch.object(user_b, 'verify_password')
-    with pytest.raises(UserServiceError, match="User with username user_c already exists"):
+    with pytest.raises(UserServiceError,
+                       match="User with username user_c already exists"):
         service.modify_username("user_b", "Password1", "user_c")

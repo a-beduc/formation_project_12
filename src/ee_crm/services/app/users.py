@@ -1,5 +1,5 @@
-from services.dto import AuthUserDTO
-from services.auth.authentication import AuthenticationService
+from ee_crm.services.dto import AuthUserDTO
+from ee_crm.services.auth.authentication import AuthenticationService
 
 
 class UserServiceError(Exception):

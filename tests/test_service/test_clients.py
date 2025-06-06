@@ -1,8 +1,9 @@
 import pytest
 
-from services.app.clients import ClientService, ClientServiceError
+from ee_crm.services.app.clients import ClientService, ClientServiceError
+from ee_crm.domain.model import Collaborator, Client
+
 from tests.test_service.conftest import FakeRepository, FakeClientRepository
-from domain.model import Collaborator, Client
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from domain.model import AuthUser, Collaborator, Client, Contract, Event
+from ee_crm.domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 
 class AbstractRepository(ABC):

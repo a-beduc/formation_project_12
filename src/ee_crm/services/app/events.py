@@ -1,6 +1,6 @@
-from domain.model import Event, Role
-from services.app.base import BaseService, ServiceError
-from services.dto import EventDTO
+from ee_crm.domain.model import Event, Role
+from ee_crm.services.app.base import BaseService, ServiceError
+from ee_crm.services.dto import EventDTO
 
 
 class EventServiceError(ServiceError):

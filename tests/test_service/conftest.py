@@ -1,8 +1,8 @@
 import pytest
-from adapters.repositories import (AbstractRepository,
-                                   AbstractContractRepository)
-from domain.model import Client
-from services.unit_of_work import AbstractUnitOfWork
+from ee_crm.adapters.repositories import (AbstractRepository,
+                                          AbstractContractRepository)
+from ee_crm.domain.model import Client
+from ee_crm.services.unit_of_work import AbstractUnitOfWork
 
 
 class FakeRepository(AbstractRepository):

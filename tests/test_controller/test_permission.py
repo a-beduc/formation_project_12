@@ -1,6 +1,6 @@
 import pytest
 
-from controllers import permission as p
+from ee_crm.controllers import permission as p
 
 
 def valid_management_payload():
@@ -45,21 +45,21 @@ def valid_support_payload():
     ]
 )
 def test_is_authenticated_success(mocker, payload):
-    mocker.patch('controllers.permission.check_token',
-                 return_value=payload)
+    mocker.patch.object(p, 'check_token',
+                        return_value=payload)
     assert p.is_authenticated()['c_id'] == 1
 
 
 def test_is_authenticated_failure(mocker):
-    mocker.patch('controllers.permission.check_token',
-                 return_value=None)
+    mocker.patch.object(p, 'check_token',
+                        return_value=None)
     with pytest.raises(PermissionError, match="Authentication invalid"):
         p.is_authenticated()
 
 
 def test_permission_with_bad_authenticated(mocker):
-    mocker.patch('controllers.permission.check_token',
-                 return_value=None)
+    mocker.patch.object(p, 'check_token',
+                        return_value=None)
 
     @p.permission
     def test_func():
@@ -70,8 +70,8 @@ def test_permission_with_bad_authenticated(mocker):
 
 
 def test_permission_with_kwargs_get_payload(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission
     def test_func(**kwargs):
@@ -82,8 +82,8 @@ def test_permission_with_kwargs_get_payload(mocker):
 
 
 def test_permission_without_kwargs_dont_get_payload(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission
     def test_func():
@@ -93,8 +93,8 @@ def test_permission_without_kwargs_dont_get_payload(mocker):
 
 
 def test_permission_with_kwargs_kw_auth_false_dont_get_payload(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission(kw_auth=False)
     def test_func(**kwargs):
@@ -106,8 +106,8 @@ def test_permission_with_kwargs_kw_auth_false_dont_get_payload(mocker):
 
 
 def test_permission_is_manager(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission(requirements=[(p.is_management,)])
     def test_func(**kwargs):
@@ -118,8 +118,8 @@ def test_permission_is_manager(mocker):
 
 
 def test_permission_is_manager_or_is_sales(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission(requirements=[(p.is_management, p.is_sales)])
     def test_func(**kwargs):
@@ -130,8 +130,8 @@ def test_permission_is_manager_or_is_sales(mocker):
 
 
 def test_permission_is_manager_and_is_sales_raise_error(mocker):
-    mocker.patch("controllers.permission.is_authenticated",
-                 return_value=valid_management_payload())
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
 
     @p.permission(requirements=[(p.is_management,), (p.is_sales,)])
     def test_func(**kwargs):

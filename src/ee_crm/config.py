@@ -12,7 +12,7 @@ def get_postgres_uri():
     host = os.getenv('PG_HOST')
     port = os.getenv('PG_PORT')
     dbname = os.getenv('PG_DBNAME')
-    return f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{dbname}"
 
 
 def get_secret_key():

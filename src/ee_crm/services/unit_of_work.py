@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from config import get_postgres_uri
-from adapters import repositories as repo
+from ee_crm.config import get_postgres_uri
+from ee_crm.adapters import repositories as repo
 
 
 class AbstractUnitOfWork(ABC):
@@ -32,6 +32,7 @@ class AbstractUnitOfWork(ABC):
         raise NotImplementedError
 
 
+# launched at import time, may be better to add a factory func that yield Sess
 DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(get_postgres_uri()),
     autoflush=False,

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from math import trunc
 
-from domain.validators import (
+from ee_crm.domain.validators import (
     AuthUserValidator as AuthVal,
     CollaboratorValidator as ColVal,
     ClientValidator as CliVal,

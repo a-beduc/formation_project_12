@@ -1,6 +1,6 @@
-from domain.model import Contract
-from services.dto import ContractDTO
-from services.app.base import BaseService, ServiceError
+from ee_crm.domain.model import Contract
+from ee_crm.services.dto import ContractDTO
+from ee_crm.services.app.base import BaseService, ServiceError
 
 
 class ContractServiceError(ServiceError):

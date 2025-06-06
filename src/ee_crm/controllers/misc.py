@@ -1,7 +1,7 @@
-from services.unit_of_work import SqlAlchemyUnitOfWork
-from services.app.collaborators import CollaboratorService
-from services.app.users import UserService
-from controllers.permission import permission
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
+from ee_crm.services.app.collaborators import CollaboratorService
+from ee_crm.services.app.users import UserService
+from ee_crm.controllers.permission import permission
 
 
 @permission
