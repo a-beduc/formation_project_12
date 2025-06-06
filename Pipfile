@@ -4,16 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-sqlalchemy = "*"
-python-dotenv = "*"
-psycopg2 = "*"
-pytest = "*"
-argon2-cffi = "*"
-pytest-mock = "*"
-pyjwt = "*"
-click = "*"
+ee-crm = {file = ".", editable = true}
 
 [dev-packages]
+pytest = "*"
+pytest-mock = "*"
+setuptools = "*"
+wheel = "*"
 
 [requires]
 python_version = "3.12"
