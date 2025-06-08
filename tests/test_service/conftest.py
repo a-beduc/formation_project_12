@@ -14,6 +14,14 @@ class FakeRepository(AbstractRepository):
         for obj in init:
             self._add(obj)
 
+    @staticmethod
+    def _apply_sort(sort, list_to_sort):
+        for field, is_desc in sort[::-1]:
+            list_to_sort = sorted(list_to_sort,
+                                  key=lambda x: getattr(x, field),
+                                  reverse=is_desc)
+        return list_to_sort
+
     def _add(self, model_obj):
         if getattr(model_obj, "id", None) is None:
             self._pk += 1
@@ -29,11 +37,8 @@ class FakeRepository(AbstractRepository):
     def _list(self, sort=None):
         storage = list(self._store.values())
         if sort is not None:
-            reversed_storage = storage[::-1]
-            for sort_tuple in reversed_storage:
-                storage = sorted(storage,
-                                 key=lambda x: getattr(x, sort_tuple[0]),
-                                 reverse=sort_tuple[1])
+            if sort is not None:
+                storage = self._apply_sort(sort, storage)
         return storage
 
     def _filter(self, sort=None, **filters):
@@ -41,14 +46,8 @@ class FakeRepository(AbstractRepository):
                     if all(getattr(obj, attr, None) == value
                     for attr, value in filters.items())]
         if sort is not None:
-            reversed_storage = filtered[::-1]
-            for sort_tuple in reversed_storage:
-                filtered = sorted(filtered,
-                                  key=lambda x: getattr(x, sort_tuple[0]),
-                                  reverse=sort_tuple[1])
-        return [obj for obj in self._store.values()
-                if all(getattr(obj, attr, None) == value
-                for attr, value in filters.items())]
+            filtered = self._apply_sort(sort, filtered)
+        return filtered
 
     def _filter_one(self, **filters):
         return next(

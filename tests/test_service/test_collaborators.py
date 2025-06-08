@@ -3,7 +3,7 @@ import pytest
 from ee_crm.services.app.collaborators import (CollaboratorService,
                                                CollaboratorServiceError)
 from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.domain.model import (AuthUserError, AuthUser, Collaborator, Role,
+from ee_crm.domain.model import (AuthUser, Collaborator, Role,
                                  CollaboratorError)
 from ee_crm.domain.validators import AuthUserValidatorError
 
@@ -133,6 +133,28 @@ class TestCollaboratorCRUD:
         dto_coll_a = CollaboratorDTO.from_domain(init_uow.collaborators.get(1))
 
         assert service.retrieve(1) == dto_coll_a
+
+    def test_get_all_collaborators_sort_reverse_id(self, init_uow):
+        service = CollaboratorService(init_uow)
+        dto_collaborators = service.retrieve_all(sort=(('id', True),))
+
+        assert dto_collaborators[0].first_name == "fn_e"
+        assert dto_collaborators[1].first_name == "fn_d"
+        assert dto_collaborators[2].first_name == "fn_c"
+        assert dto_collaborators[3].first_name == "fn_b"
+        assert dto_collaborators[4].first_name == "fn_a"
+
+    def test_get_all_collaborators_sort_reverse_role_then_last_name(
+            self, init_uow):
+        service = CollaboratorService(init_uow)
+        dto_collaborators = service.retrieve_all(sort=(('role', True),
+                                                       ('last_name', False)))
+
+        assert dto_collaborators[0].first_name == "fn_d"
+        assert dto_collaborators[1].first_name == "fn_e"
+        assert dto_collaborators[2].first_name == "fn_b"
+        assert dto_collaborators[3].first_name == "fn_c"
+        assert dto_collaborators[4].first_name == "fn_a"
 
     def test_get_all_salesmen(self, init_uow):
 

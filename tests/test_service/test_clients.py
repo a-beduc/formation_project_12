@@ -146,21 +146,17 @@ class TestClientCRUD:
 
     def test_sort_clients_by_reverse_salesman_id(self, init_uow):
         service = ClientService(init_uow)
-        all_clients = service.retrieve_all()
-        reversed_all_clients = service.sort(*all_clients,
-                                            key="salesman_id",
-                                            reverse=True)
+        all_clients = service.retrieve_all(sort=(('salesman_id', True),))
 
-        assert reversed_all_clients[0].last_name == "cl_ln_c"
-        assert reversed_all_clients[1].last_name == "cl_ln_d"
-        assert reversed_all_clients[2].last_name == "cl_ln_e"
-        assert reversed_all_clients[3].last_name == "cl_ln_a"
-        assert reversed_all_clients[4].last_name == "cl_ln_b"
+        assert all_clients[0].last_name == "cl_ln_c"
+        assert all_clients[1].last_name == "cl_ln_d"
+        assert all_clients[2].last_name == "cl_ln_e"
+        assert all_clients[3].last_name == "cl_ln_a"
+        assert all_clients[4].last_name == "cl_ln_b"
 
     def test_sort_clients_by_wrong_key(self, init_uow):
         service = ClientService(init_uow)
-        all_clients = service.retrieve_all()
 
         with pytest.raises(ClientServiceError,
-                           match="Unknown sort key: unknown_key"):
-            service.sort(*all_clients, key="unknown_key", reverse=True)
+                           match=r"wrong sort key in \['unknown_key'\]"):
+            service.retrieve_all(sort=(('unknown_key', True),))

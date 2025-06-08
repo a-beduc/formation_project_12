@@ -31,9 +31,15 @@ class BaseService(ABC):
                 raise self.error_cls(f'{self.model_cls.__name__} not found')
             return self.dto_cls.from_domain(obj)
 
-    def retrieve_all(self):
+    def retrieve_all(self, sort=None):
         with self.uow:
-            return [self.dto_cls.from_domain(obj) for obj in self._repo.list()]
+            try:
+                list_obj = [self.dto_cls.from_domain(obj)
+                            for obj in self._repo.list(sort=sort)]
+                return tuple(list_obj)
+            except AttributeError:
+                raise self.error_cls(f'wrong sort key in '
+                                     f'{[key for key, _ in sort]}')
 
     def remove(self, obj_id):
         with self.uow:
@@ -50,18 +56,12 @@ class BaseService(ABC):
                     setattr(obj, k, v)
             self.uow.commit()
 
-    def filter(self, **kwargs):
+    def filter(self, sort=None, **kwargs):
         filters = {k: v for k, v in kwargs.items()
                    if k in self.model_cls.filterable_fields()}
         if filters == {}:
             raise self.error_cls(f'No valid filters for '
                                  f'{self.model_cls.__name__} in {kwargs}')
         with self.uow:
-            objs = self._repo.filter(**filters)
+            objs = self._repo.filter(sort=sort, **filters)
             return [self.dto_cls.from_domain(obj) for obj in objs]
-
-    def sort(self, *dto_objects, key, reverse=False):
-        if key not in self.model_cls.filterable_fields():
-            raise self.error_cls(f'Unknown sort key: {key}')
-        return sorted(dto_objects, key=lambda d: getattr(d, key),
-                      reverse=reverse)
