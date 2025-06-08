@@ -1,6 +1,7 @@
 import pytest
 
 from ee_crm.controllers import permission as p
+from ee_crm.services.auth.jwt_handler import BadToken
 
 
 def valid_management_payload():
@@ -45,27 +46,29 @@ def valid_support_payload():
     ]
 )
 def test_is_authenticated_success(mocker, payload):
-    mocker.patch.object(p, 'check_token',
+    mocker.patch.object(p, 'verify_token',
                         return_value=payload)
     assert p.is_authenticated()['c_id'] == 1
 
 
 def test_is_authenticated_failure(mocker):
-    mocker.patch.object(p, 'check_token',
+    verify_token = mocker.patch.object(p, 'verify_token',
                         return_value=None)
-    with pytest.raises(PermissionError, match="Authentication invalid"):
+    verify_token.side_effect = BadToken("No access token")
+    with pytest.raises(p.AuthorizationDenied, match="Authentication invalid"):
         p.is_authenticated()
 
 
 def test_permission_with_bad_authenticated(mocker):
-    mocker.patch.object(p, 'check_token',
-                        return_value=None)
+    verify_token = mocker.patch.object(p, 'verify_token',
+                                       return_value=None)
+    verify_token.side_effect = BadToken("No access token")
 
     @p.permission
     def test_func():
         pass
 
-    with pytest.raises(PermissionError, match="Authentication invalid"):
+    with pytest.raises(p.AuthorizationDenied, match="Authentication invalid"):
         test_func()
 
 
@@ -137,5 +140,5 @@ def test_permission_is_manager_and_is_sales_raise_error(mocker):
     def test_func(**kwargs):
         pass
 
-    with pytest.raises(PermissionError):
+    with pytest.raises(p.AuthorizationDenied):
         test_func(keyword='keyword')
