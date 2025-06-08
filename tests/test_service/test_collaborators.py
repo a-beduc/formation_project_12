@@ -92,7 +92,7 @@ class TestCollaboratorCreation:
         }
         collaborator_service = CollaboratorService(init_uow)
 
-        with pytest.raises(AuthUserError, match="username taken"):
+        with pytest.raises(CollaboratorServiceError, match="username taken"):
             collaborator_service.create("user_a", "Password1", **data)
 
     def test_user_creation_uow_failure(self, mocker, init_uow):

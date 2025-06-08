@@ -26,14 +26,29 @@ class FakeRepository(AbstractRepository):
     def _delete(self, obj_pk):
         self._store.pop(obj_pk, None)
 
-    def _list(self):
-        return list(self._store.values())
+    def _list(self, sort=None):
+        storage = list(self._store.values())
+        if sort is not None:
+            reversed_storage = storage[::-1]
+            for sort_tuple in reversed_storage:
+                storage = sorted(storage,
+                                 key=lambda x: getattr(x, sort_tuple[0]),
+                                 reverse=sort_tuple[1])
+        return storage
 
-    def _filter(self, **filters):
+    def _filter(self, sort=None, **filters):
+        filtered = [obj for obj in self._store.values()
+                    if all(getattr(obj, attr, None) == value
+                    for attr, value in filters.items())]
+        if sort is not None:
+            reversed_storage = filtered[::-1]
+            for sort_tuple in reversed_storage:
+                filtered = sorted(filtered,
+                                  key=lambda x: getattr(x, sort_tuple[0]),
+                                  reverse=sort_tuple[1])
         return [obj for obj in self._store.values()
                 if all(getattr(obj, attr, None) == value
-                for attr, value in filters.items())
-                ]
+                for attr, value in filters.items())]
 
     def _filter_one(self, **filters):
         return next(

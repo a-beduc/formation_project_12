@@ -46,7 +46,7 @@ def test_change_password_success(uow, mocker):
 def test_change_password_wrong_username(uow):
     service = UserService(uow)
     with pytest.raises(AuthenticationError,
-                       match="User not found with not_bob"):
+                       match='No user found with username : "not_bob"'):
         service.modify_password("not_bob", "Password1", "new_pwd")
 
 
@@ -56,9 +56,9 @@ def test_change_password_fail_wrong_password(mocker, uow):
     uow.users = FakeRepository(init=(user,))
     service = UserService(uow)
     verifier = mocker.patch.object(user, 'verify_password')
-    verifier.side_effect = AuthUserError
+    verifier.side_effect = AuthUserError('Password mismatch')
 
-    with pytest.raises(AuthenticationError, match="Password mismatch"):
+    with pytest.raises(AuthUserError, match="Password mismatch"):
         service.modify_password("user_b", "wrong_pwd", "new_pwd")
 
 

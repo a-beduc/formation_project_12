@@ -141,3 +141,40 @@ def test_collaborator_can_be_filtered_with_multiple_fields(
     repo = repository.SqlAlchemyCollaboratorRepository(session)
     retrieved = repo.filter_one(role=3, user_id=1)
     assert retrieved == expected
+
+
+def test_collaborator_can_be_sorted_by_reverse_user_id(
+        session, init_db_table_collaborator):
+    repo = repository.SqlAlchemyCollaboratorRepository(session)
+    expected = repo.list()[::-1]
+    retrieved = repo.list(sort=(("user_id", True),))
+    assert retrieved == expected
+
+
+def test_contract_can_be_sorted_by_signed(session, init_db_table_contract):
+    repo = repository.SqlAlchemyContractRepository(session)
+    base_list = repo.list()
+    expected = [base_list[2], base_list[0], base_list[1]]
+    retrieved = repo.list(sort=(("signed", False),))
+
+    assert retrieved == expected
+
+
+def test_contract_can_be_sorted_by_signed_then_by_reverse_id(
+        session, init_db_table_contract):
+    repo = repository.SqlAlchemyContractRepository(session)
+    base_list = repo.list()
+    expected = [base_list[2], base_list[1], base_list[0]]
+    retrieved = repo.list(sort=(("signed", False), ("id", True)))
+
+    assert retrieved == expected
+
+
+def test_contract_can_be_filtered_by_signed_reverse_id_sorted(
+        session, init_db_table_contract):
+    repo = repository.SqlAlchemyContractRepository(session)
+    base_list = repo.list()
+    expected = [base_list[1], base_list[0]]
+    retrieved = repo.filter(sort=(("id", True),), signed=True)
+
+    assert retrieved == expected
