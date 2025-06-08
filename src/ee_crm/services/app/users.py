@@ -9,12 +9,13 @@ class UserServiceError(Exception):
 class UserService:
     def __init__(self, uow):
         self.uow = uow
+        self.error_cls = UserServiceError
 
     def retrieve(self, user_id):
         with self.uow:
             user = self.uow.users.get(user_id)
             if user is None:
-                raise UserServiceError(f"User not found with id {user_id}")
+                raise self.error_cls(f"User not found with id {user_id}")
             return AuthUserDTO.from_domain(user)
 
     def modify_username(self, old_username, plain_password, new_username):
@@ -22,8 +23,8 @@ class UserService:
             user_with_username = self.uow.users.filter_one(
                 username=new_username)
             if user_with_username is not None:
-                raise UserServiceError(f"User with username {new_username} "
-                                       f"already exists")
+                raise self.error_cls(f"User with username {new_username} "
+                                     f"already exists")
             user = AuthenticationService.verify_identity(self.uow,
                                                          old_username,
                                                          plain_password)

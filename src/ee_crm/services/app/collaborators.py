@@ -1,4 +1,4 @@
-from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError, Role
+from ee_crm.domain.model import AuthUser, Collaborator, Role
 from ee_crm.services.dto import CollaboratorDTO
 from ee_crm.services.app.base import BaseService, ServiceError
 
@@ -21,7 +21,7 @@ class CollaboratorService(BaseService):
     def create(self, username, plain_password, role=1, **kwargs):
         with self.uow:
             if self.uow.users.filter_one(username=username):
-                raise AuthUserError("username taken")
+                raise self.error_cls("username taken")
             AuthUser.builder(username, plain_password)
             user = AuthUser.builder(username, plain_password)
             self.uow.users.add(user)
