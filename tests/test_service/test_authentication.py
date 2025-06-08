@@ -43,7 +43,7 @@ class TestAuthenticate:
 
     def test_authenticate_fail_wrong_username(self, uow):
         with pytest.raises(AuthenticationError,
-                           match="User not found with not_bob"):
+                           match='No user found with username : "not_bob"'):
             service = AuthenticationService(uow)
             service.authenticate("not_bob", "pwd")
 
@@ -60,7 +60,7 @@ class TestAuthenticate:
 
         mocker.patch.object(uow.users, "filter_one", return_value=user)
         mock_vp = mocker.patch.object(user, "verify_password")
-        mock_vp.side_effect = AuthUserError
+        mock_vp.side_effect = AuthUserError("Password mismatch")
 
-        with pytest.raises(AuthenticationError, match="Password mismatch"):
+        with pytest.raises(AuthUserError, match="Password mismatch"):
             service.authenticate("user_b", "not_pwd")

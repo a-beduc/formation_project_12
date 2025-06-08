@@ -13,11 +13,11 @@ class AbstractRepository(ABC):
     def delete(self, obj_pk):
         self._delete(obj_pk)
 
-    def list(self):
-        return self._list()
+    def list(self, sort=None):
+        return self._list(sort=sort)
 
-    def filter(self, **filters):
-        return self._filter(**filters)
+    def filter(self, sort=None, **filters):
+        return self._filter(sort=sort, **filters)
 
     def filter_one(self, **filters):
         return self._filter_one(**filters)
@@ -35,11 +35,11 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _list(self):
+    def _list(self, sort=None):
         raise NotImplementedError
 
     @abstractmethod
-    def _filter(self, **filters):
+    def _filter(self, sort=None, **filters):
         raise NotImplementedError
 
     @abstractmethod
@@ -64,6 +64,20 @@ class SqlAlchemyRepository(AbstractRepository):
         aliases = getattr(self.model_cls, "_private_aliases", {})
         return {aliases.get(k, k): v for k, v in filters.items()}
 
+    def _translate_sort(self, sort):
+        # sort must be a tuple/list
+        aliases = getattr(self.model_cls, "_private_aliases", {})
+        ordering = [(aliases.get(e[0], e[0]), e[1]) for e in sort]
+
+        order_output = []
+        for field, is_desc in ordering:
+            attr = getattr(self.model_cls, field)
+            if is_desc is True:
+                order_output.append(attr.desc())
+            elif is_desc is False:
+                order_output.append(attr.asc())
+        return tuple(order_output)
+
     def _add(self, model_obj):
         self.session.add(model_obj)
 
@@ -74,17 +88,25 @@ class SqlAlchemyRepository(AbstractRepository):
         obj = self.session.get(self.model_cls, obj_pk)
         self.session.delete(obj)
 
-    def _list(self):
-        return self.session.query(self.model_cls).all()
+    def _list(self, sort=None):
+        query = self.session.query(self.model_cls)
+        if sort is not None:
+            order = self._translate_sort(sort)
+            query = query.order_by(*order)
+        return query.all()
 
-    def _filter(self, **filters):
+    def _filter(self, sort=None, **filters):
         orm_filters = self._translate_filters(filters)
-        return self.session.query(self.model_cls).filter_by(**orm_filters).all()
+        query = self.session.query(self.model_cls).filter_by(**orm_filters)
+        if sort is not None:
+            order = self._translate_sort(sort)
+            query = query.order_by(*order)
+        return query.all()
 
     def _filter_one(self, **filters):
         orm_filters = self._translate_filters(filters)
-        return (self.session.query(self.model_cls).filter_by(**orm_filters).
-                one_or_none())
+        query = self.session.query(self.model_cls).filter_by(**orm_filters)
+        return query.one_or_none()
 
 
 class SqlAlchemyUserRepository(SqlAlchemyRepository):

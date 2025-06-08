@@ -3,7 +3,7 @@ from pathlib import Path
 import jwt
 import json
 
-from src.ee_crm.config import (
+from ee_crm.config import (
     get_secret_key,
     get_token_store_path,
     get_token_access_lifetime,
@@ -19,6 +19,10 @@ class BadToken(TokenError):
 
 
 class ExpiredToken(TokenError):
+    pass
+
+
+class NoToken(TokenError):
     pass
 
 
@@ -72,7 +76,7 @@ def _wipe_storage():
     try:
         path.unlink()
     except FileNotFoundError:
-        print('No storage files found')
+        raise NoToken('No storage files found')
 
 
 def _prepare_access_payload(data):

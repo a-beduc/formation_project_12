@@ -1,15 +1,18 @@
-from ee_crm.controllers.login import check_token
 from functools import wraps
 from inspect import signature, Parameter
 
+from ee_crm.services.auth.jwt_handler import verify_token, BadToken
+
+
+class AuthorizationDenied(Exception):
+    pass
+
 
 def is_authenticated():
-    # let badtoken go up instead of raise permissionerror, let controller deal
-    # with it ?
-    payload = check_token()
-    if payload is None:
-        raise PermissionError('Authentication invalid')
-    return payload
+    try:
+        return verify_token()
+    except BadToken:
+        raise AuthorizationDenied('Authentication invalid')
 
 
 def is_management(ctx):
@@ -74,7 +77,7 @@ def _map_func_signature_and_value(func, *args, **kwargs):
 def _verify_requirements(ctx, requirements):
     for group in requirements:
         if not any(rule(ctx) for rule in group):
-            raise PermissionError(
+            raise AuthorizationDenied(
                 f'Permission error in {[perm.__name__ for perm in group]}')
 
 
@@ -111,35 +114,3 @@ def permission(_func=None, *, requirements=None, kw_auth=True):
         return decorator
     else:
         return decorator(_func)
-
-
-# def authenticated(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         payload = is_authenticated()
-#         if payload is None:
-#             raise (Exception('Need authentication'))
-#         kwargs['auth'] = payload
-#         return func(*args, **kwargs)
-#
-#     return wrapper
-#
-#
-# def old_permission(requirements):
-#     def decorator(func):
-#         @wraps(func)
-#         def wrapper(*args, **kwargs):
-#
-#             for group in requirements:
-#                 if not any(rule(kwargs) for rule in group):
-#                     raise Exception(
-#                         f'Permission error in {
-#                           [perm.__name__ for perm in group]}')
-#             # kwargs cleanup
-#             for key in perms_key:
-#                 kwargs.pop(key, None)
-#             return func(*args, **kwargs)
-#
-#         return wrapper
-#
-#     return decorator

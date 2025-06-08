@@ -14,6 +14,14 @@ class FakeRepository(AbstractRepository):
         for obj in init:
             self._add(obj)
 
+    @staticmethod
+    def _apply_sort(sort, list_to_sort):
+        for field, is_desc in sort[::-1]:
+            list_to_sort = sorted(list_to_sort,
+                                  key=lambda x: getattr(x, field),
+                                  reverse=is_desc)
+        return list_to_sort
+
     def _add(self, model_obj):
         if getattr(model_obj, "id", None) is None:
             self._pk += 1
@@ -26,14 +34,20 @@ class FakeRepository(AbstractRepository):
     def _delete(self, obj_pk):
         self._store.pop(obj_pk, None)
 
-    def _list(self):
-        return list(self._store.values())
+    def _list(self, sort=None):
+        storage = list(self._store.values())
+        if sort is not None:
+            if sort is not None:
+                storage = self._apply_sort(sort, storage)
+        return storage
 
-    def _filter(self, **filters):
-        return [obj for obj in self._store.values()
-                if all(getattr(obj, attr, None) == value
-                for attr, value in filters.items())
-                ]
+    def _filter(self, sort=None, **filters):
+        filtered = [obj for obj in self._store.values()
+                    if all(getattr(obj, attr, None) == value
+                    for attr, value in filters.items())]
+        if sort is not None:
+            filtered = self._apply_sort(sort, filtered)
+        return filtered
 
     def _filter_one(self, **filters):
         return next(
