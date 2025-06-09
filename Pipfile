@@ -10,7 +10,6 @@ ee-crm = {file = ".", editable = true}
 pytest = "*"
 pytest-mock = "*"
 setuptools = "*"
-wheel = "*"
 
 [requires]
 python_version = "3.12"

@@ -12,8 +12,14 @@ src/ee_crm.egg-info/top_level.txt
 src/ee_crm/adapters/__init__.py
 src/ee_crm/adapters/orm.py
 src/ee_crm/adapters/repositories.py
+src/ee_crm/cli_interface/__init__.py
+src/ee_crm/cli_interface/authentication.py
+src/ee_crm/cli_interface/collaborator.py
+src/ee_crm/cli_interface/entry_point.py
+src/ee_crm/cli_interface/utils.py
 src/ee_crm/controllers/__init__.py
-src/ee_crm/controllers/login.py
+src/ee_crm/controllers/authentication.py
+src/ee_crm/controllers/collaborator.py
 src/ee_crm/controllers/misc.py
 src/ee_crm/controllers/permission.py
 src/ee_crm/domain/__init__.py
