@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class AuthUserDTO:
     id: int | None = None
     username: str | None = None
@@ -15,7 +15,7 @@ class AuthUserDTO:
         )
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class CollaboratorDTO:
     id: int | None = None
     last_name: str | None = None
@@ -38,7 +38,7 @@ class CollaboratorDTO:
         )
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ClientDTO:
     id: int | None = None
     last_name: str | None = None
@@ -65,7 +65,7 @@ class ClientDTO:
         )
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ContractDTO:
     id: int | None = None
     total_amount: float | None = None
@@ -86,7 +86,7 @@ class ContractDTO:
         )
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class EventDTO:
     id: int | None = None
     title: str | None = None
