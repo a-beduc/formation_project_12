@@ -27,6 +27,10 @@ def is_support(ctx):
     return ctx['auth']['role'] == 5
 
 
+def is_self(ctx):
+    return ctx.get('pk') == ctx['auth']['c_id']
+
+
 # Implement later, uow should be in services layer
 
 # def is_client_salesman(ctx):
