@@ -16,9 +16,9 @@ def test_retrieve_user_success(uow):
     service = UserService(uow)
     auth_user_dto = service.retrieve(1)
 
-    assert isinstance(auth_user_dto, AuthUserDTO)
-    assert auth_user_dto.id == 1
-    assert auth_user_dto.username == "user_b"
+    assert isinstance(auth_user_dto[0], AuthUserDTO)
+    assert auth_user_dto[0].id == 1
+    assert auth_user_dto[0].username == "user_b"
 
 
 def test_retrieve_user_fail(uow):
@@ -86,7 +86,7 @@ def test_change_username_success(mocker, uow):
 
     auth_user_dto = service.retrieve(1)
 
-    assert auth_user_dto.username == "user_c"
+    assert auth_user_dto[0].username == "user_c"
 
 
 def test_change_username_fail(mocker, uow):

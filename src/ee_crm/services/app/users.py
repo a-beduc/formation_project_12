@@ -16,7 +16,7 @@ class UserService:
             user = self.uow.users.get(user_id)
             if user is None:
                 raise self.error_cls(f"User not found with id {user_id}")
-            return AuthUserDTO.from_domain(user)
+            return (AuthUserDTO.from_domain(user),)
 
     def modify_username(self, old_username, plain_password, new_username):
         with self.uow:

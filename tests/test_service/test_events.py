@@ -48,9 +48,9 @@ def test_create_event_success(init_uow):
     service.create(**data)
     event_dto = service.retrieve(3)
 
-    assert event_dto.title == "test event !"
-    assert event_dto.start_time is None
-    assert event_dto.contract_id == 3
+    assert event_dto[0].title == "test event !"
+    assert event_dto[0].start_time is None
+    assert event_dto[0].contract_id == 3
 
 
 def test_create_event_no_contract_fail(init_uow):
@@ -92,7 +92,7 @@ def test_assign_support_success(init_uow):
     service.assign_support(event_id=2, supporter_id=2)
     event_dto = service.retrieve(2)
 
-    assert event_dto.supporter_id == 2
+    assert event_dto[0].supporter_id == 2
 
 
 def test_assign_support_bad_collaborator_fail(init_uow):

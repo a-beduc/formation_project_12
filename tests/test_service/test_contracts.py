@@ -67,7 +67,7 @@ def test_create_contract_failure(init_uow):
 def test_sign_contract(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(1)
-    assert contract.signed is False
+    assert contract[0].signed is False
 
     service.sign_contract(1)
 
@@ -75,23 +75,23 @@ def test_sign_contract(init_uow):
     service.sign_contract(1)
 
     contract = service.retrieve(1)
-    assert contract.signed is True
+    assert contract[0].signed is True
 
 
 def test_change_total_amount_success(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(1)
-    assert contract.total_amount == 100.00
+    assert contract[0].total_amount == 100.00
 
     service.modify_total_amount(1, 200)
     contract = service.retrieve(1)
-    assert contract.total_amount == 200.00
+    assert contract[0].total_amount == 200.00
 
 
 def test_change_total_amount_after_signed_fail(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(4)
-    assert contract.total_amount == 400.00
+    assert contract[0].total_amount == 400.00
 
     with pytest.raises(ContractError, match="Total amount cannot be changed "
                                             "for signed contract"):
@@ -101,20 +101,20 @@ def test_change_total_amount_after_signed_fail(init_uow):
 def test_pay_amount_success(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(4)
-    assert contract.total_amount == 400.00
-    assert contract.due_amount == 400.00
+    assert contract[0].total_amount == 400.00
+    assert contract[0].due_amount == 400.00
 
     service.pay_amount(4, 400.00)
     contract = service.retrieve(4)
-    assert contract.total_amount == 400.00
-    assert contract.due_amount == 0.00
+    assert contract[0].total_amount == 400.00
+    assert contract[0].due_amount == 0.00
 
 
 def test_pay_amount_not_signed_fail(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(1)
-    assert contract.total_amount == 100.00
-    assert contract.due_amount == 100.00
+    assert contract[0].total_amount == 100.00
+    assert contract[0].due_amount == 100.00
 
     with pytest.raises(ContractError, match="Payment can't be registered "
                                             "before signature"):
@@ -124,8 +124,8 @@ def test_pay_amount_not_signed_fail(init_uow):
 def test_paid_amount_negative_fail(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(4)
-    assert contract.total_amount == 400.00
-    assert contract.due_amount == 400.00
+    assert contract[0].total_amount == 400.00
+    assert contract[0].due_amount == 400.00
 
     with pytest.raises(ContractError, match="Payment amount must be positive"):
         service.pay_amount(4, -100.00)
@@ -134,8 +134,8 @@ def test_paid_amount_negative_fail(init_uow):
 def test_paid_amount_exceed_total_fail(init_uow):
     service = ContractService(init_uow)
     contract = service.retrieve(4)
-    assert contract.total_amount == 400.00
-    assert contract.due_amount == 400.00
+    assert contract[0].total_amount == 400.00
+    assert contract[0].due_amount == 400.00
 
     with pytest.raises(ContractError, match="Payment : 500.0 exceed due. "
                                             "Still due : 400.0"):

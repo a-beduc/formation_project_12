@@ -89,8 +89,8 @@ class TestClientCRUD:
         service = ClientService(init_uow)
         client_dto = service.retrieve(client_id)
 
-        assert client_dto.salesman_id == 1
-        assert client_dto.id == 1
+        assert client_dto[0].salesman_id == 1
+        assert client_dto[0].id == 1
 
     def test_get_client_failure(self, init_uow):
         client_id = 10
@@ -105,7 +105,7 @@ class TestClientCRUD:
 
         client_dto = service.retrieve(client_id)
 
-        assert list_clients[0] == client_dto
+        assert list_clients[0] == client_dto[0]
         assert len(list_clients) == 5
 
     def test_filter_salesman_clients(self, init_uow):
@@ -121,13 +121,13 @@ class TestClientCRUD:
         list_clients = service.filter(salesman_id=salesman_id)
 
         assert len(list_clients) == 0
-        assert list_clients == []
+        assert list_clients == tuple()
 
     def test_delete_client(self, init_uow):
         service = ClientService(init_uow)
         client_id = 1
 
-        assert service.retrieve(client_id) is not None
+        assert service.retrieve(client_id)[0] is not None
         service.remove(client_id)
 
         assert init_uow.commited is True
@@ -142,7 +142,7 @@ class TestClientCRUD:
         service.modify(client_id, **update_input)
 
         assert init_uow.commited is True
-        assert service.retrieve(client_id).last_name == "new_last_name"
+        assert service.retrieve(client_id)[0].last_name == "new_last_name"
 
     def test_sort_clients_by_reverse_salesman_id(self, init_uow):
         service = ClientService(init_uow)
