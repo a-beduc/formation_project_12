@@ -112,7 +112,7 @@ def test_permission_is_manager(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_management_payload())
 
-    @p.permission(requirements=[(p.is_management,)])
+    @p.permission(requirements=p.is_management)
     def test_func(**kwargs):
         assert kwargs['auth']['c_id'] == 1
         assert kwargs['auth']['role'] == 3
@@ -124,10 +124,22 @@ def test_permission_is_manager_or_is_sales(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_management_payload())
 
-    @p.permission(requirements=[(p.is_management, p.is_sales)])
+    @p.permission(requirements=(p.is_management | p.is_sales))
     def test_func(**kwargs):
         assert kwargs['auth']['c_id'] == 1
         assert kwargs['auth']['role'] == 3
+
+    test_func(keyword='keyword')
+
+
+def test_permission_is_support_or_is_sales_or_is_manager(mocker):
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_support_payload())
+
+    @p.permission(requirements=((p.is_management & p.is_sales) | p.is_support))
+    def test_func(**kwargs):
+        assert kwargs['auth']['c_id'] == 3
+        assert kwargs['auth']['role'] == 5
 
     test_func(keyword='keyword')
 
@@ -136,11 +148,13 @@ def test_permission_is_manager_and_is_sales_raise_error(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_management_payload())
 
-    @p.permission(requirements=[(p.is_management,), (p.is_sales,)])
+    @p.permission(requirements=(p.is_management & p.is_sales))
     def test_func(**kwargs):
         pass
 
-    with pytest.raises(p.AuthorizationDenied):
+    with pytest.raises(p.AuthorizationDenied,
+                       match=r"Permission error in "
+                             r"\(is_management & is_sales\)"):
         test_func(keyword='keyword')
 
 
@@ -148,7 +162,7 @@ def test_permission_is_self_1_success(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_management_payload())
 
-    @p.permission(requirements=[(p.is_self,)])
+    @p.permission(requirements=p.is_self)
     def test_func(pk, **kwargs):
         pass
 
@@ -160,7 +174,7 @@ def test_permission_is_self_2_success(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_sales_payload())
 
-    @p.permission(requirements=[(p.is_self,)])
+    @p.permission(requirements=p.is_self)
     def test_func(pk, **kwargs):
         pass
 
@@ -172,14 +186,14 @@ def test_permission_is_self_failure_not_self(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_sales_payload())
 
-    @p.permission(requirements=[(p.is_self,)])
+    @p.permission(requirements=p.is_self)
     def test_func(pk, **kwargs):
         pass
 
     pk_id = valid_support_payload()['c_id']
 
     with pytest.raises(p.AuthorizationDenied,
-                       match=r"Permission error in \['is_self'\]"):
+                       match="Permission error in is_self"):
         test_func(pk_id, keyword='keyword')
 
 
@@ -187,7 +201,7 @@ def test_permission_is_self_or_management_success(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_management_payload())
 
-    @p.permission(requirements=[(p.is_self, p.is_management)])
+    @p.permission(requirements=(p.is_self | p.is_management))
     def test_func(pk, **kwargs):
         pass
 
@@ -201,12 +215,12 @@ def test_permission_is_self_failure_bad_signature(mocker):
     mocker.patch.object(p, "is_authenticated",
                         return_value=valid_support_payload())
 
-    @p.permission(requirements=[(p.is_self,)])
+    @p.permission(requirements=p.is_self)
     def test_func(not_pk, **kwargs):
         pass
 
     pk_id = valid_support_payload()['c_id']
 
     with pytest.raises(p.AuthorizationDenied,
-                       match=r"Permission error in \['is_self'\]"):
+                       match="Permission error in is_self"):
         test_func(pk_id, keyword='keyword')

@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import wraps, update_wrapper
 from inspect import signature, Parameter
 
 from ee_crm.services.auth.jwt_handler import verify_token, BadToken
@@ -8,6 +8,37 @@ class AuthorizationDenied(Exception):
     pass
 
 
+class P:
+    """
+    https://stackoverflow.com/questions/9184632/pointfree-function-combination-in-python
+    """
+    def __init__(self, func, label=None):
+        self.pred = func
+        self.func_name = label or func.__name__
+
+    def __call__(self, ctx):
+        return self.pred(ctx)
+
+    def __and__(self, other):
+        def func(ctx):
+            return self(ctx) and other(ctx)
+        return P(func, label=f'({self.func_name} & {other.func_name})')
+
+    def __or__(self, other):
+        def func(ctx):
+            return self(ctx) or other(ctx)
+        return P(func, label=f'({self.func_name} | {other.func_name})')
+
+    def __repr__(self):
+        return self.func_name
+
+
+def predicate(func):
+    result = P(func)
+    update_wrapper(result, func)
+    return result
+
+
 def is_authenticated():
     try:
         return verify_token()
@@ -15,21 +46,33 @@ def is_authenticated():
         raise AuthorizationDenied('Authentication invalid')
 
 
+@predicate
 def is_management(ctx):
     return ctx['auth']['role'] == 3
 
 
+@predicate
 def is_sales(ctx):
     return ctx['auth']['role'] == 4
 
 
+@predicate
 def is_support(ctx):
     return ctx['auth']['role'] == 5
 
 
+@predicate
 def is_self(ctx):
-    return ctx.get('pk') == ctx['auth']['c_id']
+    return ctx.get('pk', None) == ctx['auth']['c_id']
 
+
+@predicate
+def is_associated_salesman(ctx):
+    client_id = ctx.get('pk', None)
+    logged_user_id = ctx['auth']['c_id']
+    controller_manager = ctx.get('self')
+    return (controller_manager.service.retrieve(client_id)[0].salesman_id ==
+            logged_user_id)
 
 # Implement later, uow should be in services layer
 
@@ -79,10 +122,14 @@ def _map_func_signature_and_value(func, *args, **kwargs):
 
 
 def _verify_requirements(ctx, requirements):
-    for group in requirements:
-        if not any(rule(ctx) for rule in group):
-            raise AuthorizationDenied(
-                f'Permission error in {[perm.__name__ for perm in group]}')
+    if not requirements(ctx):
+        raise AuthorizationDenied(f'Permission error in {requirements}')
+
+# def _verify_requirements(ctx, requirements):
+#     for group in requirements:
+#         if not any(rule(ctx) for rule in group):
+#             raise AuthorizationDenied(
+#                 f'Permission error in {[perm.__name__ for perm in group]}')
 
 
 def _accept_kwargs(func):
@@ -100,11 +147,12 @@ def permission(_func=None, *, requirements=None, kw_auth=True):
             auth = is_authenticated()
             ctx = {'auth': auth}
 
-            if requirements:
+            if requirements is not None:
                 ctx.update(
                     _map_func_signature_and_value(func, *args, **kwargs))
-
-                _verify_requirements(ctx, requirements)
+                if not requirements(ctx):
+                    raise AuthorizationDenied(
+                        f'Permission error in {requirements}')
 
             # if flag is raised and func accept **kwargs can pass payload
             if kw_auth and _accept_kwargs(func):
