@@ -65,6 +65,11 @@ class FakeClientRepository(FakeRepository, AbstractContractRepository):
                 client.salesman_id == salesman_id]
 
 
+class MockSession:
+    def flush(self):
+        pass
+
+
 # init empty interface, add tuples of objects to FakeRepos to init with datas
 class FakeUnitOfWork(AbstractUnitOfWork):
     def __init__(self):
@@ -74,6 +79,7 @@ class FakeUnitOfWork(AbstractUnitOfWork):
         self.clients = FakeClientRepository()
         self.contracts = FakeRepository()
         self.events = FakeRepository()
+        self.session = MockSession()
 
     def __enter__(self):
         return self

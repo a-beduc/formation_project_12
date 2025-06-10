@@ -27,7 +27,7 @@ def patch_past_time(mocker, patch_lifetimes):
                         return_value=int(FAKE_TIME.timestamp()))
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def patch_storage(tmp_path, mocker):
     storage = tmp_path / "tokens.json"
     mocker.patch.object(jwt_handler, 'get_token_store_path',

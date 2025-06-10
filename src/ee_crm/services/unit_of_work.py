@@ -35,7 +35,7 @@ class AbstractUnitOfWork(ABC):
 # launched at import time, may be better to add a factory func that yield Sess
 DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(get_postgres_uri()),
-    autoflush=False,
+    autoflush=True,
 )
 
 

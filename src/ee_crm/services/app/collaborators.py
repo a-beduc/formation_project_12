@@ -28,6 +28,8 @@ class CollaboratorService(BaseService):
 
             obj_value = {k: v for k, v in kwargs.items()
                          if k in self.model_cls.updatable_fields()}
+
+            self.uow.session.flush()
             collaborator = Collaborator.builder(user_id=user.id, role=role,
                                                 **obj_value)
             self._repo.add(collaborator)
