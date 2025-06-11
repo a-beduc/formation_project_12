@@ -11,7 +11,7 @@ class AbstractUnitOfWork(ABC):
     users: repo.AbstractRepository
     collaborators: repo.AbstractRepository
     clients: repo.AbstractRepository
-    contracts: repo.AbstractContractRepository
+    contracts: repo.AbstractRepository
     events: repo.AbstractRepository
 
     def __enter__(self):

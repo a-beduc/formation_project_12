@@ -1,4 +1,5 @@
 import pytest
+
 from datetime import datetime
 
 from ee_crm.domain import validators as v

@@ -1,7 +1,7 @@
+import pytest
+
 import datetime
 import json
-
-import pytest
 
 from ee_crm.services.auth import jwt_handler
 

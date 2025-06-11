@@ -53,7 +53,7 @@ def test_is_authenticated_success(mocker, payload):
 
 def test_is_authenticated_failure(mocker):
     verify_token = mocker.patch.object(p, 'verify_token',
-                        return_value=None)
+                                       return_value=None)
     verify_token.side_effect = BadToken("No access token")
     with pytest.raises(p.AuthorizationDenied, match="Authentication invalid"):
         p.is_authenticated()
@@ -154,7 +154,7 @@ def test_permission_is_manager_and_is_sales_raise_error(mocker):
 
     with pytest.raises(p.AuthorizationDenied,
                        match=r"Permission error in "
-                             r"\(is_management & is_sales\)"):
+                             r"\(is_management and is_sales\)"):
         test_func(keyword='keyword')
 
 
