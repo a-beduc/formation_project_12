@@ -1,6 +1,6 @@
 from ee_crm.domain.model import Event, Role
 from ee_crm.services.app.base import BaseService, ServiceError
-from ee_crm.services.dto import EventDTO
+from ee_crm.services.dto import EventDTO, ClientDTO
 
 
 class EventServiceError(ServiceError):
@@ -40,3 +40,9 @@ class EventService(BaseService):
             event = self._repo.get(event_id)
             event.supporter_id = supporter_id
             self.uow.commit()
+
+    def retrieve_associated_client(self, event_id):
+        with self.uow:
+            event = self._repo.get(event_id)
+            client = event.contract.client
+            return (ClientDTO.from_domain(client),)

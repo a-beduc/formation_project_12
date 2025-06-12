@@ -1,5 +1,5 @@
 from ee_crm.domain.model import Contract
-from ee_crm.services.dto import ContractDTO
+from ee_crm.services.dto import ContractDTO, ClientDTO
 from ee_crm.services.app.base import BaseService, ServiceError
 
 
@@ -37,3 +37,12 @@ class ContractService(BaseService):
             contract = self._repo.get(contract_id)
             contract.register_payment(amount)
             self.uow.commit()
+
+    def retrieve_associated_client(self, contract_id):
+        with self.uow:
+            contract = self._repo.get(contract_id)
+            try:
+                client = contract.client
+                return (ClientDTO.from_domain(client),)
+            except AttributeError:
+                raise ContractServiceError("No ")
