@@ -1,22 +1,34 @@
+from ee_crm.domain.model import AuthUser
 from ee_crm.services.dto import AuthUserDTO
 from ee_crm.services.auth.authentication import AuthenticationService
+from ee_crm.services.app.base import BaseService, ServiceError
 
 
-class UserServiceError(Exception):
+class UserServiceError(ServiceError):
     pass
 
 
-class UserService:
+class UserService(BaseService):
     def __init__(self, uow):
-        self.uow = uow
-        self.error_cls = UserServiceError
+        super().__init__(
+            uow,
+            AuthUser,
+            AuthUserDTO,
+            UserServiceError,
+            "users"
+        )
 
-    def retrieve(self, user_id):
-        with self.uow:
-            user = self.uow.users.get(user_id)
-            if user is None:
-                raise self.error_cls(f"User not found with id {user_id}")
-            return (AuthUserDTO.from_domain(user),)
+    def create(self, **obj_value):
+        raise UserServiceError("Can't create user directly, "
+                               "use appropriate methods.")
+
+    def remove(self, obj_id):
+        raise UserServiceError("Can't delete user directly, "
+                               "use appropriate methods.")
+
+    def modify(self, obj_id, **kwargs):
+        raise UserServiceError("Can't update user directly, "
+                               "use appropriate methods.")
 
     def modify_username(self, old_username, plain_password, new_username):
         with self.uow:
