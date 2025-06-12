@@ -224,3 +224,27 @@ def test_permission_is_self_failure_bad_signature(mocker):
     with pytest.raises(p.AuthorizationDenied,
                        match="Permission error in is_self"):
         test_func(pk_id, keyword='keyword')
+
+
+def test_permission_can_be_inverted(mocker):
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_sales_payload())
+
+    @p.permission(requirements=~p.is_management & ~p.is_support)
+    def test_func(**kwargs):
+        pass
+
+    test_func(keyword='keyword')
+
+
+def test_permission_is_management_can_be_inverted(mocker):
+    mocker.patch.object(p, "is_authenticated",
+                        return_value=valid_management_payload())
+
+    @p.permission(requirements=~p.is_management)
+    def test_func(**kwargs):
+        pass
+
+    with pytest.raises(p.AuthorizationDenied,
+                       match=r"Permission error in not is_management"):
+        test_func(keyword='keyword')

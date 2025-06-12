@@ -7,7 +7,8 @@ from ee_crm.controllers.permission import (
     contract_is_signed,
     event_has_support,
     is_event_associated_support,
-    is_event_associated_salesman
+    is_event_associated_salesman,
+    P
 )
 
 
@@ -87,3 +88,12 @@ def test_is_event_associated_salesman(mock_in_memory_data):
 
     ctx_2 = {"auth": payload, "pk": 1}
     assert is_event_associated_salesman(ctx_2) is False
+
+
+def test_can_invert_is_event_associated_salesman(mock_in_memory_data):
+    payload = auth_payload(2, 5)
+    ctx_1 = {"auth": payload, "pk": 2}
+    assert (~is_event_associated_salesman)(ctx_1) is False
+
+    ctx_2 = {"auth": payload, "pk": 1}
+    assert (~is_event_associated_salesman)(ctx_2) is True
