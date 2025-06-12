@@ -191,12 +191,12 @@ class TestCollaboratorCRUD:
         user_1_dto_before = service.retrieve(1)
         assert user_1_dto_before[0].role == Role.MANAGEMENT
 
-        service.assign_role(1, role="ADMIN")
+        service.assign_role(1, role=Role.SUPPORT)
         user_1_dto_after = service.retrieve(1)
-        assert user_1_dto_after[0].role == Role.ADMIN
+        assert user_1_dto_after[0].role == Role.SUPPORT
 
     def test_assign_role_fail(self, init_uow):
         service = CollaboratorService(init_uow)
-        with pytest.raises(CollaboratorError,
-                           match="Role must be an instance of RoleType"):
+        with pytest.raises(CollaboratorServiceError,
+                           match="Invalid role: UNKNOWN"):
             service.assign_role(1, role="UNKNOWN")
