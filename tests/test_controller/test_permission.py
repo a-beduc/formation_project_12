@@ -2,6 +2,15 @@ import pytest
 
 from ee_crm.controllers import permission as p
 from ee_crm.services.auth.jwt_handler import BadToken
+from ee_crm.controllers.permission import (
+    is_client_associated_salesman,
+    contract_has_salesman,
+    is_contract_associated_salesman,
+    contract_is_signed,
+    event_has_support,
+    is_event_associated_support,
+    is_event_associated_salesman
+)
 
 
 def valid_management_payload():

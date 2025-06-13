@@ -225,3 +225,19 @@ def fake_repo():
 @pytest.fixture(scope='function')
 def uow():
     return FakeUnitOfWork()
+
+
+@pytest.fixture
+def fake_service(mocker):
+    service = mocker.Mock()
+    service.retrieve.return_value = tuple()
+    service.retrieve_all.return_value = tuple()
+    service.filter.return_value = tuple()
+    return service
+
+
+@pytest.fixture
+def bypass_permission(mocker):
+    mocker.patch("ee_crm.controllers.permission.verify_token",
+                 return_value={"sub": "user_a", "c_id": 1,
+                               "role": 3, "name": "fn_a ln_a"})

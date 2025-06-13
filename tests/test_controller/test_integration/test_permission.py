@@ -8,7 +8,6 @@ from ee_crm.controllers.permission import (
     event_has_support,
     is_event_associated_support,
     is_event_associated_salesman,
-    P
 )
 
 

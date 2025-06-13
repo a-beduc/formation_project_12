@@ -38,21 +38,6 @@ def collaborators_dto():
     return coll_a, coll_b, coll_c
 
 
-@pytest.fixture
-def fake_service(mocker):
-    service = mocker.Mock()
-    service.retrieve.return_value = tuple()
-    service.retrieve_all.return_value = tuple()
-    service.filter.return_value = tuple()
-    return service
-
-@pytest.fixture
-def bypass_permission(mocker):
-    mocker.patch("ee_crm.controllers.permission.verify_token",
-                 return_value={"sub": "user_a", "c_id": 1,
-                               "role": 3, "name": "fn_a ln_a"})
-
-
 def test_read_by_pk(fake_service, collaborators_dto, bypass_permission):
     controller = CollaboratorManager(fake_service)
     fake_service.retrieve.return_value = collaborators_dto[0]
