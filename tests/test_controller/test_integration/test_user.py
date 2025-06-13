@@ -19,7 +19,7 @@ def bypass_password(mocker):
 
 
 def test_who_am_i_return_ok(init_db_table_users, init_db_table_collaborator,
-                            bypass_permission, in_memory_uow):
+                            bypass_permission_manager, in_memory_uow):
     controller = UserManager(UserService(in_memory_uow()))
     auth_dto, coll_dto = controller.who_am_i()
 
@@ -27,7 +27,7 @@ def test_who_am_i_return_ok(init_db_table_users, init_db_table_collaborator,
     assert coll_dto.last_name == "col_ln_one"
 
 
-def test_update_username_ok(init_db_table_users, bypass_permission,
+def test_update_username_ok(init_db_table_users, bypass_permission_manager,
                             in_memory_uow, bypass_password, mocker):
     controller = UserManager(UserService(in_memory_uow()))
     mocker.patch("ee_crm.controllers.app.user.AuthenticationService."
@@ -39,7 +39,7 @@ def test_update_username_ok(init_db_table_users, bypass_permission,
     assert controller.read(pk=1)[0].username == "new_username"
 
 
-def test_update_username_fail(init_db_table_users, bypass_permission,
+def test_update_username_fail(init_db_table_users, bypass_permission_manager,
                               in_memory_uow, bypass_password, mocker):
     controller = UserManager(UserService(in_memory_uow()))
     mocker.patch("ee_crm.controllers.app.user.AuthenticationService."
@@ -50,7 +50,7 @@ def test_update_username_fail(init_db_table_users, bypass_permission,
         controller.update_username("user_one", "password", "new_username")
 
 
-def test_update_password_ok(init_db_table_users, bypass_permission,
+def test_update_password_ok(init_db_table_users, bypass_permission_manager,
                             in_memory_uow, bypass_password, mocker):
 
     def mock_set_password(self, plain_password):
@@ -75,7 +75,7 @@ def test_update_password_ok(init_db_table_users, bypass_permission,
         assert local_uow.users.get(1)._password == "newPASSWORD1"
 
 
-def test_update_password_fail(init_db_table_users, bypass_permission,
+def test_update_password_fail(init_db_table_users, bypass_permission_manager,
                               in_memory_uow, bypass_password, mocker):
     controller = UserManager(UserService(in_memory_uow()))
     mocker.patch("ee_crm.controllers.app.user.AuthenticationService."

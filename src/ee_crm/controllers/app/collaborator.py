@@ -3,7 +3,7 @@ from ee_crm.services.app.collaborators import CollaboratorService
 
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_management, is_self
-from ee_crm.domain.model import Role
+from ee_crm.domain.model import Role, CollaboratorError
 
 
 class CollaboratorManager(BaseManager):
@@ -18,6 +18,15 @@ class CollaboratorManager(BaseManager):
         "user_id": int
     }
     _default_service = CollaboratorService(SqlAlchemyUnitOfWork())
+
+    def _validate_fields(self, fields):
+        fields_dict = super()._validate_fields(fields)
+        if 'role' in fields:
+            try:
+                fields_dict['role'] = Role.sanitizer(fields['role'])
+            except CollaboratorError:
+                pass
+        return fields_dict
 
     @permission(requirements=is_management)
     def create(self, username, plain_password, **kwargs):
@@ -40,16 +49,16 @@ class CollaboratorManager(BaseManager):
         return super().read(pk=pk, filters=filters, sort=sort)
 
     @permission(requirements=(is_management | is_self))
-    def update(self, pk, update_data, **kwargs):
+    def update(self, pk, **kwargs):
         update_fields = {
             "last_name",
             "first_name",
             "email",
             "phone_number"
         }
-        update_data = {k: v for k, v in kwargs.items() if k in update_fields}
-        validated_data = self._validate_fields(update_data)
-        return super().update(pk=pk, **validated_data)
+        update_data = {k: v for k, v in kwargs.items() if k in
+                       update_fields}
+        return super().update(pk=pk, **update_data)
 
     @permission(requirements=(is_management | is_self))
     def delete(self, pk, **kwargs):

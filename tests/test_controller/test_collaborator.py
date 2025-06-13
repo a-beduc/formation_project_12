@@ -38,7 +38,7 @@ def collaborators_dto():
     return coll_a, coll_b, coll_c
 
 
-def test_read_by_pk(fake_service, collaborators_dto, bypass_permission):
+def test_read_by_pk(fake_service, collaborators_dto, bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     fake_service.retrieve.return_value = collaborators_dto[0]
     pk = 1
@@ -48,7 +48,7 @@ def test_read_by_pk(fake_service, collaborators_dto, bypass_permission):
     assert result == collaborators_dto[0]
 
 
-def test_read_all(fake_service, collaborators_dto, bypass_permission):
+def test_read_all(fake_service, collaborators_dto, bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     fake_service.retrieve_all.return_value = collaborators_dto
     result = controller.read()
@@ -58,7 +58,7 @@ def test_read_all(fake_service, collaborators_dto, bypass_permission):
 
 
 def test_read_all_sort_by_reverse_id(fake_service, collaborators_dto,
-                                     bypass_permission):
+                                     bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     fake_service.retrieve_all.return_value = collaborators_dto[::-1]
     sort = (("id", True),)
@@ -69,7 +69,7 @@ def test_read_all_sort_by_reverse_id(fake_service, collaborators_dto,
 
 
 def test_read_filter_by_last_name(fake_service, collaborators_dto,
-                                  bypass_permission):
+                                  bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     fake_service.filter.return_value = collaborators_dto[1]
     filters = {"last_name": "ln_b"}
@@ -93,7 +93,7 @@ def test_validate_fields_remove_unwanted_key(fake_service):
 
 
 def test_read_filter_sort_by_unknown_field(fake_service, collaborators_dto,
-                                           bypass_permission):
+                                           bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     filters = {"unknown": "unknown"}
     sort = (("unknown", True),)
@@ -104,7 +104,8 @@ def test_read_filter_sort_by_unknown_field(fake_service, collaborators_dto,
                                                 **{})
 
 
-def test_create_collaborator_minimal_data(fake_service, bypass_permission):
+def test_create_collaborator_minimal_data(fake_service,
+                                          bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     controller.create(username="Alfred", plain_password="Password1")
     fake_service.create.assert_called_once_with(
@@ -115,7 +116,7 @@ def test_create_collaborator_minimal_data(fake_service, bypass_permission):
 
 
 def test_create_collaborator_with_support_role(fake_service,
-                                               bypass_permission):
+                                               bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     controller.create(username="Banner", plain_password="Password1",
                       role="SUPPORT")
@@ -127,7 +128,7 @@ def test_create_collaborator_with_support_role(fake_service,
 
 
 def test_create_collaborator_with_bad_role(fake_service,
-                                           bypass_permission):
+                                           bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
 
     with pytest.raises(CollaboratorError, match="Invalid role: BAD"):
@@ -146,7 +147,7 @@ def test_create_permission_denied(fake_service, mocker):
         controller.create(username="Banner", plain_password="Password1")
 
 
-def test_change_collaborator_role(fake_service, bypass_permission):
+def test_change_collaborator_role(fake_service, bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     controller.change_collaborator_role(pk="5", role="MANAGEMENT")
     fake_service.assign_role.assert_called_once_with(5, Role.MANAGEMENT)

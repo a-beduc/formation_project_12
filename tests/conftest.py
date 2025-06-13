@@ -237,7 +237,14 @@ def fake_service(mocker):
 
 
 @pytest.fixture
-def bypass_permission(mocker):
-    mocker.patch("ee_crm.controllers.permission.verify_token",
+def bypass_permission_manager(mocker):
+    mocker.patch("ee_crm.controllers.permission.is_authenticated",
                  return_value={"sub": "user_a", "c_id": 1,
                                "role": 3, "name": "fn_a ln_a"})
+
+
+@pytest.fixture
+def bypass_permission_sales(mocker):
+    mocker.patch("ee_crm.controllers.permission.is_authenticated",
+                 return_value={"sub": "user_b", "c_id": 2,
+                               "role": 4, "name": "fn_b ln_b"})
