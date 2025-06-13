@@ -51,7 +51,13 @@ class CollaboratorService(BaseService):
         # need to decide how to handle resources linked to certain roles when
         # user change role (clients of a sales person becoming management ?)
         with self.uow:
-            if role not in {1, 3, 4, 5}:
+            roles = {
+                Role.DEACTIVATED,
+                Role.MANAGEMENT,
+                Role.SALES,
+                Role.SUPPORT
+            }
+            if role not in roles:
                 raise CollaboratorServiceError(f"Invalid role: {role}")
             collaborator = self._repo.get(collaborator_id)
             collaborator.role = role
