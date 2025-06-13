@@ -10,6 +10,8 @@ ee-crm = {file = ".", editable = true}
 pytest = "*"
 pytest-mock = "*"
 setuptools = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.12"

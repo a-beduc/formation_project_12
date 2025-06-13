@@ -8,3 +8,5 @@ pyjwt>=2
 [dev]
 pytest
 pytest-mock
+coverage
+pytest-cov
