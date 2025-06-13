@@ -29,3 +29,23 @@ eecrm = "ee_crm.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+    "pyproject.toml",
+    "z_manual/*",
+    "__init__.py"
+]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__:",
+    "@(abc\\.)?abstractmethod"
+]
