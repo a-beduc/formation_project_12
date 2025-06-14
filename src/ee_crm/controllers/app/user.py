@@ -5,16 +5,21 @@ from ee_crm.services.app.users import UserService, UserServiceError
 from ee_crm.services.app.collaborators import CollaboratorService
 
 from ee_crm.controllers.permission import permission, is_management
-from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.app.base import BaseManager, BaseManagerError
+
+
+class UserManagerError(BaseManagerError):
+    pass
 
 
 class UserManager(BaseManager):
     label = "User"
-    _validate_types = {
+    _validate_types_map = {
         "id": int,
         "username": str,
     }
     _default_service = UserService(SqlAlchemyUnitOfWork())
+    error_cls = UserManagerError
 
     @permission(requirements=is_management)
     def read(self, pk=None, filters=None, sort=None):
@@ -35,7 +40,7 @@ class UserManager(BaseManager):
         payload = service_auth.authenticate(old_username, plain_password)
 
         if not payload['c_id'] == kwargs['auth']['c_id']:
-            raise UserServiceError("You can't modify someone else username.")
+            raise self.error_cls("You can't modify someone else username.")
         self.service.modify_username(str(old_username),
                                      str(plain_password),
                                      str(new_username))
@@ -47,7 +52,7 @@ class UserManager(BaseManager):
         payload = service_auth.authenticate(username, old_plain_password)
 
         if not payload['c_id'] == kwargs['auth']['c_id']:
-            raise UserServiceError("You can't modify someone else password.")
+            raise self.error_cls("You can't modify someone else password.")
         self.service.modify_password(str(username),
                                      str(old_plain_password),
                                      str(new_plain_password))

@@ -3,14 +3,18 @@ from datetime import datetime
 from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 from ee_crm.services.app.clients import ClientService
 
-from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.app.base import BaseManager, BaseManagerError
 from ee_crm.controllers.permission import (
     permission, is_sales, is_client_associated_salesman)
 
 
+class ClientManagerError(BaseManagerError):
+    pass
+
+
 class ClientManager(BaseManager):
     label = "Client"
-    _validate_types = {
+    _validate_types_map = {
         "id": int,
         "last_name": str,
         "first_name": str,
@@ -22,6 +26,7 @@ class ClientManager(BaseManager):
         "salesman_id": int
     }
     _default_service = ClientService(SqlAlchemyUnitOfWork())
+    error_cls = ClientManagerError
 
     @permission(requirements=is_sales)
     def create(self, **kwargs):

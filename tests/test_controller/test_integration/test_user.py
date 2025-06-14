@@ -1,7 +1,7 @@
 import pytest
 
-from ee_crm.controllers.app.user import UserManager
-from ee_crm.services.app.users import UserService, UserServiceError
+from ee_crm.controllers.app.user import UserManager, UserManagerError
+from ee_crm.services.app.users import UserService
 
 
 @pytest.fixture(autouse=True)
@@ -45,7 +45,7 @@ def test_update_username_fail(init_db_table_users, bypass_permission_manager,
     mocker.patch("ee_crm.controllers.app.user.AuthenticationService."
                  "authenticate",
                  return_value={"c_id": 2})
-    with pytest.raises(UserServiceError,
+    with pytest.raises(UserManagerError,
                        match="You can't modify someone else username."):
         controller.update_username("user_one", "password", "new_username")
 
@@ -81,6 +81,6 @@ def test_update_password_fail(init_db_table_users, bypass_permission_manager,
     mocker.patch("ee_crm.controllers.app.user.AuthenticationService."
                  "authenticate",
                  return_value={"c_id": 2})
-    with pytest.raises(UserServiceError,
+    with pytest.raises(UserManagerError,
                        match="You can't modify someone else password."):
         controller.update_password("user_one", "oldPASSWORD1", "newPASSWORD1")

@@ -1,14 +1,18 @@
 from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 from ee_crm.services.app.collaborators import CollaboratorService
 
-from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.app.base import BaseManager, BaseManagerError
 from ee_crm.controllers.permission import permission, is_management, is_self
 from ee_crm.domain.model import Role, CollaboratorError
 
 
+class CollaboratorManagerError(BaseManagerError):
+    pass
+
+
 class CollaboratorManager(BaseManager):
     label = "Collaborator"
-    _validate_types = {
+    _validate_types_map = {
         "id": int,
         "last_name": str,
         "first_name": str,
@@ -18,6 +22,7 @@ class CollaboratorManager(BaseManager):
         "user_id": int
     }
     _default_service = CollaboratorService(SqlAlchemyUnitOfWork())
+    error_cls = CollaboratorManagerError
 
     def _validate_fields(self, fields):
         fields_dict = super()._validate_fields(fields)
@@ -62,11 +67,11 @@ class CollaboratorManager(BaseManager):
 
     @permission(requirements=(is_management | is_self))
     def delete(self, pk, **kwargs):
-        validated_pk = int(pk)
-        self.service.remove(collaborator_id=validated_pk, user_id=validated_pk)
+        pk = self._validate_pk_type(pk)
+        self.service.remove(collaborator_id=pk, user_id=pk)
 
     @permission(requirements=is_management)
     def change_collaborator_role(self, pk, role):
-        collaborator_id = int(pk)
+        pk = self._validate_pk_type(pk)
         role = Role.sanitizer(role)
-        self.service.assign_role(collaborator_id, role)
+        self.service.assign_role(pk, role)
