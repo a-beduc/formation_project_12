@@ -17,10 +17,20 @@ def init_uow(uow, fake_repo):
     uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
     cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
+    cli_a.salesman = coll_a
+
     cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", _salesman_id=1)
+    cli_b.salesman = coll_a
+
     cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", _salesman_id=2)
+    cli_c.salesman = coll_b
+
     cli_d = Client(last_name="cl_ln_d", first_name="cl_fn_d", _salesman_id=2)
+    cli_d.salesman = coll_b
+
     cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
+    cli_e.salesman = coll_b
+
     uow.clients = fake_repo(
         init=(cli_a, cli_b, cli_c, cli_d, cli_e))
 

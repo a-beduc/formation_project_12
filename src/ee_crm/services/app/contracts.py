@@ -1,4 +1,4 @@
-from ee_crm.domain.model import Contract
+from ee_crm.domain.model import Contract, Role
 from ee_crm.services.dto import ContractDTO, ClientDTO
 from ee_crm.services.app.base import BaseService, ServiceError
 
@@ -18,6 +18,20 @@ class ContractService(BaseService):
         )
 
     def create(self, client_id=None, total_amount=None):
+        with self.uow:
+            client = self.uow.clients.get(client_id)
+            if not client:
+                raise ContractServiceError(
+                    "Contract must be linked to a client")
+            if not client.salesman:
+                raise ContractServiceError(
+                    "Client must have a designated salesman")
+            if not client.salesman.role == Role.SALES:
+                raise ContractServiceError(
+                    "Associated collaborator is not in SALES, "
+                    "must reassign client"
+                )
+
         return super().create(client_id=client_id, total_amount=total_amount)
 
     def sign_contract(self, contract_id):
@@ -45,4 +59,4 @@ class ContractService(BaseService):
                 client = contract.client
                 return (ClientDTO.from_domain(client),)
             except AttributeError:
-                raise ContractServiceError("No ")
+                raise ContractServiceError("No associated client")
