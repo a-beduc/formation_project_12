@@ -26,7 +26,7 @@ def test_read_all_collaborator(init_db_table_collaborator,
     controller = CollaboratorManager(CollaboratorService(in_memory_uow()))
     list_collaborator = controller.read()
     assert list_collaborator is not None
-    assert len(list_collaborator) == 3
+    assert len(list_collaborator) == 4
     assert isinstance(list_collaborator[0], CollaboratorDTO)
     assert list_collaborator[0].first_name == "col_fn_one"
     assert list_collaborator[0].role == Role.MANAGEMENT
@@ -89,10 +89,11 @@ def test_sort_collaborator_reverse(init_db_table_collaborator,
     sort = (("role", True),)
     list_collaborator = controller.read(sort=sort)
 
-    assert len(list_collaborator) == 3
+    assert len(list_collaborator) == 4
     assert list_collaborator[0].first_name == "col_fn_thr"
-    assert list_collaborator[1].first_name == "col_fn_two"
-    assert list_collaborator[2].first_name == "col_fn_one"
+    assert list_collaborator[1].first_name == "col_fn_fou"
+    assert list_collaborator[2].first_name == "col_fn_two"
+    assert list_collaborator[3].first_name == "col_fn_one"
 
 
 def test_sort_collaborator_unknown_sort(init_db_table_collaborator,
@@ -111,7 +112,7 @@ def test_create_collaborator_minimal(init_db_table_users,
                                      in_memory_uow):
     controller_coll = CollaboratorManager(CollaboratorService(in_memory_uow()))
 
-    assert len(controller_coll.read()) == 3
+    assert len(controller_coll.read()) == 4
 
     username = "Bobby"
     plain_password = "Password1"
@@ -119,13 +120,13 @@ def test_create_collaborator_minimal(init_db_table_users,
     new_collaborator = controller_coll.read()[-1]
 
     controller_user = UserManager(UserService(in_memory_uow()))
-    new_user = controller_user.read(4)[0]
+    new_user = controller_user.read(5)[0]
 
     assert new_user.username == "Bobby"
-    assert new_user.id == 4
+    assert new_user.id == 5
 
-    assert len(controller_coll.read()) == 4
-    assert new_collaborator.user_id == 4
+    assert len(controller_coll.read()) == 5
+    assert new_collaborator.user_id == 5
     assert new_collaborator.role == Role.DEACTIVATED
 
 
@@ -159,11 +160,11 @@ def test_delete_collaborator(init_db_table_users,
     controller = CollaboratorManager(CollaboratorService(in_memory_uow()))
     list_collaborator = controller.read()
 
-    assert len(list_collaborator) == 3
+    assert len(list_collaborator) == 4
     controller.delete(pk=3)
 
     list_collaborator = controller.read()
-    assert len(list_collaborator) == 2
+    assert len(list_collaborator) == 3
 
 
 def test_change_collaborator_role(init_db_table_collaborator,

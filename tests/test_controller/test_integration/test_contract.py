@@ -22,7 +22,7 @@ def test_read_all_contract(init_db_table_contract,
     controller = ContractManager(ContractService(in_memory_uow()))
     list_contract = controller.read()
 
-    assert len(list_contract) == 5
+    assert len(list_contract) == 6
     assert isinstance(list_contract[0], ContractDTO)
 
 
@@ -44,7 +44,7 @@ def test_filter_contracts_signed(init_db_table_contract,
     filters = {"signed": "YES"}
     signed_contracts = controller.read(filters=filters)
 
-    assert len(signed_contracts) == 3
+    assert len(signed_contracts) == 4
     assert isinstance(signed_contracts[0], ContractDTO)
     assert signed_contracts[0].client_id == 1
 
@@ -56,12 +56,13 @@ def test_sort_contracts_reverse_signed(init_db_table_contract,
     sort = (("signed", True),)
     list_contracts = controller.read(sort=sort)
 
-    assert len(list_contracts) == 5
+    assert len(list_contracts) == 6
     assert list_contracts[0].id == 1
     assert list_contracts[1].id == 2
     assert list_contracts[2].id == 5
-    assert list_contracts[3].id == 3
-    assert list_contracts[4].id == 4
+    assert list_contracts[3].id == 6
+    assert list_contracts[4].id == 3
+    assert list_contracts[5].id == 4
 
 
 def test_create_contract_minimal(init_db_table_collaborator,
@@ -73,7 +74,7 @@ def test_create_contract_minimal(init_db_table_collaborator,
     data = {"client_id": 3}
     controller.create(**data)
 
-    contract = controller.read(6)[0]
+    contract = controller.read(7)[0]
 
     assert contract.total_amount == 0
     assert contract.due_amount == 0
@@ -135,12 +136,12 @@ def test_try_delete_contract(init_db_table_collaborator, init_db_table_client,
     controller = ContractManager(ContractService(in_memory_uow()))
 
     list_contract = controller.read()
-    assert len(list_contract) == 5
+    assert len(list_contract) == 6
 
     controller.delete(pk=3)
 
     list_contract = controller.read()
-    assert len(list_contract) == 4
+    assert len(list_contract) == 5
 
 
 def test_try_delete_contract_not_my_client(
@@ -174,12 +175,12 @@ def test_manager_delete_contract_client_without_salesman(
         init_db_table_contract, in_memory_uow, bypass_permission_manager):
     controller = ContractManager(ContractService(in_memory_uow()))
     list_contract = controller.read()
-    assert len(list_contract) == 5
+    assert len(list_contract) == 6
 
     controller.delete(pk=4)
 
     list_contract = controller.read()
-    assert len(list_contract) == 4
+    assert len(list_contract) == 5
 
 
 def test_salesman_sign_contract(

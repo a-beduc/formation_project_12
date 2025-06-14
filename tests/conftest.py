@@ -65,7 +65,8 @@ def init_db_table_users(session):
         "INSERT INTO users (username, password) VALUES "
         "('user_one', 'password_one'), "
         "('user_two', 'password_two'), "
-        "('user_thr', 'password_thr')"
+        "('user_thr', 'password_thr'),"
+        "('user_fou', 'password_fou')"
     )
     session.execute(stmt)
     session.commit()
@@ -80,7 +81,9 @@ def init_db_table_collaborator(session):
         "'1'),"
         "('col_ln_two', 'col_fn_two', 'col_email@two', '0000000002', '4', "
         "'2'),"
-        "('col_ln_thr', 'col_fn_thr', 'col_email@thr', '0000000003', '5', '3')"
+        "('col_ln_thr', 'col_fn_thr', 'col_email@thr', '0000000003', '5', "
+        "'3'),"
+        "('col_ln_fou', 'col_fn_fou', 'col_email@fou', '0000000004', '5', '4')"
     )
     session.execute(stmt)
     session.commit()
@@ -113,7 +116,8 @@ def init_db_table_contract(session):
         "(100.0, 20.0, '2025-05-02 00:00:02', true, 2), "
         "(100.0, 0.0, '2025-05-03 00:00:03', false, 3), "
         "(100.0, 0.0, '2025-05-04 00:00:04', false, 4), "
-        "(100.0, 0.0, '2025-05-05 00:00:05', true, 3) "
+        "(100.0, 0.0, '2025-05-05 00:00:05', true, 3), "
+        "(200.0, 0.0, '2025-05-05 00:00:05', true, 3 )"
     )
     session.execute(stmt)
     session.commit()
@@ -124,12 +128,14 @@ def init_db_table_event(session):
     stmt = text(
         "INSERT INTO event (title, start_time, end_time, location, notes, "
         "supporter_id, contract_id) VALUES"
-        "('title_one', '2025-06-01 00:00:01', '2025-06-01 01:00:01', "
+        "('title_one', '2025-06-01 00:00:00', '2025-06-01 01:00:00', "
         "'location_one', 'notes_one', 3, 1),"
-        "('title_two', '2025-06-01 00:00:01', '2025-06-01 01:00:01', "
+        "('title_two', '2025-06-01 00:00:00', '2025-06-01 01:00:00', "
         "'location_two', 'notes_two', 3, 3),"
-        "('title_thr', '2025-06-01 00:00:01', '2025-06-01 01:00:01', "
-        "'location_thr', 'notes_thr', NULL, 5)"
+        "('title_thr', '2025-06-01 00:00:00', '2025-06-01 01:00:00', "
+        "'location_thr', 'notes_thr', NULL, 5),"
+        "('title_fou', '2025-07-01 00:00:00', '2025-07-02 01:00:00', "
+        "'location_fou', 'notes_fou', NULL, NULL)"
     )
     session.execute(stmt)
     session.commit()
@@ -248,3 +254,10 @@ def bypass_permission_sales(mocker):
     mocker.patch("ee_crm.controllers.permission.is_authenticated",
                  return_value={"sub": "user_b", "c_id": 2,
                                "role": 4, "name": "fn_b ln_b"})
+
+
+@pytest.fixture
+def bypass_permission_support(mocker):
+    mocker.patch("ee_crm.controllers.permission.is_authenticated",
+                 return_value={"sub": "user_c", "c_id": 3,
+                               "role": 5, "name": "fn_c ln_c"})
