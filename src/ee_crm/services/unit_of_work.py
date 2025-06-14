@@ -11,7 +11,7 @@ class AbstractUnitOfWork(ABC):
     users: repo.AbstractRepository
     collaborators: repo.AbstractRepository
     clients: repo.AbstractRepository
-    contracts: repo.AbstractContractRepository
+    contracts: repo.AbstractRepository
     events: repo.AbstractRepository
 
     def __enter__(self):
@@ -35,7 +35,7 @@ class AbstractUnitOfWork(ABC):
 # launched at import time, may be better to add a factory func that yield Sess
 DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(get_postgres_uri()),
-    autoflush=False,
+    autoflush=True,
 )
 
 

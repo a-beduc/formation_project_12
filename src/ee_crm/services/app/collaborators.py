@@ -28,16 +28,22 @@ class CollaboratorService(BaseService):
 
             obj_value = {k: v for k, v in kwargs.items()
                          if k in self.model_cls.updatable_fields()}
+
+            self.uow.session.flush()
             collaborator = Collaborator.builder(user_id=user.id, role=role,
                                                 **obj_value)
             self._repo.add(collaborator)
             self.uow.commit()
 
-    def remove(self, collaborator_id=None):
+    def remove(self, collaborator_id=None, user_id=None):
         with self.uow:
-            collaborator = self._repo.get(collaborator_id)
-            user = self.uow.users.get(collaborator.user_id)
-            self._repo.delete(collaborator_id)
+            if collaborator_id:
+                collaborator = self._repo.get(collaborator_id)
+                user = self.uow.users.get(collaborator.user_id)
+            elif user_id:
+                user = self.uow.users.get(user_id)
+                collaborator = self._repo.filter(user_id=user.id)
+            self._repo.delete(collaborator.id)
             self.uow.users.delete(user.id)
             self.uow.commit()
 
@@ -45,13 +51,14 @@ class CollaboratorService(BaseService):
         # need to decide how to handle resources linked to certain roles when
         # user change role (clients of a sales person becoming management ?)
         with self.uow:
-            role_map = {
-                "DEACTIVATED": Role.DEACTIVATED,
-                "ADMIN": Role.ADMIN,
-                "MANAGEMENT": Role.MANAGEMENT,
-                "SALES": Role.SALES,
-                "SUPPORT": Role.SUPPORT
+            roles = {
+                Role.DEACTIVATED,
+                Role.MANAGEMENT,
+                Role.SALES,
+                Role.SUPPORT
             }
+            if role not in roles:
+                raise CollaboratorServiceError(f"Invalid role: {role}")
             collaborator = self._repo.get(collaborator_id)
-            collaborator.role = role_map.get(role, None)
+            collaborator.role = role
             self.uow.commit()

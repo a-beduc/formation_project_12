@@ -1,7 +1,5 @@
 import pytest
 
-from tests.test_service.conftest import FakeRepository
-
 from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError
 from ee_crm.services.auth.authentication import (
     AuthenticationService,
@@ -9,14 +7,14 @@ from ee_crm.services.auth.authentication import (
 
 
 class TestAuthenticate:
-    def test_authenticate_success(self, mocker, uow):
+    def test_authenticate_success(self, mocker, uow, fake_repo):
         user = AuthUser(_username="user_b",
                         _password="Password1")
-        uow.users = FakeRepository(init=(user,))
+        uow.users = fake_repo(init=(user,))
         collaborator = Collaborator(_user_id=1,
                                     last_name="Ross",
                                     first_name="Bobby")
-        uow.collaborators = FakeRepository(init=(collaborator,))
+        uow.collaborators = fake_repo(init=(collaborator,))
 
         service = AuthenticationService(uow)
         expected_payload = {
@@ -47,14 +45,14 @@ class TestAuthenticate:
             service = AuthenticationService(uow)
             service.authenticate("not_bob", "pwd")
 
-    def test_authenticate_fail_wrong_password(self, uow, mocker):
+    def test_authenticate_fail_wrong_password(self, uow, mocker, fake_repo):
         user = AuthUser(_username="user_b",
                         _password="Password1")
-        uow.users = FakeRepository(init=(user,))
+        uow.users = fake_repo(init=(user,))
         collaborator = Collaborator(_user_id=1,
                                     last_name="Ross",
                                     first_name="Bobby")
-        uow.collaborators = FakeRepository(init=(collaborator,))
+        uow.collaborators = fake_repo(init=(collaborator,))
 
         service = AuthenticationService(uow)
 

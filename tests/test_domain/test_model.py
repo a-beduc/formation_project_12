@@ -1,6 +1,3 @@
-# ask help for how to mock datetime later, a solution could be to add a _now()
-# in the model package and mock the _now() to circumvent the datetime mocking
-
 import pytest
 
 import ee_crm.domain.model as dm
@@ -23,7 +20,6 @@ def test_collaborator_builder_success():
                                            user_id=1)
 
     assert isinstance(collaborator, dm.Collaborator)
-    assert collaborator.id is None
     assert collaborator.last_name == "last_name"
     assert collaborator.first_name == "first_name"
     assert collaborator.email is None

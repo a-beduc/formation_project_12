@@ -24,12 +24,12 @@ def test_uow_can_retrieve_a_user_modify_it_and_save_it(session_factory,
 def test_uow_can_save_a_user(session_factory, init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        user = AuthUser(_username='user_fou', _password='Password4')
+        user = AuthUser(_username='user_fiv', _password='Password5')
         uow.users.add(user)
         uow.commit()
 
     with uow:
-        assert uow.users.get(4).username == 'user_fou'
+        assert uow.users.get(5).username == 'user_fiv'
 
 
 def test_uow_can_delete_a_user(session_factory, init_db_table_users):
@@ -46,11 +46,11 @@ def test_uow_add_without_commit_trigger_rollback(session_factory,
                                                  init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        user = AuthUser(_username='user_fou', _password='Password4')
+        user = AuthUser(_username='user_fiv', _password='Password5')
         uow.users.add(user)
 
     with uow:
-        assert uow.users.get(4) is None
+        assert uow.users.get(5) is None
 
 
 def test_uow_modifying_without_commit_trigger_rollback(session_factory,
@@ -81,9 +81,9 @@ def test_uow_rollback_on_error(session_factory, init_db_table_users):
     uow = SqlAlchemyUnitOfWork(session_factory)
     with pytest.raises(MyException):
         with uow:
-            user = AuthUser(_username='user_fou', _password='Password4')
+            user = AuthUser(_username='user_fiv', _password='Password5')
             uow.users.add(user)
             raise MyException()
 
     with uow:
-        assert uow.users.get(4) is None
+        assert uow.users.get(5) is None

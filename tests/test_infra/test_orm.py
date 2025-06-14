@@ -1,4 +1,4 @@
-from ee_crm.domain.model import AuthUser, Collaborator, Client, Contract, Event
+from ee_crm.domain.model import AuthUser, Collaborator, Client
 import datetime
 
 
@@ -8,7 +8,8 @@ class TestAuthUserOrm:
         expected = [
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
-            AuthUser(_username="user_thr", _password="password_thr")
+            AuthUser(_username="user_thr", _password="password_thr"),
+            AuthUser(_username="user_fou", _password="password_fou")
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
@@ -32,12 +33,13 @@ class TestAuthUserOrm:
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
             AuthUser(_username="user_thr", _password="password_thr"),
-            AuthUser(_username="user_fou", _password="password_fou")
+            AuthUser(_username="user_fou", _password="password_fou"),
+            AuthUser(_username="user_fiv", _password="password_fiv")
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
 
-        new_user = AuthUser(_username="user_fou", _password="password_fou")
+        new_user = AuthUser(_username="user_fiv", _password="password_fiv")
         session.add(new_user)
         session.commit()
         assert session.query(AuthUser).all() == expected
@@ -60,11 +62,12 @@ class TestAuthUserOrm:
         expected = [
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
+            AuthUser(_username="user_thr", _password="password_thr"),
         ]
         for elem, user in enumerate(expected):
             user.id = elem + 1
 
-        user_to_remove = session.get(AuthUser, 3)
+        user_to_remove = session.get(AuthUser, 4)
         session.delete(user_to_remove)
         session.commit()
         assert session.query(AuthUser).all() == expected
@@ -73,7 +76,6 @@ class TestAuthUserOrm:
 class TestCollaboratorOrm:
     def test_collaborator_mapper_can_load_rows(self, session,
                                                init_db_table_users,
-                                               init_db_table_role,
                                                init_db_table_collaborator):
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
@@ -85,6 +87,9 @@ class TestCollaboratorOrm:
             Collaborator(last_name='col_ln_thr', first_name='col_fn_thr',
                          email='col_email@thr', phone_number='0000000003',
                          _role_id=5, _user_id=3),
+            Collaborator(last_name='col_ln_fou', first_name='col_fn_fou',
+                         email='col_email@fou', phone_number='0000000004',
+                         _role_id=5, _user_id=4),
         ]
         for elem, collaborator in enumerate(expected):
             collaborator.id = elem + 1
@@ -92,7 +97,6 @@ class TestCollaboratorOrm:
 
     def test_collaborator_mapper_can_select_row(self, session,
                                                 init_db_table_users,
-                                                init_db_table_role,
                                                 init_db_table_collaborator):
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
@@ -104,6 +108,9 @@ class TestCollaboratorOrm:
             Collaborator(last_name='col_ln_thr', first_name='col_fn_thr',
                          email='col_email@thr', phone_number='0000000003',
                          _role_id=5, _user_id=3),
+            Collaborator(last_name='col_ln_fou', first_name='col_fn_fou',
+                         email='col_email@fou', phone_number='0000000004',
+                         _role_id=5, _user_id=4),
         ]
         for elem, collaborator in enumerate(expected):
             collaborator.id = elem + 1
@@ -111,23 +118,21 @@ class TestCollaboratorOrm:
         assert session.get(Collaborator, 1) == expected[0]
         assert session.get(Collaborator, 2) == expected[1]
         assert session.get(Collaborator, 3) == expected[2]
+        assert session.get(Collaborator, 4) == expected[3]
 
     def test_collaborator_mapper_can_add_row(self, session,
                                              init_db_table_users,
-                                             init_db_table_role,
                                              init_db_table_collaborator):
-
         new_collaborator = Collaborator(
-            last_name='col_ln_fou', first_name='col_fn_fou',
-            email='col_email@fou', phone_number='0000000004', _user_id=4)
+            last_name='col_ln_fiv', first_name='col_fn_fiv',
+            email='col_email@fiv', phone_number='0000000005', _user_id=5)
 
         session.add(new_collaborator)
         session.commit()
-        assert session.get(Collaborator, 4) == new_collaborator
+        assert session.get(Collaborator, 5) == new_collaborator
 
     def test_collaborator_mapper_can_update_row(self, session,
                                                 init_db_table_users,
-                                                init_db_table_role,
                                                 init_db_table_collaborator):
 
         collaborator = Collaborator(last_name='col_ln_two',
@@ -147,7 +152,6 @@ class TestCollaboratorOrm:
 
     def test_collaborator_mapper_can_delete_row(self, session,
                                                 init_db_table_users,
-                                                init_db_table_role,
                                                 init_db_table_collaborator):
         session.delete(session.get(Collaborator, 2))
         session.commit()
@@ -157,7 +161,6 @@ class TestCollaboratorOrm:
 class TestRelationship:
     def test_user_to_collaborator_and_back(self, session,
                                            init_db_table_users,
-                                           init_db_table_role,
                                            init_db_table_collaborator):
         user = session.get(AuthUser, 1)
         collaborator = session.get(Collaborator, 1)
@@ -168,44 +171,41 @@ class TestRelationship:
     def test_update_collaborator_user_update_collaborator_user_id(
             self, session,
             init_db_table_users,
-            init_db_table_role,
             init_db_table_collaborator):
         new_user = AuthUser(_username="test_user", _password="test_password")
         session.add(new_user)
         session.commit()
 
-        user_four = session.get(AuthUser, 4)
-        assert user_four.username == new_user.username
+        user_fiv = session.get(AuthUser, 5)
+        assert user_fiv.username == new_user.username
 
         collaborator = session.get(Collaborator, 1)
         assert collaborator.user_id == 1
 
-        collaborator.user = user_four
+        collaborator.user = user_fiv
         # if collaborator.user is modified session.commit() is needed to update
         session.commit()
-        assert collaborator.user_id == 4
+        assert collaborator.user_id == 5
 
     def test_update_collaborator_user_id_update_collaborator_user(
             self, session,
             init_db_table_users,
-            init_db_table_role,
             init_db_table_collaborator):
         new_user = AuthUser(_username="test_user", _password="test_password")
         session.add(new_user)
 
-        user_four = session.get(AuthUser, 4)
-        assert user_four == new_user
+        user_fiv = session.get(AuthUser, 5)
+        assert user_fiv == new_user
 
         collaborator = session.get(Collaborator, 1)
         assert collaborator.user_id == 1
 
         collaborator._user_id = new_user.id
         # if collaborator.user_id is modified, session.commit isn't needed
-        assert collaborator.user == user_four
+        assert collaborator.user == user_fiv
 
     def test_delete_user_and_get_collaborator_user(self, session,
                                                    init_db_table_users,
-                                                   init_db_table_role,
                                                    init_db_table_collaborator):
         collaborator = session.get(Collaborator, 1)
         user = session.get(AuthUser, 1)
@@ -216,8 +216,7 @@ class TestRelationship:
         assert collaborator.user is None
 
     def test_delete_collaborator_and_get_user_collaborator(
-            self, session, init_db_table_users, init_db_table_role,
-            init_db_table_collaborator):
+            self, session, init_db_table_users, init_db_table_collaborator):
         collaborator = session.get(Collaborator, 1)
         user = session.get(AuthUser, 1)
         session.delete(collaborator)
@@ -227,7 +226,6 @@ class TestRelationship:
 
     def test_collaborator_to_client_and_back(self, session,
                                              init_db_table_users,
-                                             init_db_table_role,
                                              init_db_table_collaborator,
                                              init_db_table_client):
         collaborator_2 = session.get(Collaborator, 2)
@@ -243,7 +241,6 @@ class TestRelationship:
 
     def test_add_client_to_salesman(self, session,
                                     init_db_table_users,
-                                    init_db_table_role,
                                     init_db_table_collaborator,
                                     init_db_table_client):
         collaborator_2 = session.get(Collaborator, 2)

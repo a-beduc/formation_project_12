@@ -1,11 +1,52 @@
-from functools import wraps
+from functools import wraps, update_wrapper
 from inspect import signature, Parameter
+
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
+from ee_crm.services.app.contracts import ContractService
+from ee_crm.services.app.clients import ClientService
+from ee_crm.services.app.events import EventService
 
 from ee_crm.services.auth.jwt_handler import verify_token, BadToken
 
 
 class AuthorizationDenied(Exception):
     pass
+
+
+class P:
+    """
+    https://stackoverflow.com/questions/9184632/pointfree-function-combination-in-python
+    """
+    def __init__(self, func, label=None):
+        self.pred = func
+        self.func_name = label or func.__name__
+
+    def __call__(self, ctx):
+        return self.pred(ctx)
+
+    def __and__(self, other):
+        def func(ctx):
+            return self(ctx) and other(ctx)
+        return P(func, label=f'({self.func_name} and {other.func_name})')
+
+    def __or__(self, other):
+        def func(ctx):
+            return self(ctx) or other(ctx)
+        return P(func, label=f'({self.func_name} or {other.func_name})')
+
+    def __invert__(self):
+        def func(ctx):
+            return not self(ctx)
+        return P(func, label=f'not {self.func_name}')
+
+    def __repr__(self):
+        return self.func_name
+
+
+def predicate(func):
+    result = P(func)
+    update_wrapper(result, func)
+    return result
 
 
 def is_authenticated():
@@ -15,34 +56,81 @@ def is_authenticated():
         raise AuthorizationDenied('Authentication invalid')
 
 
+@predicate
 def is_management(ctx):
     return ctx['auth']['role'] == 3
 
 
+@predicate
 def is_sales(ctx):
     return ctx['auth']['role'] == 4
 
 
+@predicate
 def is_support(ctx):
     return ctx['auth']['role'] == 5
 
 
-# Implement later, uow should be in services layer
+@predicate
+def is_self(ctx):
+    return ctx.get('pk', None) == ctx['auth']['c_id']
 
-# def is_client_salesman(ctx):
-#     uow = ctx['uow']
-#     return (uow.clients.get(ctx['client_id']).salesman_id ==
-#             ctx['auth']['c_id'])
-#
-#
-# def is_contract_salesman(ctx):
-#     uow = ctx['uow']
-#     return uow.contracts.get_client_from_contract(ctx['contract_id']).salesman_id == ctx['auth']['c_id']
-#
-#
-# def is_event_support(ctx):
-#     uow = ctx['uow']
-#     return uow.events.get(ctx['event_id']).support_id == ctx['auth']['c_id']
+
+@predicate
+def is_client_associated_salesman(ctx):
+    client_id = ctx.get('pk', None)
+    logged_u_id = ctx['auth']['c_id']
+    service = ClientService(SqlAlchemyUnitOfWork())
+    salesman_id = service.retrieve(client_id)[0].salesman_id
+    return salesman_id == logged_u_id
+
+
+@predicate
+def contract_has_salesman(ctx):
+    contract_id = ctx.get('pk', None)
+    service = ContractService(SqlAlchemyUnitOfWork())
+    s_id = service.retrieve_associated_client(contract_id)[0].salesman_id
+    return s_id is not None
+
+
+@predicate
+def is_contract_associated_salesman(ctx):
+    contract_id = ctx.get('pk', None)
+    logged_u_id = ctx['auth']['c_id']
+    service = ContractService(SqlAlchemyUnitOfWork())
+    s_id = service.retrieve_associated_client(contract_id)[0].salesman_id
+    return s_id == logged_u_id
+
+
+@predicate
+def contract_is_signed(ctx):
+    contract_id = ctx.get('pk', None)
+    service = ContractService(SqlAlchemyUnitOfWork())
+    return service.retrieve(contract_id)[0].signed
+
+
+@predicate
+def event_has_support(ctx):
+    event_id = ctx.get('pk', None)
+    service = EventService(SqlAlchemyUnitOfWork())
+    return service.retrieve(event_id)[0].supporter_id is not None
+
+
+@predicate
+def is_event_associated_support(ctx):
+    event_id = ctx.get('pk', None)
+    logged_u_id = ctx['auth']['c_id']
+    service = EventService(SqlAlchemyUnitOfWork())
+    return service.retrieve(event_id)[0].supporter_id == logged_u_id
+
+
+@predicate
+def is_event_associated_salesman(ctx):
+    event_id = ctx.get('pk', None)
+    logged_u_id = ctx['auth']['c_id']
+    service = EventService(SqlAlchemyUnitOfWork())
+    salesman_id = service.retrieve_associated_client(event_id)[0].salesman_id
+    return salesman_id == logged_u_id
 
 
 def _map_func_signature_and_value(func, *args, **kwargs):
@@ -62,23 +150,14 @@ def _map_func_signature_and_value(func, *args, **kwargs):
         defaults_arg_names = dict(zip(arg_names, defaults_args_value))
         for name, default in defaults_arg_names.items():
             args_dict.setdefault(name, default)
-
     ctx.update(args_dict)
 
     # map the keyword arguments if not given
     for key, default in (func.__kwdefaults__ or {}).items():
         kwargs.setdefault(key, default)
-
     ctx.update(kwargs)
 
     return ctx
-
-
-def _verify_requirements(ctx, requirements):
-    for group in requirements:
-        if not any(rule(ctx) for rule in group):
-            raise AuthorizationDenied(
-                f'Permission error in {[perm.__name__ for perm in group]}')
 
 
 def _accept_kwargs(func):
@@ -96,11 +175,14 @@ def permission(_func=None, *, requirements=None, kw_auth=True):
             auth = is_authenticated()
             ctx = {'auth': auth}
 
-            if requirements:
+            if requirements is not None:
                 ctx.update(
                     _map_func_signature_and_value(func, *args, **kwargs))
-
-                _verify_requirements(ctx, requirements)
+            # print(ctx)
+            # exit()
+                if not requirements(ctx):
+                    raise AuthorizationDenied(
+                        f'Permission error in {requirements}')
 
             # if flag is raised and func accept **kwargs can pass payload
             if kw_auth and _accept_kwargs(func):

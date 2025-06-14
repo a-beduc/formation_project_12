@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools<=68", "wheel"]
+requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ee-crm"
-version = "0.1.0"
+version = "0.1.2"
 description = "Epic Event CRM Project CLI"
 requires-python = ">=3.12"
 dependencies = [
@@ -19,7 +19,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "pytest-mock"
+    "pytest-mock",
+    "coverage",
+    "pytest-cov"
 ]
 
 [project.scripts]
@@ -27,3 +29,23 @@ eecrm = "ee_crm.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+    "pyproject.toml",
+    "z_manual/*",
+    "__init__.py"
+]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__:",
+    "@(abc\\.)?abstractmethod"
+]

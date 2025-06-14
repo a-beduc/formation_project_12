@@ -15,7 +15,8 @@ def test_repository_can_retrieve_list_users(session, init_db_table_users):
     expected = [
         AuthUser(_username="user_one", _password="password_one"),
         AuthUser(_username="user_two", _password="password_two"),
-        AuthUser(_username="user_thr", _password="password_thr")
+        AuthUser(_username="user_thr", _password="password_thr"),
+        AuthUser(_username="user_fou", _password="password_fou"),
     ]
     for elem, user in enumerate(expected):
         user.id = elem + 1
@@ -26,22 +27,23 @@ def test_repository_can_retrieve_list_users(session, init_db_table_users):
 
 
 def test_repository_can_save_user(session, init_db_table_users):
-    expected = AuthUser(_username='user_fou', _password='password_fou')
-    expected.id = 4
+    expected = AuthUser(_username='user_fiv', _password='password_fiv')
+    expected.id = 5
 
-    user = AuthUser(_username='user_fou', _password='password_fou')
+    user = AuthUser(_username='user_fiv', _password='password_fiv')
     repo = repository.SqlAlchemyUserRepository(session)
     repo.add(user)
 
-    assert repo.get(4) == expected
+    assert repo.get(5) == expected
 
 
 def test_repository_can_delete_user(session, init_db_table_users):
     expected = [
         AuthUser(_username="user_one", _password="password_one"),
-        AuthUser(_username="user_thr", _password="password_thr")
+        AuthUser(_username="user_thr", _password="password_thr"),
+        AuthUser(_username="user_fou", _password="password_fou")
     ]
-    expected[0].id, expected[1].id = (1, 3)
+    expected[0].id, expected[1].id, expected[2].id = (1, 3, 4)
 
     user = AuthUser(_username="user_two", _password="password_two")
     user.id = 2
@@ -66,14 +68,14 @@ def test_repository_can_update_user(session, init_db_table_users):
 
 
 def test_user_saved_and_loaded_are_equals(session, init_db_table_users):
-    in_memory_user = AuthUser(_username='user_fou', _password='password_fou')
+    in_memory_user = AuthUser(_username='user_fiv', _password='password_fiv')
     repo = repository.SqlAlchemyUserRepository(session)
     repo.add(in_memory_user)
 
-    in_memory_user.id = 4
+    in_memory_user.id = 5
 
-    assert repo.get(4) == in_memory_user
-    assert id(repo.get(4)) == id(in_memory_user)
+    assert repo.get(5) == in_memory_user
+    assert id(repo.get(5)) == id(in_memory_user)
 
 
 def test_repository_can_get_user_from_username(session,
@@ -100,7 +102,8 @@ def test_repository_can_retrieve_collaborator(session,
     assert retrieved == expected
 
 
-def test_collaborator_saved_and_loaded_are_equals(session, init_db_table_users):
+def test_collaborator_saved_and_loaded_are_equals(session,
+                                                  init_db_table_users):
     in_memory_collaborator = Collaborator(
         last_name='col_ln_fou', first_name='col_fn_fou',
         email='col_email@fou', phone_number='0000000004', _user_id=4)
@@ -114,7 +117,6 @@ def test_collaborator_saved_and_loaded_are_equals(session, init_db_table_users):
 
 def test_collaborator_can_be_filtered_by_role(session,
                                               init_db_table_users,
-                                              init_db_table_role,
                                               init_db_table_collaborator):
     collaborator = Collaborator(last_name='col_ln_one',
                                 first_name='col_fn_one',
@@ -129,8 +131,7 @@ def test_collaborator_can_be_filtered_by_role(session,
 
 
 def test_collaborator_can_be_filtered_with_multiple_fields(
-        session, init_db_table_users, init_db_table_role,
-        init_db_table_collaborator):
+        session, init_db_table_users, init_db_table_collaborator):
     collaborator = Collaborator(last_name='col_ln_one',
                                 first_name='col_fn_one',
                                 email='col_email@one',
@@ -154,7 +155,8 @@ def test_collaborator_can_be_sorted_by_reverse_user_id(
 def test_contract_can_be_sorted_by_signed(session, init_db_table_contract):
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
-    expected = [base_list[2], base_list[0], base_list[1]]
+    expected = [base_list[2], base_list[3], base_list[0], base_list[1],
+                base_list[4], base_list[5]]
     retrieved = repo.list(sort=(("signed", False),))
 
     assert retrieved == expected
@@ -164,7 +166,8 @@ def test_contract_can_be_sorted_by_signed_then_by_reverse_id(
         session, init_db_table_contract):
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
-    expected = [base_list[2], base_list[1], base_list[0]]
+    expected = [base_list[3], base_list[2], base_list[5], base_list[4],
+                base_list[1], base_list[0]]
     retrieved = repo.list(sort=(("signed", False), ("id", True)))
 
     assert retrieved == expected
@@ -174,7 +177,26 @@ def test_contract_can_be_filtered_by_signed_reverse_id_sorted(
         session, init_db_table_contract):
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
-    expected = [base_list[1], base_list[0]]
+    expected = [base_list[5], base_list[4], base_list[1], base_list[0]]
     retrieved = repo.filter(sort=(("id", True),), signed=True)
 
     assert retrieved == expected
+
+
+def test_can_retrieve_client_from_contract(
+        session, init_db_table_client, init_db_table_contract):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    repo_client = repository.SqlAlchemyClientRepository(session)
+    contract = repo_contract.get(2)
+    client = repo_client.get(2)
+    assert client == contract.client
+
+
+def test_can_retrieve_client_from_event(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client):
+    repo_event = repository.SqlAlchemyEventRepository(session)
+    repo_client = repository.SqlAlchemyClientRepository(session)
+    event = repo_event.get(2)
+    client = repo_client.get(3)
+    assert client == event.contract.client

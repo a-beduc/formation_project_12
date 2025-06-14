@@ -7,17 +7,15 @@ from ee_crm.domain.model import (AuthUser, Collaborator, Role,
                                  CollaboratorError)
 from ee_crm.domain.validators import AuthUserValidatorError
 
-from tests.test_service.conftest import FakeRepository
-
 
 @pytest.fixture
-def init_uow(uow):
+def init_uow(uow, fake_repo):
     user_a = AuthUser.builder("user_a", "Password1")
     user_b = AuthUser.builder("user_b", "Password2")
     user_c = AuthUser.builder("user_c", "Password3")
     user_d = AuthUser.builder("user_d", "Password4")
     user_e = AuthUser.builder("user_e", "Password5")
-    uow.users = FakeRepository(init=(user_a, user_b, user_c, user_d, user_e))
+    uow.users = fake_repo(init=(user_a, user_b, user_c, user_d, user_e))
 
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.MANAGEMENT, _user_id=1)
@@ -29,7 +27,7 @@ def init_uow(uow):
                           _role_id=Role.SUPPORT, _user_id=4)
     coll_e = Collaborator(first_name="fn_e", last_name="ln_e",
                           _role_id=Role.SUPPORT, _user_id=5)
-    uow.collaborators = FakeRepository(init=(coll_a, coll_b, coll_c, coll_d,
+    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c, coll_d,
                                              coll_e))
 
     return uow
@@ -123,16 +121,16 @@ class TestCollaboratorCRUD:
         dto_coll_a = CollaboratorDTO.from_domain(init_uow.collaborators.get(1))
         dto_coll_b = CollaboratorDTO.from_domain(init_uow.collaborators.get(2))
 
-        assert service.filter(user_id=1) == [dto_coll_a]
-        assert service.filter(user_id=2) == [dto_coll_b]
-        assert service.filter(user_id=8) == []
+        assert service.filter(user_id=1) == (dto_coll_a,)
+        assert service.filter(user_id=2) == (dto_coll_b,)
+        assert service.filter(user_id=8) == tuple()
 
     def test_get_collaborator(self, init_uow):
         service = CollaboratorService(init_uow)
 
         dto_coll_a = CollaboratorDTO.from_domain(init_uow.collaborators.get(1))
 
-        assert service.retrieve(1) == dto_coll_a
+        assert service.retrieve(1)[0] == dto_coll_a
 
     def test_get_all_collaborators_sort_reverse_id(self, init_uow):
         service = CollaboratorService(init_uow)
@@ -164,12 +162,12 @@ class TestCollaboratorCRUD:
         dto_coll_c = CollaboratorDTO.from_domain(init_uow.collaborators.get(3))
 
         list_of_salesmen = service.filter(role=4)
-        assert list_of_salesmen == [dto_coll_b, dto_coll_c]
+        assert list_of_salesmen == (dto_coll_b, dto_coll_c)
 
     def test_delete_collaborator(self, init_uow):
         service = CollaboratorService(init_uow)
 
-        assert service.retrieve(1).first_name == "fn_a"
+        assert service.retrieve(1)[0].first_name == "fn_a"
 
         service.remove(1)
         assert init_uow.commited is True
@@ -184,21 +182,21 @@ class TestCollaboratorCRUD:
         service.modify(1, **update_input)
 
         assert init_uow.commited is True
-        assert service.retrieve(1).last_name == "new_last_name"
+        assert service.retrieve(1)[0].last_name == "new_last_name"
         # user_id is a protected field, no update authorized.
-        assert service.retrieve(1).user_id == 1
+        assert service.retrieve(1)[0].user_id == 1
 
     def test_assign_role_success(self, init_uow):
         service = CollaboratorService(init_uow)
         user_1_dto_before = service.retrieve(1)
-        assert user_1_dto_before.role == Role.MANAGEMENT
+        assert user_1_dto_before[0].role == Role.MANAGEMENT
 
-        service.assign_role(1, role="ADMIN")
+        service.assign_role(1, role=Role.SUPPORT)
         user_1_dto_after = service.retrieve(1)
-        assert user_1_dto_after.role == Role.ADMIN
+        assert user_1_dto_after[0].role == Role.SUPPORT
 
     def test_assign_role_fail(self, init_uow):
         service = CollaboratorService(init_uow)
-        with pytest.raises(CollaboratorError,
-                           match="Role must be an instance of RoleType"):
+        with pytest.raises(CollaboratorServiceError,
+                           match="Invalid role: UNKNOWN"):
             service.assign_role(1, role="UNKNOWN")

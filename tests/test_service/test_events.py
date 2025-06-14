@@ -1,21 +1,20 @@
 import pytest
+
 from datetime import datetime
 
 from ee_crm.domain.model import Collaborator, Role, Contract, Event
 from ee_crm.services.app.events import EventService, EventServiceError
 
-from tests.test_service.conftest import FakeRepository
-
 
 @pytest.fixture
-def init_uow(uow):
+def init_uow(uow, fake_repo):
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.SALES, _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b",
                           _role_id=Role.SUPPORT, _user_id=2)
     coll_c = Collaborator(first_name="fn_c", last_name="ln_c",
                           _role_id=Role.MANAGEMENT, _user_id=3)
-    uow.collaborators = FakeRepository(init=(coll_a, coll_b, coll_c))
+    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
     con_a = Contract(_total_amount=100.00, _client_id=1)
     con_b = Contract(_total_amount=200.00, _client_id=1)
@@ -24,7 +23,7 @@ def init_uow(uow):
     con_e = Contract(_total_amount=500.00, _client_id=4, _signed=True,
                      _paid_amount=200.00)
 
-    uow.contracts = FakeRepository(
+    uow.contracts = fake_repo(
         init=(con_a, con_b, con_c, con_d, con_e)
     )
 
@@ -32,7 +31,7 @@ def init_uow(uow):
                   end_time=datetime(2025, 1, 2), location="address a",
                   attendee=30, notes="notes a", supporter_id=2, _contract_id=5)
     eve_b = Event(_contract_id=4)
-    uow.events = FakeRepository(
+    uow.events = fake_repo(
         init=(eve_a, eve_b)
     )
     return uow
@@ -48,9 +47,9 @@ def test_create_event_success(init_uow):
     service.create(**data)
     event_dto = service.retrieve(3)
 
-    assert event_dto.title == "test event !"
-    assert event_dto.start_time is None
-    assert event_dto.contract_id == 3
+    assert event_dto[0].title == "test event !"
+    assert event_dto[0].start_time is None
+    assert event_dto[0].contract_id == 3
 
 
 def test_create_event_no_contract_fail(init_uow):
@@ -92,7 +91,7 @@ def test_assign_support_success(init_uow):
     service.assign_support(event_id=2, supporter_id=2)
     event_dto = service.retrieve(2)
 
-    assert event_dto.supporter_id == 2
+    assert event_dto[0].supporter_id == 2
 
 
 def test_assign_support_bad_collaborator_fail(init_uow):

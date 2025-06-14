@@ -92,6 +92,24 @@ class Role(IntEnum):
     SALES = 4
     SUPPORT = 5
 
+    @classmethod
+    def sanitizer(cls, value_in):
+        if isinstance(value_in, cls):
+            return value_in
+
+        try:
+            return cls(int(value_in))
+        except (ValueError, TypeError):
+            pass
+
+        if isinstance(value_in, str):
+            try:
+                return cls[value_in.upper()]
+            except KeyError:
+                pass
+
+        raise CollaboratorError(f"Invalid role: {value_in}")
+
 
 @dataclass(kw_only=True)
 class Collaborator:
@@ -146,7 +164,7 @@ class Collaborator:
             "first_name": first_name,
             "email": email,
             "phone_number": phone_number,
-            "role": role,
+            "role": Role.sanitizer(role),
             "user_id": user_id
         }
 
@@ -181,7 +199,7 @@ class Client:
     company: str | None = None
     _created_at: datetime = datetime.now()
     _updated_at: datetime = datetime.now()
-    _salesman_id: int
+    _salesman_id: int | None = None
 
     _private_aliases = {"created_at": "_created_at",
                         "updated_at": "_updated_at",
@@ -262,7 +280,7 @@ class Contract:
     _paid_amount: float | None = 0.00
     created_at: datetime = datetime.now()
     _signed: bool | None = False
-    _client_id: int
+    _client_id: int | None = None
 
     _private_aliases = {"total_amount": "_total_amount",
                         "paid_amount": "_paid_amount",
@@ -346,6 +364,8 @@ class Contract:
 
         if total_amount is not None:
             data["total_amount"] = trunc(total_amount * 100) / 100
+        else:
+            data["total_amount"] = 0
 
         return cls(_total_amount=data["total_amount"],
                    _client_id=data["client_id"])
@@ -361,7 +381,7 @@ class Event:
     attendee: int | None = None
     notes: str | None = None
     supporter_id: int | None = None
-    _contract_id: int
+    _contract_id: int | None = None
 
     _private_aliases = {"contract_id": "_contract_id"}
 
@@ -377,8 +397,7 @@ class Event:
     @staticmethod
     def filterable_fields():
         return {"id", "title", "start_time", "end_time", "location",
-                "attendee",
-                "notes", "supporter_id", "contract_id"}
+                "attendee", "notes", "supporter_id", "contract_id"}
 
     @classmethod
     def builder(cls, title=None, start_time=None, end_time=None, location=None,

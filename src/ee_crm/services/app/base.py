@@ -29,7 +29,7 @@ class BaseService(ABC):
             obj = self._repo.get(obj_id)
             if obj is None:
                 raise self.error_cls(f'{self.model_cls.__name__} not found')
-            return self.dto_cls.from_domain(obj)
+            return (self.dto_cls.from_domain(obj),)
 
     def retrieve_all(self, sort=None):
         with self.uow:
@@ -64,4 +64,4 @@ class BaseService(ABC):
                                  f'{self.model_cls.__name__} in {kwargs}')
         with self.uow:
             objs = self._repo.filter(sort=sort, **filters)
-            return [self.dto_cls.from_domain(obj) for obj in objs]
+            return tuple([self.dto_cls.from_domain(obj) for obj in objs])

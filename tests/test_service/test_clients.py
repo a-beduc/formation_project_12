@@ -3,27 +3,23 @@ import pytest
 from ee_crm.services.app.clients import ClientService, ClientServiceError
 from ee_crm.domain.model import Collaborator, Client
 
-from tests.test_service.conftest import FakeRepository, FakeClientRepository
-
 
 @pytest.fixture
-def init_uow(uow):
+def init_uow(uow, fake_repo):
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a", _role_id=4,
                           _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b", _role_id=4,
                           _user_id=2)
     coll_c = Collaborator(first_name="fn_c", last_name="ln_c", _role_id=3,
                           _user_id=3)
-    uow.collaborators = FakeRepository(
-        init=(coll_a, coll_b, coll_c))
+    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
     cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
     cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", _salesman_id=1)
     cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", _salesman_id=2)
     cli_d = Client(last_name="cl_ln_d", first_name="cl_fn_d", _salesman_id=2)
     cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
-    uow.clients = FakeClientRepository(
-        init=(cli_a, cli_b, cli_c, cli_d, cli_e))
+    uow.clients = fake_repo(init=(cli_a, cli_b, cli_c, cli_d, cli_e))
     return uow
 
 
@@ -89,8 +85,8 @@ class TestClientCRUD:
         service = ClientService(init_uow)
         client_dto = service.retrieve(client_id)
 
-        assert client_dto.salesman_id == 1
-        assert client_dto.id == 1
+        assert client_dto[0].salesman_id == 1
+        assert client_dto[0].id == 1
 
     def test_get_client_failure(self, init_uow):
         client_id = 10
@@ -105,7 +101,7 @@ class TestClientCRUD:
 
         client_dto = service.retrieve(client_id)
 
-        assert list_clients[0] == client_dto
+        assert list_clients[0] == client_dto[0]
         assert len(list_clients) == 5
 
     def test_filter_salesman_clients(self, init_uow):
@@ -121,13 +117,13 @@ class TestClientCRUD:
         list_clients = service.filter(salesman_id=salesman_id)
 
         assert len(list_clients) == 0
-        assert list_clients == []
+        assert list_clients == tuple()
 
     def test_delete_client(self, init_uow):
         service = ClientService(init_uow)
         client_id = 1
 
-        assert service.retrieve(client_id) is not None
+        assert service.retrieve(client_id)[0] is not None
         service.remove(client_id)
 
         assert init_uow.commited is True
@@ -142,7 +138,7 @@ class TestClientCRUD:
         service.modify(client_id, **update_input)
 
         assert init_uow.commited is True
-        assert service.retrieve(client_id).last_name == "new_last_name"
+        assert service.retrieve(client_id)[0].last_name == "new_last_name"
 
     def test_sort_clients_by_reverse_salesman_id(self, init_uow):
         service = ClientService(init_uow)
