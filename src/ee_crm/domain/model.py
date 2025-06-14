@@ -364,6 +364,8 @@ class Contract:
 
         if total_amount is not None:
             data["total_amount"] = trunc(total_amount * 100) / 100
+        else:
+            data["total_amount"] = 0
 
         return cls(_total_amount=data["total_amount"],
                    _client_id=data["client_id"])
