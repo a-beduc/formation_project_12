@@ -2,7 +2,7 @@ from ee_crm.cli_interface.views.view_base import BaseView
 
 
 class ContractView(BaseView):
-    label = "Contract Table"
+    label = "Contract"
     columns = ['id', 'total_amount', 'due_amount', 'created_at', 'signed',
                'client_id']
     weight_width_allocation = {

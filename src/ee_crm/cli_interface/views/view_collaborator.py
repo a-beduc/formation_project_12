@@ -2,7 +2,7 @@ from ee_crm.cli_interface.views.view_base import BaseView
 
 
 class CollaboratorView(BaseView):
-    label = "Collaborator Table"
+    label = "Collaborator"
     columns = ['id', 'last_name', 'first_name', 'email', 'phone_number',
                'role', 'user_id']
     weight_width_allocation = {
@@ -20,6 +20,6 @@ class CollaboratorView(BaseView):
         "first_name": 20,
         "email": 30,
         "phone_number": 20,
-        "role": 20,
+        "role": 12,
         "user_id": 6
     }

@@ -14,7 +14,8 @@ _EXPAND_ACCEPTED_KEYS = {
     "first_name": {"fn", "first name", "first_name"},
     "email": {"at", "email", "e_mail"},
     "phone_number": {"ph", "phone number", "phone_number"},
-    "role": {"ro", "role"}
+    "role": {"ro", "role"},
+    "user_id": {"ui", "uid", "user id", "user_id"}
 }
 KEYS_MAP = map_accepted_key(_EXPAND_ACCEPTED_KEYS)
 

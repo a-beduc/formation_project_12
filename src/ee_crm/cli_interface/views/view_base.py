@@ -109,14 +109,15 @@ class BaseView(ABC):
                 + 4 + len(self.instance_columns) - 1)
 
     def _construct_top_line(self, table_width):
-        width_label = len(self.label) + 2
+        table_label = f" {self.label} Table "
+        width_label = len(table_label)
         width_line = (table_width - 2 - width_label) // 2
         width_leftover = (table_width - 2 - width_label) % 2
         width_line_left = width_line
         width_line_right = width_line + width_leftover
         return (f"{self.separator['dctl']}"
                 f"{width_line_left * self.separator['dlh']}"
-                f" {self.label} "
+                f"{table_label}"
                 f"{width_line_right * self.separator['dlh']}"
                 f"{self.separator['dctr']}")
 
@@ -144,7 +145,7 @@ class BaseView(ABC):
 
     def render(self, data, remove_col=None):
         if not data:
-            self._error("No client found.")
+            self._error(f"No {self.label.lower()} found.")
             return
 
         if remove_col is not None:

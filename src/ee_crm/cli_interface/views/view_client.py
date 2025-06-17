@@ -2,7 +2,7 @@ from ee_crm.cli_interface.views.view_base import BaseView
 
 
 class ClientView(BaseView):
-    label = "Client Table"
+    label = "Client"
     columns = ['id', 'last_name', 'first_name', 'email', 'phone_number',
                'company', 'created_at', 'updated_at', 'salesman_id']
     weight_width_allocation = {

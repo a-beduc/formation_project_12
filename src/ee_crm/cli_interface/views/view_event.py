@@ -2,7 +2,7 @@ from ee_crm.cli_interface.views.view_base import BaseView
 
 
 class EventView(BaseView):
-    label = "Event Table"
+    label = "Event"
     columns = ['id', 'title', 'start_time', 'end_time', 'location',
                'attendee', 'notes', 'supporter_id', 'contract_id']
     weight_width_allocation = {

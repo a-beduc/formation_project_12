@@ -24,7 +24,7 @@ class BaseManager(ABC):
     def _validate_types(self, key, value):
         try:
             return self._validate_types_map[key](value)
-        except TypeError:
+        except ValueError:
             raise self.error_cls(f"{value} is not of the right type of data.")
 
     def _validate_fields(self, fields):
