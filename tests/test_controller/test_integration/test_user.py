@@ -1,6 +1,7 @@
 import pytest
 
 from ee_crm.controllers.app.user import UserManager, UserManagerError
+from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
 from ee_crm.services.app.users import UserService
 
 
@@ -23,6 +24,8 @@ def test_who_am_i_return_ok(init_db_table_users, init_db_table_collaborator,
     controller = UserManager(UserService(in_memory_uow()))
     auth_dto, coll_dto = controller.who_am_i()
 
+    assert isinstance(auth_dto, AuthUserDTO)
+    assert isinstance(coll_dto, CollaboratorDTO)
     assert auth_dto.username == "user_one"
     assert coll_dto.last_name == "col_ln_one"
 

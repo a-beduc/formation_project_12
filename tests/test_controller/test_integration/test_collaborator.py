@@ -29,7 +29,7 @@ def test_read_all_collaborator(init_db_table_collaborator,
     assert len(list_collaborator) == 4
     assert isinstance(list_collaborator[0], CollaboratorDTO)
     assert list_collaborator[0].first_name == "col_fn_one"
-    assert list_collaborator[0].role == Role.MANAGEMENT
+    assert list_collaborator[0].role == 'MANAGEMENT'
 
 
 def test_filter_collaborator_role_explicit(init_db_table_collaborator,
@@ -127,7 +127,7 @@ def test_create_collaborator_minimal(init_db_table_users,
 
     assert len(controller_coll.read()) == 5
     assert new_collaborator.user_id == 5
-    assert new_collaborator.role == Role.DEACTIVATED
+    assert new_collaborator.role == 'DEACTIVATED'
 
 
 def test_update_collaborator(init_db_table_collaborator,
@@ -173,8 +173,8 @@ def test_change_collaborator_role(init_db_table_collaborator,
     controller = CollaboratorManager(CollaboratorService(in_memory_uow()))
 
     coll_3 = controller.read(3)[0]
-    assert coll_3.role == Role.SUPPORT
+    assert coll_3.role == 'SUPPORT'
 
     controller.change_collaborator_role(3, "SALES")
     coll_3 = controller.read(3)[0]
-    assert coll_3.role == Role.SALES
+    assert coll_3.role == 'SALES'

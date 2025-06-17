@@ -189,11 +189,11 @@ class TestCollaboratorCRUD:
     def test_assign_role_success(self, init_uow):
         service = CollaboratorService(init_uow)
         user_1_dto_before = service.retrieve(1)
-        assert user_1_dto_before[0].role == Role.MANAGEMENT
+        assert user_1_dto_before[0].role == 'MANAGEMENT'
 
         service.assign_role(1, role=Role.SUPPORT)
         user_1_dto_after = service.retrieve(1)
-        assert user_1_dto_after[0].role == Role.SUPPORT
+        assert user_1_dto_after[0].role == 'SUPPORT'
 
     def test_assign_role_fail(self, init_uow):
         service = CollaboratorService(init_uow)

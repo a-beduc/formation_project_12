@@ -22,18 +22,19 @@ class CollaboratorDTO:
     first_name: str | None = None
     email: str | None = None
     phone_number: str | None = None
-    role: int | None = None
+    role: str | None = None
     user_id: int | None = None
 
     @classmethod
     def from_domain(cls, collaborator):
+        # call Role.name to get str associated with int
         return cls(
             id=collaborator.id,
             last_name=collaborator.last_name,
             first_name=collaborator.first_name,
             email=collaborator.email,
             phone_number=collaborator.phone_number,
-            role=collaborator.role,
+            role=collaborator.role.name,
             user_id=collaborator.user_id,
         )
 

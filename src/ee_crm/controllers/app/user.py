@@ -31,7 +31,7 @@ class UserManager(BaseManager):
         c_id = kwargs['auth']['c_id']
         coll = CollaboratorService(uow).retrieve(c_id)[0]
         user = self.service.retrieve(coll.user_id)[0]
-        return AuthUserDTO.from_domain(user), CollaboratorDTO.from_domain(coll)
+        return user, coll
 
     @permission
     def update_username(self, old_username, plain_password, new_username,
