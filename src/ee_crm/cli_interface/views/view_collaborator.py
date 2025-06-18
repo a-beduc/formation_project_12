@@ -1,7 +1,7 @@
-from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_base_crud import CrudView
 
 
-class CollaboratorView(BaseView):
+class CollaboratorCrudView(CrudView):
     label = "Collaborator"
     columns = ['id', 'last_name', 'first_name', 'email', 'phone_number',
                'role', 'user_id']

@@ -1,7 +1,7 @@
-from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_base_crud import CrudView
 
 
-class ClientView(BaseView):
+class ClientCrudView(CrudView):
     label = "Client"
     columns = ['id', 'last_name', 'first_name', 'email', 'phone_number',
                'company', 'created_at', 'updated_at', 'salesman_id']

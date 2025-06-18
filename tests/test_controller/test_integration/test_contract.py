@@ -4,7 +4,7 @@ from datetime import datetime
 from ee_crm.controllers.app.contract import ContractManager, \
     ContractManagerError
 from ee_crm.controllers.permission import AuthorizationDenied
-from ee_crm.domain.model import ContractError
+from ee_crm.domain.model import ContractDomainError
 from ee_crm.services.app.contracts import ContractService, ContractServiceError
 from ee_crm.services.dto import ContractDTO
 

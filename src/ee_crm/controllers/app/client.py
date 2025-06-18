@@ -1,15 +1,11 @@
-from datetime import datetime
-
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
+from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.permission import permission, is_sales, \
+    is_client_associated_salesman
+from ee_crm.controllers.utils import verify_positive_int, verify_string, \
+    verify_datetime
+from ee_crm.exceptions import ClientManagerError
 from ee_crm.services.app.clients import ClientService
-
-from ee_crm.controllers.app.base import BaseManager, BaseManagerError
-from ee_crm.controllers.permission import (
-    permission, is_sales, is_client_associated_salesman)
-
-
-class ClientManagerError(BaseManagerError):
-    pass
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class ClientManager(BaseManager):

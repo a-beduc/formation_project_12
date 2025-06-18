@@ -1,29 +1,11 @@
 import datetime
-from pathlib import Path
-import jwt
 import json
+import jwt
+from pathlib import Path
 
-from ee_crm.config import (
-    get_secret_key,
-    get_token_store_path,
-    get_token_access_lifetime,
-    get_token_refresh_lifetime)
-
-
-class TokenError(Exception):
-    pass
-
-
-class BadToken(TokenError):
-    pass
-
-
-class ExpiredToken(TokenError):
-    pass
-
-
-class NoToken(TokenError):
-    pass
+from ee_crm.config import get_secret_key, get_token_store_path, \
+    get_token_access_lifetime, get_token_refresh_lifetime
+from ee_crm.exceptions import ExpiredToken, BadToken, NoToken, TokenError
 
 
 def _now():

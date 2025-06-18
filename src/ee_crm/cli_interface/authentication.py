@@ -1,8 +1,6 @@
 import click
 
-from ee_crm.domain.model import AuthUserError
-from ee_crm.services.auth.authentication import AuthenticationError
-from ee_crm.services.auth.jwt_handler import NoToken
+from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.controllers import authentication
 
 

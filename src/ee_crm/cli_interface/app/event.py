@@ -1,11 +1,12 @@
 import click
 
-from ee_crm.cli_interface.views.view_event import EventView
-from ee_crm.controllers.app.event import EventManager
+from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, \
+    cli_update, cli_delete
 from ee_crm.cli_interface.utils import map_accepted_key, \
     normalize_remove_columns
-from ee_crm.cli_interface.app.cli_func import (cli_create, cli_read,
-                                               cli_update, cli_delete)
+from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_event import EventCrudView
+from ee_crm.controllers.app.event import EventManager
 
 
 _EXPAND_ACCEPTED_KEYS = {

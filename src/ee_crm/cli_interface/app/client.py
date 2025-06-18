@@ -1,12 +1,12 @@
 import click
 
+from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, \
+    cli_update, cli_delete
+from ee_crm.cli_interface.utils import map_accepted_key, \
+    normalize_remove_columns
+from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_client import ClientCrudView
 from ee_crm.controllers.app.client import ClientManager
-from ee_crm.cli_interface.app.cli_func import (
-    cli_create, cli_read, cli_update, cli_delete)
-from ee_crm.cli_interface.utils import (map_accepted_key,
-                                        normalize_remove_columns)
-
-from ee_crm.cli_interface.views.view_client import ClientView
 
 
 _EXPAND_ACCEPTED_KEYS = {

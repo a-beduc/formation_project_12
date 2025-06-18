@@ -1,15 +1,11 @@
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
-from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
-from ee_crm.services.auth.authentication import AuthenticationService
-from ee_crm.services.app.users import UserService, UserServiceError
-from ee_crm.services.app.collaborators import CollaboratorService
-
+from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_management
-from ee_crm.controllers.app.base import BaseManager, BaseManagerError
-
-
-class UserManagerError(BaseManagerError):
-    pass
+from ee_crm.controllers.utils import verify_positive_int, verify_string
+from ee_crm.exceptions import UserManagerError
+from ee_crm.services.app.collaborators import CollaboratorService
+from ee_crm.services.app.users import UserService
+from ee_crm.services.auth.authentication import AuthenticationService
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class UserManager(BaseManager):

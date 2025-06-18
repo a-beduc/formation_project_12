@@ -1,10 +1,11 @@
 import click
 
-from ee_crm.cli_interface.views.view_contract import ContractView
-from ee_crm.controllers.app.contract import ContractManager
+from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, cli_delete
 from ee_crm.cli_interface.utils import map_accepted_key, \
     normalize_remove_columns
-from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, cli_delete
+from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_contract import ContractCrudView
+from ee_crm.controllers.app.contract import ContractManager
 
 
 _EXPAND_ACCEPTED_KEYS = {

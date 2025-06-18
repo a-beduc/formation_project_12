@@ -1,12 +1,14 @@
 import click
 
-from ee_crm.cli_interface.views.view_collaborator import CollaboratorView
+from ee_crm.cli_interface.app.cli_func import cli_prompt, cli_read, \
+    cli_update, cli_delete
+from ee_crm.cli_interface.utils import clean_input_fields, normalize_fields, \
+    map_accepted_key, normalize_remove_columns
+from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_collaborator import CollaboratorCrudView
 from ee_crm.controllers.app.collaborator import CollaboratorManager
-from ee_crm.cli_interface.utils import (
-    clean_input_fields, normalize_fields, map_accepted_key,
-    normalize_remove_columns)
-from ee_crm.cli_interface.app.cli_func import (cli_prompt, cli_read,
-                                               cli_update, cli_delete)
+from ee_crm.controllers.app.user import UserManager
+
 
 _EXPAND_ACCEPTED_KEYS = {
     "id": {"id"},

@@ -1,10 +1,7 @@
 from ee_crm.domain.model import AuthUser, Collaborator, Role
+from ee_crm.exceptions import CollaboratorServiceError, CollaboratorDomainError
+from ee_crm.services.app.base import BaseService
 from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.services.app.base import BaseService, ServiceError
-
-
-class CollaboratorServiceError(ServiceError):
-    pass
 
 
 class CollaboratorService(BaseService):

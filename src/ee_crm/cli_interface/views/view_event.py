@@ -1,7 +1,7 @@
-from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_base_crud import CrudView
 
 
-class EventView(BaseView):
+class EventCrudView(CrudView):
     label = "Event"
     columns = ['id', 'title', 'start_time', 'end_time', 'location',
                'attendee', 'notes', 'supporter_id', 'contract_id']

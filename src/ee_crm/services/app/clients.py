@@ -1,10 +1,7 @@
 from ee_crm.domain.model import Client
+from ee_crm.exceptions import ClientServiceError
+from ee_crm.services.app.base import BaseService
 from ee_crm.services.dto import ClientDTO
-from ee_crm.services.app.base import BaseService, ServiceError
-
-
-class ClientServiceError(ServiceError):
-    pass
 
 
 class ClientService(BaseService):

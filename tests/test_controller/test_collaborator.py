@@ -2,7 +2,7 @@ import pytest
 
 from ee_crm.controllers.app.collaborator import CollaboratorManager
 from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.domain.model import Role, CollaboratorError
+from ee_crm.domain.model import Role, CollaboratorDomainError
 from ee_crm.controllers.permission import AuthorizationDenied
 
 

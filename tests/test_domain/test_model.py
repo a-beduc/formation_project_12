@@ -10,7 +10,7 @@ def test_auth_user_builder_success():
     assert user.username == "user_one"
     user.verify_password("Password1")
 
-    with pytest.raises(dm.AuthUserError, match="Password mismatch"):
+    with pytest.raises(dm.AuthUserDomainError, match="Password mismatch"):
         user.verify_password("wrong_password")
 
 

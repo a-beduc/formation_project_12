@@ -1,8 +1,10 @@
 import click
+
 from ee_crm.cli_interface.app.cli_func import cli_read
 from ee_crm.cli_interface.utils import normalize_remove_columns, \
     map_accepted_key
-from ee_crm.cli_interface.views.view_user import UserView
+from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_user import UserCrudView
 from ee_crm.controllers.app.user import UserManager
 
 

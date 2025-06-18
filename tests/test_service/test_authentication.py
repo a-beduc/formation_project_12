@@ -1,6 +1,6 @@
 import pytest
 
-from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError
+from ee_crm.domain.model import AuthUser, Collaborator, AuthUserDomainError
 from ee_crm.services.auth.authentication import (
     AuthenticationService,
     AuthenticationError)

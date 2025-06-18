@@ -1,8 +1,6 @@
 import click
-from ee_crm.cli_interface.utils import (clean_input_fields,
-                                        normalize_fields,
-                                        clean_sort,
-                                        normalize_sort)
+from ee_crm.cli_interface.utils import clean_input_fields, normalize_fields, \
+    clean_sort, normalize_sort
 
 
 def cli_prompt(data, no_prompt, prompt_field):

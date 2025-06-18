@@ -1,7 +1,7 @@
 import pytest
 
 from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
-                                 ContractError)
+                                 ContractDomainError)
 from ee_crm.domain.validators import ContractValidatorError
 from ee_crm.services.app.contracts import ContractService
 

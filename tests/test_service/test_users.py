@@ -2,7 +2,7 @@ import pytest
 
 from ee_crm.services.auth.authentication import AuthenticationError
 from ee_crm.services.app.users import UserServiceError, UserService
-from ee_crm.domain.model import AuthUser, AuthUserError
+from ee_crm.domain.model import AuthUser, AuthUserDomainError
 from ee_crm.domain.validators import AuthUserValidatorError
 from ee_crm.services.dto import AuthUserDTO
 

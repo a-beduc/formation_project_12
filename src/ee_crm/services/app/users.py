@@ -1,11 +1,8 @@
 from ee_crm.domain.model import AuthUser
-from ee_crm.services.dto import AuthUserDTO
+from ee_crm.exceptions import UserServiceError
+from ee_crm.services.app.base import BaseService
 from ee_crm.services.auth.authentication import AuthenticationService
-from ee_crm.services.app.base import BaseService, ServiceError
-
-
-class UserServiceError(ServiceError):
-    pass
+from ee_crm.services.dto import AuthUserDTO
 
 
 class UserService(BaseService):

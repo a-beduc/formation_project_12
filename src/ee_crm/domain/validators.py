@@ -1,30 +1,10 @@
 from abc import ABC
-from re import search, match
 from datetime import datetime
+from re import search, match
 
-
-class ValidatorError(Exception):
-    pass
-
-
-class AuthUserValidatorError(ValidatorError):
-    pass
-
-
-class CollaboratorValidatorError(ValidatorError):
-    pass
-
-
-class ClientValidatorError(ValidatorError):
-    pass
-
-
-class ContractValidatorError(ValidatorError):
-    pass
-
-
-class EventValidatorError(ValidatorError):
-    pass
+from ee_crm.exceptions import AuthUserValidatorError, \
+    CollaboratorValidatorError, ContractValidatorError, ClientValidatorError, \
+    EventValidatorError
 
 
 class BaseValidator(ABC):

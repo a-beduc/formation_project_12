@@ -1,16 +1,13 @@
 from functools import wraps, update_wrapper
 from inspect import signature, Parameter
 
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
-from ee_crm.services.app.contracts import ContractService
+from ee_crm.exceptions import AuthorizationDenied, BadToken
+
 from ee_crm.services.app.clients import ClientService
+from ee_crm.services.app.contracts import ContractService
 from ee_crm.services.app.events import EventService
-
-from ee_crm.services.auth.jwt_handler import verify_token, BadToken
-
-
-class AuthorizationDenied(Exception):
-    pass
+from ee_crm.services.auth.jwt_handler import verify_token
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class P:

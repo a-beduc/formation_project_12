@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
 from shutil import get_terminal_size
 
-import click
+from ee_crm.cli_interface.views.view_base import BaseView
 
 
-class BaseView(ABC):
+class CrudView(BaseView):
     label: str
     columns: list[str]
     weight_width_allocation: dict[str, int]

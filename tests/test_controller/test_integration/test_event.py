@@ -1,9 +1,7 @@
 import pytest
 
-from ee_crm.controllers.app.event import EventManager, \
-    EventManagerError
+from ee_crm.controllers.app.event import EventManager
 from ee_crm.controllers.permission import AuthorizationDenied
-from ee_crm.domain.model import EventError
 from ee_crm.services.app.events import EventService, EventServiceError
 from ee_crm.services.dto import EventDTO
 

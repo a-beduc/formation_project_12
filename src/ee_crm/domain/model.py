@@ -1,7 +1,7 @@
 from argon2 import PasswordHasher, exceptions
-from enum import IntEnum
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import IntEnum
 from math import trunc
 
 from ee_crm.domain.validators import (
@@ -11,30 +11,8 @@ from ee_crm.domain.validators import (
     ContractValidator as ConVal,
     EventValidator as EveVal
 )
-
-
-class DomainError(Exception):
-    pass
-
-
-class AuthUserError(DomainError):
-    pass
-
-
-class CollaboratorError(DomainError):
-    pass
-
-
-class ClientError(DomainError):
-    pass
-
-
-class ContractError(DomainError):
-    pass
-
-
-class EventError(DomainError):
-    pass
+from ee_crm.exceptions import AuthUserDomainError, CollaboratorDomainError, \
+    ClientDomainError, ContractDomainError, EventDomainError
 
 
 @dataclass(kw_only=True)

@@ -1,18 +1,14 @@
-from datetime import datetime
 from math import trunc
 
+from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.utils import verify_positive_int, verify_bool, \
+    verify_positive_float, verify_datetime
+from ee_crm.controllers.permission import permission, is_sales, \
+    is_management, is_contract_associated_salesman, contract_has_salesman, \
+    contract_is_signed
+from ee_crm.exceptions import ContractManagerError, InputError
 from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
-from ee_crm.services.app.contracts import ContractService, ContractServiceError
-
-from ee_crm.controllers.app.base import BaseManager, BaseManagerError
-from ee_crm.controllers.permission import (
-    permission, is_sales, is_management,
-    is_contract_associated_salesman, contract_has_salesman,
-    contract_is_signed)
-
-
-class ContractManagerError(BaseManagerError):
-    pass
+from ee_crm.services.app.contracts import ContractService
 
 
 class ContractManager(BaseManager):

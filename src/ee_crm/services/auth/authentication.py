@@ -1,8 +1,4 @@
-from ee_crm.domain.model import AuthUserError
-
-
-class AuthenticationError(Exception):
-    pass
+from ee_crm.exceptions import AuthenticationError
 
 
 class AuthenticationService:

@@ -1,7 +1,7 @@
-from ee_crm.cli_interface.views.view_base import BaseView
+from ee_crm.cli_interface.views.view_base_crud import CrudView
 
 
-class UserView(BaseView):
+class UserCrudView(CrudView):
     label = "User"
     columns = ['id', 'username']
     weight_width_allocation = {
