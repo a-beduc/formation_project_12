@@ -5,11 +5,12 @@ from ee_crm.exceptions import CRMException
 
 
 def main():
-    start_mappers()
     try:
+        start_mappers()
         cli()
-    except Exception as e:
-        print(e)
+    except CRMException as err:
+        error = ErrorView(err)
+        error.display_error()
 
 
 if __name__ == '__main__':
