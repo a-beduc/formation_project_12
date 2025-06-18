@@ -12,15 +12,15 @@ from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 class EventManager(BaseManager):
     label = "Event"
     _validate_types_map = {
-        "id": int,
-        "title": str,
-        "start_time": datetime.fromisoformat,
-        "end_time": datetime.fromisoformat,
-        "location": str,
-        "attendee": int,
-        "notes": str,
-        "supporter_id": int,
-        "contract_id": int
+        "id": verify_positive_int,
+        "title": verify_string,
+        "start_time": verify_datetime,
+        "end_time": verify_datetime,
+        "location": verify_string,
+        "attendee": verify_positive_int,
+        "notes": verify_string,
+        "supporter_id": verify_positive_int,
+        "contract_id": verify_positive_int
     }
     _default_service = EventService(SqlAlchemyUnitOfWork())
     error_cls = EventManagerError

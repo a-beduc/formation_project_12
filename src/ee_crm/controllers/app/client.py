@@ -11,15 +11,15 @@ from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 class ClientManager(BaseManager):
     label = "Client"
     _validate_types_map = {
-        "id": int,
-        "last_name": str,
-        "first_name": str,
-        "email": str,
-        "phone_number": str,
-        "company": str,
-        "created_at": datetime.fromisoformat,
-        "updated_at": datetime.fromisoformat,
-        "salesman_id": int
+        "id": verify_positive_int,
+        "last_name": verify_string,
+        "first_name": verify_string,
+        "email": verify_string,
+        "phone_number": verify_string,
+        "company": verify_string,
+        "created_at": verify_datetime,
+        "updated_at": verify_datetime,
+        "salesman_id": verify_positive_int
     }
     _default_service = ClientService(SqlAlchemyUnitOfWork())
     error_cls = ClientManagerError

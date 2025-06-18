@@ -11,8 +11,8 @@ from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 class UserManager(BaseManager):
     label = "User"
     _validate_types_map = {
-        "id": int,
-        "username": str,
+        "id": verify_positive_int,
+        "username": verify_string,
     }
     _default_service = UserService(SqlAlchemyUnitOfWork())
     error_cls = UserManagerError

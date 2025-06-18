@@ -14,12 +14,12 @@ from ee_crm.services.app.contracts import ContractService
 class ContractManager(BaseManager):
     label = "Contract"
     _validate_types_map = {
-        "id": int,
-        "total_amount": float,
-        "paid_amount": float,
-        "signed": bool,
-        "client_id": int,
-        "created_at": datetime.fromisoformat,
+        "id": verify_positive_int,
+        "total_amount": verify_positive_float,
+        "paid_amount": verify_positive_float,
+        "signed": verify_bool,
+        "client_id": verify_positive_int,
+        "created_at": verify_datetime,
     }
     _default_service = ContractService(SqlAlchemyUnitOfWork())
     error_cls = ContractManagerError
