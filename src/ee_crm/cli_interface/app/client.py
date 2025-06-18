@@ -48,7 +48,7 @@ def client():
 def create(data_client, no_prompt):
     cli_create(data_client, no_prompt, ClientManager,
                PROMPT_FIELDS, KEYS_MAP)
-    click.echo("Client successfully created")
+    BaseView.success("Client successfully created")
 
 
 @click.command()
@@ -73,7 +73,7 @@ def read(pk, filters, sorts, remove_columns):
     output = cli_read(pk, filters, sorts, ClientManager,
                       KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
-    ClientView().render(output, remove_col=remove_col)
+    ClientCrudView().render(output, remove_col=remove_col)
 
 
 @click.command()
@@ -90,7 +90,7 @@ def read(pk, filters, sorts, remove_columns):
 def update(pk, data_client, no_prompt):
     cli_update(pk, data_client, no_prompt, ClientManager,
                PROMPT_FIELDS, KEYS_MAP)
-    click.echo(f"Client successfully updated")
+    BaseView.success(f"Client successfully updated")
 
 
 @click.command()
@@ -99,7 +99,7 @@ def update(pk, data_client, no_prompt):
               help="Client's unique id, pk: INT >= 1")
 def delete(pk):
     cli_delete(pk, ClientManager)
-    click.echo(f"Client successfully deleted")
+    BaseView.success(f"Client successfully deleted")
 
 
 client.add_command(create)

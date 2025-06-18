@@ -32,8 +32,11 @@ class UserService(BaseService):
             user_with_username = self.uow.users.filter_one(
                 username=new_username)
             if user_with_username is not None:
-                raise self.error_cls(f"User with username {new_username} "
+                err = self.error_cls(f"User with username {new_username} "
                                      f"already exists")
+                err.tips = (f"The username {new_username} is taken, select a "
+                            f"different one and try again.")
+                raise err
             user = AuthenticationService.verify_identity(self.uow,
                                                          old_username,
                                                          plain_password)

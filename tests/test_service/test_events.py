@@ -58,8 +58,7 @@ def test_create_event_no_contract_fail(init_uow):
     }
     service = EventService(init_uow)
 
-    with pytest.raises(EventServiceError,
-                       match="No contract found with id None"):
+    with pytest.raises(EventServiceError, match="No contract found"):
         service.create(**data)
 
 
@@ -70,7 +69,7 @@ def test_create_event_bad_contract_fail(init_uow):
     }
     service = EventService(init_uow)
 
-    with pytest.raises(EventServiceError, match="No contract found with id 9"):
+    with pytest.raises(EventServiceError, match="No contract found"):
         service.create(**data)
 
 

@@ -5,10 +5,6 @@ from ee_crm.exceptions import BaseManagerError
 from ee_crm.services.unit_of_work import AbstractUnitOfWork
 
 
-class BaseManagerError(Exception):
-    pass
-
-
 class BaseManager(ABC):
     label: str
     _validate_types_map: dict
@@ -20,15 +16,23 @@ class BaseManager(ABC):
 
     def _validate_pk_type(self, pk):
         try:
-            return int(pk)
-        except ValueError:
-            raise self.error_cls(f"{pk} must be an integer.")
+            return verify_positive_int(pk)
+        except InputError as e:
+            err = self.error_cls(f"{e.args[0]}. Input <-pk: {pk}>.")
+            err.threat = e.threat
+            err.tips = (f"{e.tips} Verify your input <pk: {pk}> in the "
+                        f"command and try again.")
+            raise err
 
     def _validate_types(self, key, value):
         try:
             return self._validate_types_map[key](value)
-        except ValueError:
-            raise self.error_cls(f"{value} is not of the right type of data.")
+        except InputError as e:
+            err = self.error_cls(f"{e.args[0]}")
+            err.threat = e.threat
+            err.tips = (f"{e.tips} Verify your input <{key}: {value}> in the "
+                        f"command and try again.")
+            raise err
 
     def _validate_fields(self, fields):
         return {

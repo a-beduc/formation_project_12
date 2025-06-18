@@ -21,9 +21,14 @@ def _decode(token, verify_exp=True):
         return jwt.decode(token, get_secret_key(), algorithms='HS256',
                           options={'verify_exp': verify_exp})
     except jwt.ExpiredSignatureError:
-        raise ExpiredToken("Expired token")
+        err = ExpiredToken("Expired token")
+        err.tips = "Your session expired, please try to log in again."
+        raise err
     except jwt.InvalidTokenError:
-        raise BadToken("Bad token")
+        err = BadToken("Bad token")
+        err.tips = ("The token signature isn't valid, please try to log in "
+                    "again to refresh it")
+        raise err
 
 
 def _storage_path():
@@ -58,7 +63,9 @@ def _wipe_storage():
     try:
         path.unlink()
     except FileNotFoundError:
-        raise NoToken('No storage files found')
+        err = NoToken('No valid credentials, already logged out')
+        err.tips = "You are already logged out. You can try to log in again."
+        raise err
 
 
 def _prepare_access_payload(data):
@@ -96,7 +103,9 @@ def verify_token():
     tokens = _read_storage()
     access_token = tokens.get("access-token", None)
     if access_token is None:
-        raise BadToken("No access token")
+        err = BadToken("No access token")
+        err.tips = "No credentials found, please try to log in again."
+        raise err
 
     try:
         return _decode(access_token)
@@ -106,13 +115,17 @@ def verify_token():
     refresh_token = tokens.get("refresh-token", None)
     if refresh_token is None:
         _wipe_storage()
-        raise BadToken("Missing refresh token")
+        err = BadToken("Missing refresh token")
+        err.tips = "The token is expired, please try to log in again."
+        raise err
 
     try:
         _decode(refresh_token)
     except TokenError:
         _wipe_storage()
-        raise BadToken("Invalid refresh token")
+        err = BadToken("Invalid refresh token")
+        err.tips = "The token is invalid, please try to log in again."
+        raise err
 
     old_access_token_payload = _decode(access_token, verify_exp=False)
     new_access_token_payload = (

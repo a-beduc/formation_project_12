@@ -49,8 +49,10 @@ def predicate(func):
 def is_authenticated():
     try:
         return verify_token()
-    except BadToken:
-        raise AuthorizationDenied('Authentication invalid')
+    except BadToken as e:
+        err = AuthorizationDenied('Authentication invalid')
+        err.tips = e.tips
+        raise err
 
 
 @predicate
@@ -178,8 +180,14 @@ def permission(_func=None, *, requirements=None, kw_auth=True):
             # print(ctx)
             # exit()
                 if not requirements(ctx):
-                    raise AuthorizationDenied(
+                    err = AuthorizationDenied(
                         f'Permission error in {requirements}')
+                    err.tips = \
+                        (f"This command isn't available to your account, "
+                         f"you didn't satisfy at least one of the "
+                         f"following required authorizations : "
+                         f"{requirements}")
+                    raise err
 
             # if flag is raised and func accept **kwargs can pass payload
             if kw_auth and _accept_kwargs(func):

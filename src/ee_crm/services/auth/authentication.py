@@ -9,8 +9,10 @@ class AuthenticationService:
     def verify_identity(uow, username, plain_password):
         user = uow.users.filter_one(username=username)
         if user is None:
-            raise AuthenticationError(f'No user found with username : '
-                                      f'"{username}"')
+            err = AuthenticationError('No user found')
+            err.tips = (f"No user with the username \"{username}\" found in "
+                        f"the database.")
+            raise err
         user.verify_password(plain_password)
         return user
 

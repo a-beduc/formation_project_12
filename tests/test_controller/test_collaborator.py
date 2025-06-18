@@ -106,6 +106,7 @@ def test_read_filter_sort_by_unknown_field(fake_service, collaborators_dto,
 
 def test_create_collaborator_minimal_data(fake_service,
                                           bypass_permission_manager):
+    fake_service.role_sanitizer.return_value = Role.DEACTIVATED
     controller = CollaboratorManager(fake_service)
     controller.create(username="Alfred", plain_password="Password1")
     fake_service.create.assert_called_once_with(
@@ -117,6 +118,7 @@ def test_create_collaborator_minimal_data(fake_service,
 
 def test_create_collaborator_with_support_role(fake_service,
                                                bypass_permission_manager):
+    fake_service.role_sanitizer.return_value = Role.SUPPORT
     controller = CollaboratorManager(fake_service)
     controller.create(username="Banner", plain_password="Password1",
                       role="SUPPORT")
@@ -129,9 +131,10 @@ def test_create_collaborator_with_support_role(fake_service,
 
 def test_create_collaborator_with_bad_role(fake_service,
                                            bypass_permission_manager):
+    fake_service.role_sanitizer.side_effect = CollaboratorDomainError
     controller = CollaboratorManager(fake_service)
 
-    with pytest.raises(CollaboratorError, match="Invalid role: BAD"):
+    with pytest.raises(CollaboratorDomainError):
         controller.create(username="Banner", plain_password="Password1",
                           role="BAD")
 
@@ -148,6 +151,7 @@ def test_create_permission_denied(fake_service, mocker):
 
 
 def test_change_collaborator_role(fake_service, bypass_permission_manager):
+    fake_service.role_sanitizer.return_value = Role.MANAGEMENT
     controller = CollaboratorManager(fake_service)
     controller.change_collaborator_role(pk="5", role="MANAGEMENT")
     fake_service.assign_role.assert_called_once_with(5, Role.MANAGEMENT)

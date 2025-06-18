@@ -35,8 +35,10 @@ def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
 
     if not click.confirm(f"Update {controller.label} : ({pk}) "
                          f"'{class_dto[0].last_name}' ?"):
-        click.echo("Aborted")
-        raise SystemExit(1)
+        err = ctrl_class.error_cls("Aborted by user")
+        err.threat = "warning"
+        err.tips = 'You must press "Y" to confirm update, try again'
+        raise err
 
     cl_data = clean_input_fields(data_input) or {}
     norm_data = normalize_fields(cl_data, keys_map) or {}
@@ -51,7 +53,9 @@ def cli_delete(pk, ctrl_class):
 
     if not click.confirm(f"Delete {controller.label} : ({pk}) "
                          f"'{class_dto[0].last_name}' ?"):
-        click.echo("Aborted")
-        raise SystemExit(1)
+        err = ctrl_class.error_cls("Aborted by user")
+        err.threat = "warning"
+        err.tips = 'You must press "Y" to confirm deletion, try again'
+        raise err
 
     controller.delete(pk)

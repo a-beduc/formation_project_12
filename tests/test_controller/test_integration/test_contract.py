@@ -267,8 +267,7 @@ def test_salesman_try_change_total_wrong_type(
 
     with pytest.raises(
             ContractManagerError,
-            match="Total of the contract must be a valid price, "
-                  "given : wrong data type"):
+            match="Input must be a valid Float"):
         controller.change_total(pk=3, total="wrong data type")
 
     contract = controller.read(3)[0]
@@ -297,7 +296,7 @@ def test_salesman_pay_too_much(
     contract = controller.read(2)[0]
     assert contract.due_amount == 80.0
 
-    with pytest.raises(ContractError,
+    with pytest.raises(ContractDomainError,
                        match="Payment : 100.0 exceed due. Still due : 80.0"):
         controller.pay(2, 100.0)
 
@@ -313,8 +312,7 @@ def test_salesman_pay_wrong_type(
     contract = controller.read(2)[0]
     assert contract.due_amount == 80.0
     with pytest.raises(ContractManagerError,
-                       match="Total of the contract must be a valid price, "
-                             "given : wrong type"):
+                       match="Input must be a valid Float"):
         controller.pay(2, "wrong type")
 
     contract = controller.read(2)[0]

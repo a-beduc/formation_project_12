@@ -36,7 +36,11 @@ class UserManager(BaseManager):
         payload = service_auth.authenticate(old_username, plain_password)
 
         if not payload['c_id'] == kwargs['auth']['c_id']:
-            raise self.error_cls("You can't modify someone else username.")
+            err = self.error_cls("You can't modify someone else username.")
+            err.tips = ("Trying to modify someone else username is forbidden, "
+                        "log out and log back in as the user you want to "
+                        "modify")
+            raise err
         self.service.modify_username(str(old_username),
                                      str(plain_password),
                                      str(new_username))
@@ -48,7 +52,19 @@ class UserManager(BaseManager):
         payload = service_auth.authenticate(username, old_plain_password)
 
         if not payload['c_id'] == kwargs['auth']['c_id']:
-            raise self.error_cls("You can't modify someone else password.")
+            err = self.error_cls("You can't modify someone else password.")
+            err.tips = ("Trying to modify someone else password is forbidden, "
+                        "log out and log back in as the user you want to "
+                        "modify")
+            raise err
         self.service.modify_password(str(username),
                                      str(old_plain_password),
                                      str(new_plain_password))
+
+    @classmethod
+    def verify_plain_password_match(cls, plain_password_1, plain_password_2):
+        if not plain_password_1 == plain_password_2:
+            err = cls.error_cls("passwords do not match")
+            err.tips("The given passwords do not match, verify any typo and "
+                     "try again")
+            raise err
