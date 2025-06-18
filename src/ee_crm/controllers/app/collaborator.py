@@ -23,10 +23,7 @@ class CollaboratorManager(BaseManager):
     def _validate_fields(self, fields):
         fields_dict = super()._validate_fields(fields)
         if 'role' in fields:
-            try:
-                fields_dict['role'] = Role.sanitizer(fields['role'])
-            except CollaboratorError:
-                pass
+            fields_dict['role'] = self.service.role_sanitizer(fields['role'])
         return fields_dict
 
     @permission(requirements=is_management)
@@ -39,7 +36,7 @@ class CollaboratorManager(BaseManager):
             "role"
         }
         role = kwargs.pop('role', "DEACTIVATED")
-        role = Role.sanitizer(role)
+        role = self.service.role_sanitizer(role, strict=True)
         create_data = {k: v for k, v in kwargs.items() if k in create_fields}
         validated_data = self._validate_fields(create_data)
         self.service.create(username, plain_password, role=role,
@@ -69,5 +66,5 @@ class CollaboratorManager(BaseManager):
     @permission(requirements=is_management)
     def change_collaborator_role(self, pk, role):
         pk = self._validate_pk_type(pk)
-        role = Role.sanitizer(role)
+        role = self.service.role_sanitizer(role, strict=True)
         self.service.assign_role(pk, role)

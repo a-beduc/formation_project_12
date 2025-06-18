@@ -15,6 +15,16 @@ class CollaboratorService(BaseService):
             "collaborators"
         )
 
+    @staticmethod
+    def role_sanitizer(role, strict=False):
+        if strict:
+            return Role.sanitizer(role)
+        try:
+            return Role.sanitizer(role)
+        except CollaboratorDomainError:
+            # used to filter out every role for queries with invalid Role input
+            return -1
+
     def create(self, username, plain_password, role=1, **kwargs):
         with self.uow:
             if self.uow.users.filter_one(username=username):
