@@ -4,7 +4,7 @@ from ee_crm.services.app.collaborators import (CollaboratorService,
                                                CollaboratorServiceError)
 from ee_crm.services.dto import CollaboratorDTO
 from ee_crm.domain.model import (AuthUser, Collaborator, Role,
-                                 CollaboratorError)
+                                 CollaboratorDomainError)
 from ee_crm.domain.validators import AuthUserValidatorError
 
 
@@ -65,8 +65,7 @@ class TestCollaboratorCreation:
         service = CollaboratorService(init_uow)
 
         with pytest.raises(AuthUserValidatorError,
-                           match="password too weak, need at least 8 char, "
-                                 "1 number, 1 upper, 1 lower"):
+                           match="password too weak"):
             service.create("user_test", "pwd", **data)
 
     def test_user_creation_empty_username(self, init_uow):
@@ -189,14 +188,62 @@ class TestCollaboratorCRUD:
     def test_assign_role_success(self, init_uow):
         service = CollaboratorService(init_uow)
         user_1_dto_before = service.retrieve(1)
-        assert user_1_dto_before[0].role == Role.MANAGEMENT
+        assert user_1_dto_before[0].role == 'MANAGEMENT'
 
         service.assign_role(1, role=Role.SUPPORT)
         user_1_dto_after = service.retrieve(1)
-        assert user_1_dto_after[0].role == Role.SUPPORT
+        assert user_1_dto_after[0].role == 'SUPPORT'
 
     def test_assign_role_fail(self, init_uow):
         service = CollaboratorService(init_uow)
         with pytest.raises(CollaboratorServiceError,
                            match="Invalid role: UNKNOWN"):
             service.assign_role(1, role="UNKNOWN")
+
+
+@pytest.mark.parametrize(
+    'label, role, strict, expected',
+    [
+        ('NB_DEACTIVATED', 1, False, Role.DEACTIVATED),
+        ('WD_DEACTIVATED', 'DEACTIVATED', False, Role.DEACTIVATED),
+        ('NB_MANAGEMENT', 3, False, Role.MANAGEMENT),
+        ('WD_MANAGEMENT', 'MANAGEMENT', False, Role.MANAGEMENT),
+        ('NB_SALES', 4, False, Role.SALES),
+        ('WD_SALES', 'SALES', False, Role.SALES),
+        ('NB_SUPPORT', 5, False, Role.SUPPORT),
+        ('WD_SUPPORT', 'SUPPORT', False, Role.SUPPORT),
+        ('UNKNOWN_ROLE', 'UNKNOWN', False, -1),
+        ('ADMIN_ROLE', 'ADMIN', False, Role.ADMIN),
+    ]
+)
+def test_role_sanitizer_not_strict(init_uow, label, role, strict, expected):
+    service = CollaboratorService(init_uow)
+    result = service.role_sanitizer(role, strict=strict)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    'label, role, strict, expected',
+    [
+        ('NB_DEACTIVATED', 1, True, Role.DEACTIVATED),
+        ('WD_DEACTIVATED','DEACTIVATED', True, Role.DEACTIVATED),
+        ('NB_MANAGEMENT', 3, True, Role.MANAGEMENT),
+        ('WD_MANAGEMENT', 'MANAGEMENT', True, Role.MANAGEMENT),
+        ('NB_SALES', 4, True, Role.SALES),
+        ('WD_SALES', 'SALES', True, Role.SALES),
+        ('NB_SUPPORT', 5, True, Role.SUPPORT),
+        ('WD_SUPPORT', 'SUPPORT', True, Role.SUPPORT),
+        ('UNKNOWN_ROLE', 'UNKNOWN', True, CollaboratorDomainError)
+    ]
+)
+def test_role_sanitizer_strict(init_uow, label, role, strict, expected):
+    service = CollaboratorService(init_uow)
+    if role in {1, 3, 4, 5, 'DEACTIVATED', 'MANAGEMENT', 'SALES', 'SUPPORT'}:
+        result = service.role_sanitizer(role, strict=strict)
+        assert result == expected
+    else:
+        with pytest.raises(expected):
+            service.role_sanitizer(role, strict=strict)
+
+
+

@@ -1,6 +1,6 @@
 import pytest
 
-from ee_crm.domain.model import AuthUser, Collaborator, AuthUserError
+from ee_crm.domain.model import AuthUser, Collaborator, AuthUserDomainError
 from ee_crm.services.auth.authentication import (
     AuthenticationService,
     AuthenticationError)
@@ -41,7 +41,7 @@ class TestAuthenticate:
 
     def test_authenticate_fail_wrong_username(self, uow):
         with pytest.raises(AuthenticationError,
-                           match='No user found with username : "not_bob"'):
+                           match='No user found'):
             service = AuthenticationService(uow)
             service.authenticate("not_bob", "pwd")
 
@@ -58,7 +58,7 @@ class TestAuthenticate:
 
         mocker.patch.object(uow.users, "filter_one", return_value=user)
         mock_vp = mocker.patch.object(user, "verify_password")
-        mock_vp.side_effect = AuthUserError("Password mismatch")
+        mock_vp.side_effect = AuthUserDomainError("Password mismatch")
 
-        with pytest.raises(AuthUserError, match="Password mismatch"):
+        with pytest.raises(AuthUserDomainError, match="Password mismatch"):
             service.authenticate("user_b", "not_pwd")

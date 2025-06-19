@@ -1,31 +1,26 @@
-from datetime import datetime
-
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
+from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.permission import permission, is_sales, \
+    is_management, event_has_support, is_event_associated_support, \
+    is_event_associated_salesman
+from ee_crm.controllers.utils import verify_positive_int, verify_string, \
+    verify_datetime
+from ee_crm.exceptions import EventManagerError
 from ee_crm.services.app.events import EventService
-
-from ee_crm.controllers.app.base import BaseManager, BaseManagerError
-from ee_crm.controllers.permission import (
-    permission, is_sales, is_support, is_management, event_has_support,
-    is_event_associated_support, is_event_associated_salesman
-)
-
-
-class EventManagerError(BaseManagerError):
-    pass
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class EventManager(BaseManager):
     label = "Event"
     _validate_types_map = {
-        "id": int,
-        "title": str,
-        "start_time": datetime.fromisoformat,
-        "end_time": datetime.fromisoformat,
-        "location": str,
-        "attendee": int,
-        "notes": str,
-        "supporter_id": int,
-        "contract_id": int
+        "id": verify_positive_int,
+        "title": verify_string,
+        "start_time": verify_datetime,
+        "end_time": verify_datetime,
+        "location": verify_string,
+        "attendee": verify_positive_int,
+        "notes": verify_string,
+        "supporter_id": verify_positive_int,
+        "contract_id": verify_positive_int
     }
     _default_service = EventService(SqlAlchemyUnitOfWork())
     error_cls = EventManagerError

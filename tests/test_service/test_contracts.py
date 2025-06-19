@@ -1,7 +1,7 @@
 import pytest
 
 from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
-                                 ContractError)
+                                 ContractDomainError)
 from ee_crm.domain.validators import ContractValidatorError
 from ee_crm.services.app.contracts import ContractService
 
@@ -101,7 +101,7 @@ def test_change_total_amount_after_signed_fail(init_uow):
     contract = service.retrieve(4)
     assert contract[0].total_amount == 400.00
 
-    with pytest.raises(ContractError, match="Total amount cannot be changed "
+    with pytest.raises(ContractDomainError, match="Total amount cannot be changed "
                                             "for signed contract"):
         service.modify_total_amount(4, 200)
 
@@ -124,7 +124,7 @@ def test_pay_amount_not_signed_fail(init_uow):
     assert contract[0].total_amount == 100.00
     assert contract[0].due_amount == 100.00
 
-    with pytest.raises(ContractError, match="Payment can't be registered "
+    with pytest.raises(ContractDomainError, match="Payment can't be registered "
                                             "before signature"):
         service.pay_amount(1, 100.00)
 
@@ -135,7 +135,7 @@ def test_paid_amount_negative_fail(init_uow):
     assert contract[0].total_amount == 400.00
     assert contract[0].due_amount == 400.00
 
-    with pytest.raises(ContractError, match="Payment amount must be positive"):
+    with pytest.raises(ContractDomainError, match="Payment amount must be positive"):
         service.pay_amount(4, -100.00)
 
 
@@ -145,6 +145,6 @@ def test_paid_amount_exceed_total_fail(init_uow):
     assert contract[0].total_amount == 400.00
     assert contract[0].due_amount == 400.00
 
-    with pytest.raises(ContractError, match="Payment : 500.0 exceed due. "
+    with pytest.raises(ContractDomainError, match="Payment : 500.0 exceed due. "
                                             "Still due : 400.0"):
         service.pay_amount(4, 500.00)

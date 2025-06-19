@@ -1,10 +1,6 @@
 from abc import ABC
 
 
-class ServiceError(Exception):
-    pass
-
-
 class BaseService(ABC):
     def __init__(self, uow, model_cls, dto_cls, error_cls, repo_attr):
         self.uow = uow
@@ -28,7 +24,11 @@ class BaseService(ABC):
         with self.uow:
             obj = self._repo.get(obj_id)
             if obj is None:
-                raise self.error_cls(f'{self.model_cls.__name__} not found')
+                err = self.error_cls(f'{self.model_cls.__name__} not found')
+                err.tips = (f"The -pk \"{obj_id}\" isn't linked to an "
+                            f"existing {self.model_cls.__name__}. Try a "
+                            f"different one.")
+                raise err
             return (self.dto_cls.from_domain(obj),)
 
     def retrieve_all(self, sort=None):
@@ -38,8 +38,11 @@ class BaseService(ABC):
                             for obj in self._repo.list(sort=sort)]
                 return tuple(list_obj)
             except AttributeError:
-                raise self.error_cls(f'wrong sort key in '
+                err = self.error_cls(f'wrong sort key in '
                                      f'{[key for key, _ in sort]}')
+                err.tips = ("There was an error in the sorting methods, one of"
+                            "the key isn't valid. Verify input and try again")
+                raise err
 
     def remove(self, obj_id):
         with self.uow:
@@ -50,7 +53,11 @@ class BaseService(ABC):
         with self.uow:
             obj = self._repo.get(obj_id)
             if obj is None:
-                raise self.error_cls(f'{self.model_cls.__name__} not found')
+                err = self.error_cls(f'{self.model_cls.__name__} not found')
+                err.tips = (f"The -pk \"{obj_id}\" isn't linked to an "
+                            f"existing {self.model_cls.__name__}. Try a "
+                            f"different one.")
+                raise err
             for k, v in kwargs.items():
                 if v is not None and k in self.model_cls.updatable_fields():
                     setattr(obj, k, v)
@@ -60,8 +67,12 @@ class BaseService(ABC):
         filters = {k: v for k, v in kwargs.items()
                    if k in self.model_cls.filterable_fields()}
         if filters == {}:
-            raise self.error_cls(f'No valid filters for '
+            err = self.error_cls(f'No valid filters for '
                                  f'{self.model_cls.__name__} in {kwargs}')
+            err.tips = ("There was an error in the filtering methods, none of "
+                        "the provided filters are valid. "
+                        "Verify input and try again")
+            raise err
         with self.uow:
             objs = self._repo.filter(sort=sort, **filters)
             return tuple([self.dto_cls.from_domain(obj) for obj in objs])

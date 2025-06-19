@@ -1,8 +1,7 @@
+from ee_crm.services.auth.authentication import AuthenticationService
+from ee_crm.services.auth.jwt_handler import create_and_store_tokens, \
+    wipe_tokens
 from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
-from ee_crm.services.auth.authentication import (
-    AuthenticationService)
-from ee_crm.services.auth.jwt_handler import (
-    create_and_store_tokens, wipe_tokens)
 
 
 def login(username, plain_password):

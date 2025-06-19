@@ -1,7 +1,7 @@
 from argon2 import PasswordHasher, exceptions
-from enum import IntEnum
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import IntEnum
 from math import trunc
 
 from ee_crm.domain.validators import (
@@ -11,30 +11,8 @@ from ee_crm.domain.validators import (
     ContractValidator as ConVal,
     EventValidator as EveVal
 )
-
-
-class DomainError(Exception):
-    pass
-
-
-class AuthUserError(DomainError):
-    pass
-
-
-class CollaboratorError(DomainError):
-    pass
-
-
-class ClientError(DomainError):
-    pass
-
-
-class ContractError(DomainError):
-    pass
-
-
-class EventError(DomainError):
-    pass
+from ee_crm.exceptions import AuthUserDomainError, CollaboratorDomainError, \
+    ClientDomainError, ContractDomainError, EventDomainError
 
 
 @dataclass(kw_only=True)
@@ -72,7 +50,11 @@ class AuthUser:
         try:
             ph.verify(self._password, plain_password)
         except exceptions.VerifyMismatchError:
-            raise AuthUserError(f"Password mismatch")
+            err = AuthUserDomainError(f"Password mismatch")
+            err.tips = ("The provided password doesn't match with the password"
+                        " saved in database for this user. Verify your input "
+                        "and try again.")
+            raise err
 
     @classmethod
     def builder(cls, username, plain_password):
@@ -93,22 +75,26 @@ class Role(IntEnum):
     SUPPORT = 5
 
     @classmethod
-    def sanitizer(cls, value_in):
-        if isinstance(value_in, cls):
-            return value_in
+    def sanitizer(cls, value):
+        if isinstance(value, cls):
+            return value
 
         try:
-            return cls(int(value_in))
+            return cls(int(value))
         except (ValueError, TypeError):
             pass
 
-        if isinstance(value_in, str):
+        if isinstance(value, str):
             try:
-                return cls[value_in.upper()]
+                return cls[value.upper()]
             except KeyError:
                 pass
 
-        raise CollaboratorError(f"Invalid role: {value_in}")
+        err = CollaboratorDomainError(f"Invalid role: {value}")
+        err.tips = ('Role can be one of '
+                    '"DEACTIVATED", "MANAGEMENT", "SALES", "SUPPORT". '
+                    'Verify your input and try again')
+        raise err
 
 
 @dataclass(kw_only=True)
@@ -135,7 +121,12 @@ class Collaborator:
     @role.setter
     def role(self, value):
         if not isinstance(value, Role):
-            raise CollaboratorError("Role must be an instance of RoleType")
+            err = CollaboratorDomainError(
+                "Role must be an instance of RoleType")
+            err.tips = ('Role can be one of '
+                        '"DEACTIVATED", "MANAGEMENT", "SALES", "SUPPORT". '
+                        'Verify your input and try again')
+            raise err
         self._role_id = int(value)
 
     @staticmethod
@@ -157,7 +148,11 @@ class Collaborator:
                 user_id=None):
 
         if not user_id:
-            raise CollaboratorError("Collaborator must have a linked user")
+            err = CollaboratorDomainError("Collaborator must have a linked "
+                                          "user")
+            err.tips = ('The provided user id is not linked to a user in the '
+                        'database, critical error, contact support.')
+            raise err
 
         data = {
             "last_name": last_name,
@@ -241,7 +236,10 @@ class Client:
                 salesman_id=None):
 
         if not salesman_id:
-            raise ClientError("Client must have a linked salesman")
+            err = ClientDomainError("Client must have a linked salesman")
+            err.tips = ("The given salesman_id isn't linked to a collaborator "
+                        "with the SALES role.")
+            raise err
 
         data = {
             "last_name": last_name,
@@ -314,18 +312,37 @@ class Contract:
         ConVal.validate_price(new_total)
         validated_price = trunc(new_total * 100) / 100
         if self._signed:
-            raise ContractError("Total amount cannot be changed for signed "
-                                "contract")
+            err = ContractDomainError("Total amount cannot be changed for "
+                                      "signed contract.")
+            err.tips = ("You cannot change the total amount of a contract "
+                        "after it has been signed. You must ask for a new "
+                        "contract to be made to modify the total amount.")
+            raise err
         self._total_amount = validated_price
 
     def register_payment(self, amount):
         if not self._signed:
-            raise ContractError("Payment can't be registered before signature")
+            err = ContractDomainError("Payment can't be registered before "
+                                      "signature.")
+            err.tips = ("You must sign the contract before being able to "
+                        "register any payment. Beware, once signed the total "
+                        "amount to pay for the contract will be frozen.")
+            raise err
         if amount <= 0:
-            raise ContractError("Payment amount must be positive")
+            err = ContractDomainError("Payment amount must be positive")
+            err.tips = ("You can't register an invalid payment amount. "
+                        "Assure that the payment is at least 0.")
+            raise err
         if amount > (self._total_amount - self._paid_amount):
-            raise ContractError(f"Payment : {amount} exceed due. "
-                                f"Still due : {self.calculate_due_amount()}")
+            err = ContractDomainError(
+                f"Payment : {amount} exceed due. "
+                f"Still due : {self.calculate_due_amount()}.")
+            err.tips = (f"The provided payment is higher than the due amount. "
+                        f"Verify amount and try again, if the payment has "
+                        f"already been processed, you must pay back the "
+                        f"client the following amount : "
+                        f"{amount - self.calculate_due_amount()}.")
+            raise err
         ConVal.validate_price(amount)
         validated_price = trunc(amount * 100) / 100
         self._paid_amount += validated_price
@@ -346,7 +363,10 @@ class Contract:
     @classmethod
     def builder(cls, total_amount=None, client_id=None):
         if not client_id:
-            raise ContractError("Contract must have a linked client")
+            err = ContractDomainError("Contract must have a linked client")
+            err.tips = ("The given client_id isn't linked to a client in the "
+                        "database, verify your input and try again.")
+            raise err
 
         data = {
             "total_amount": total_amount,
@@ -403,7 +423,10 @@ class Event:
     def builder(cls, title=None, start_time=None, end_time=None, location=None,
                 attendee=None, notes=None, contract_id=None):
         if not contract_id:
-            raise EventError("Contract must have a linked client")
+            err = EventDomainError("Contract must have a linked client")
+            err.tips = ("The given contract_id isn't linked to a contract in "
+                        "the database, verify your input and try again.")
+            raise err
 
         data = {
             "title": title,

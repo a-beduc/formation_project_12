@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ee_crm.config import get_postgres_uri
 from ee_crm.adapters import repositories as repo
+from ee_crm.config import get_postgres_uri
 
 
 class AbstractUnitOfWork(ABC):

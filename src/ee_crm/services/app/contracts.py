@@ -1,10 +1,7 @@
 from ee_crm.domain.model import Contract, Role
+from ee_crm.exceptions import ContractServiceError
+from ee_crm.services.app.base import BaseService
 from ee_crm.services.dto import ContractDTO, ClientDTO
-from ee_crm.services.app.base import BaseService, ServiceError
-
-
-class ContractServiceError(ServiceError):
-    pass
 
 
 class ContractService(BaseService):
@@ -21,16 +18,26 @@ class ContractService(BaseService):
         with self.uow:
             client = self.uow.clients.get(client_id)
             if not client:
-                raise ContractServiceError(
+                err = ContractServiceError(
                     "Contract must be linked to a client")
+                err.tips = (f"The client_id {client_id} isn't linked to a "
+                            f"client in the database.")
+                raise err
             if not client.salesman:
-                raise ContractServiceError(
+                err = ContractServiceError(
                     "Client must have a designated salesman")
+                err.tips = (f"The client with the pk {client_id} doesn't have"
+                            f"a designated salesman. Provide him/her one to"
+                            f"be able to create contracts for him/her")
+                raise err
             if not client.salesman.role == Role.SALES:
-                raise ContractServiceError(
+                err = ContractServiceError(
                     "Associated collaborator is not in SALES, "
-                    "must reassign client"
-                )
+                    "must reassign client")
+                err.tips = ("The collaborator associated with the client of "
+                            "this contract is not a salesman, contact a "
+                            "member of the MANAGEMENT to resolve this issue.")
+                raise err
 
         return super().create(client_id=client_id, total_amount=total_amount)
 
@@ -59,4 +66,7 @@ class ContractService(BaseService):
                 client = contract.client
                 return (ClientDTO.from_domain(client),)
             except AttributeError:
-                raise ContractServiceError("No associated client")
+                err = ContractServiceError("No associated client")
+                err.tips = (f"The contract_id {contract_id} isn't linked to a "
+                            f"client in the database.")
+                raise err

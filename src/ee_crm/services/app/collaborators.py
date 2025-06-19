@@ -1,10 +1,7 @@
 from ee_crm.domain.model import AuthUser, Collaborator, Role
+from ee_crm.exceptions import CollaboratorServiceError, CollaboratorDomainError
+from ee_crm.services.app.base import BaseService
 from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.services.app.base import BaseService, ServiceError
-
-
-class CollaboratorServiceError(ServiceError):
-    pass
 
 
 class CollaboratorService(BaseService):
@@ -18,10 +15,23 @@ class CollaboratorService(BaseService):
             "collaborators"
         )
 
+    @staticmethod
+    def role_sanitizer(role, strict=False):
+        if strict:
+            return Role.sanitizer(role)
+        try:
+            return Role.sanitizer(role)
+        except CollaboratorDomainError:
+            # used to filter out every role for queries with invalid Role input
+            return -1
+
     def create(self, username, plain_password, role=1, **kwargs):
         with self.uow:
             if self.uow.users.filter_one(username=username):
-                raise self.error_cls("username taken")
+                err = self.error_cls("username taken")
+                err.tips = (f"The username {username} is taken, select a "
+                            f"different one and try again.")
+                raise err
             AuthUser.builder(username, plain_password)
             user = AuthUser.builder(username, plain_password)
             self.uow.users.add(user)
@@ -58,7 +68,10 @@ class CollaboratorService(BaseService):
                 Role.SUPPORT
             }
             if role not in roles:
-                raise CollaboratorServiceError(f"Invalid role: {role}")
+                err = CollaboratorServiceError(f"Invalid role: {role}")
+                err.tips = (f"Invalid role {role}, the role can be one of the "
+                            f"following : {', '.join(r.name for r in roles)}")
+                raise err
             collaborator = self._repo.get(collaborator_id)
             collaborator.role = role
             self.uow.commit()

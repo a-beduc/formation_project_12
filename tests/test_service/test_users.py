@@ -2,7 +2,7 @@ import pytest
 
 from ee_crm.services.auth.authentication import AuthenticationError
 from ee_crm.services.app.users import UserServiceError, UserService
-from ee_crm.domain.model import AuthUser, AuthUserError
+from ee_crm.domain.model import AuthUser, AuthUserDomainError
 from ee_crm.domain.validators import AuthUserValidatorError
 from ee_crm.services.dto import AuthUserDTO
 
@@ -44,7 +44,7 @@ def test_change_password_success(mocker, uow, fake_repo):
 def test_change_password_wrong_username(uow):
     service = UserService(uow)
     with pytest.raises(AuthenticationError,
-                       match='No user found with username : "not_bob"'):
+                       match='No user found'):
         service.modify_password("not_bob", "Password1", "new_pwd")
 
 
@@ -54,9 +54,9 @@ def test_change_password_fail_wrong_password(mocker, uow, fake_repo):
     uow.users = fake_repo(init=(user,))
     service = UserService(uow)
     verifier = mocker.patch.object(user, 'verify_password')
-    verifier.side_effect = AuthUserError('Password mismatch')
+    verifier.side_effect = AuthUserDomainError('Password mismatch')
 
-    with pytest.raises(AuthUserError, match="Password mismatch"):
+    with pytest.raises(AuthUserDomainError, match="Password mismatch"):
         service.modify_password("user_b", "wrong_pwd", "new_pwd")
 
 
@@ -68,8 +68,7 @@ def test_change_password_fail_new_pwd_too_short(mocker, uow, fake_repo):
     mocker.patch.object(user, 'verify_password')
 
     with pytest.raises(AuthUserValidatorError,
-                       match="password too weak, need at least 8 char, "
-                             "1 number, 1 upper, 1 lower"):
+                       match="password too weak"):
         service.modify_password("user_b", "Password1", "ne")
 
 

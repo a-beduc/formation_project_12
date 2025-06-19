@@ -134,14 +134,10 @@ def test_validate_password_success(password):
 @pytest.mark.parametrize(
     "password, err_msg",
     [
-        ("short1A", "password too weak, need at least 8 char, 1 number, "
-                    "1 upper, 1 lower"),
-        ("nouppercase1", "password too weak, need at least 8 char, 1 number, "
-                         "1 upper, 1 lower"),
-        ("NOLOWERCASE1", "password too weak, need at least 8 char, 1 number, "
-                         "1 upper, 1 lower"),
-        ("NoNumber", "password too weak, need at least 8 char, 1 number, "
-                     "1 upper, 1 lower"),
+        ("short1A", "password too weak"),
+        ("nouppercase1", "password too weak"),
+        ("NOLOWERCASE1", "password too weak"),
+        ("NoNumber", "password too weak"),
         (123456789, "Password must be a string"),
         (f"Aa1{'a'*253}", "Password too long")
     ]
