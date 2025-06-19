@@ -40,7 +40,7 @@ def contract():
 def create(data_contract, no_prompt):
     cli_create(data_contract, no_prompt, ContractManager,
                PROMPT_FIELDS, KEYS_MAP)
-    click.echo("Contract successfully created")
+    BaseView.success("Contract successfully created")
 
 
 @click.command()
@@ -64,7 +64,7 @@ def create(data_contract, no_prompt):
 def read(pk, filters, sorts, remove_columns):
     output = cli_read(pk, filters, sorts, ContractManager, KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
-    ContractView().render(output, remove_col=remove_col)
+    ContractCrudView().render(output, remove_col=remove_col)
 
 
 @click.command()
@@ -73,7 +73,7 @@ def read(pk, filters, sorts, remove_columns):
               help="Contract's unique id, pk: INT >= 1")
 def delete(pk):
     cli_delete(pk, ContractManager)
-    click.echo(f"Client successfully deleted")
+    BaseView.success(f"Client successfully deleted")
 
 
 contract.add_command(create)

@@ -58,7 +58,7 @@ def event():
 def create(data_event, no_prompt):
     cli_create(data_event, no_prompt, EventManager,
                PROMPT_CREATE, KEYS_MAP)
-    click.echo("Event successfully created")
+    BaseView.success("Event successfully created")
 
 
 @click.command()
@@ -82,7 +82,7 @@ def create(data_event, no_prompt):
 def read(pk, filters, sorts, remove_columns):
     output = cli_read(pk, filters, sorts, EventManager, KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
-    EventView().render(output, remove_col=remove_col)
+    EventCrudView().render(output, remove_col=remove_col)
 
 
 @click.command()
@@ -99,7 +99,7 @@ def read(pk, filters, sorts, remove_columns):
 def update(pk, data_event, no_prompt):
     cli_update(pk, data_event, no_prompt, EventManager,
                PROMPT_UPDATE, KEYS_MAP)
-    click.echo(f"Event successfully updated")
+    BaseView.success(f"Event successfully updated")
 
 
 @click.command()
@@ -108,7 +108,7 @@ def update(pk, data_event, no_prompt):
               help="Event's unique id, pk: INT >= 1")
 def delete(pk):
     cli_delete(pk, EventManager)
-    click.echo(f"Event successfully deleted")
+    BaseView.success(f"Event successfully deleted")
 
 
 event.add_command(create)

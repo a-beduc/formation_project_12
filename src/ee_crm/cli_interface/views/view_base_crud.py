@@ -25,16 +25,6 @@ class CrudView(BaseView):
         self.instance_columns = list(self.columns)
 
     @staticmethod
-    def echo(text):
-        click.echo(text)
-
-    def _success(self, msg):
-        self.echo(click.style(msg, fg='green'))
-
-    def _error(self, msg):
-        self.echo(click.style(msg, fg='red'))
-
-    @staticmethod
     def _prepare_chunks(text, size):
         if text is None:
             return ['']
@@ -144,7 +134,7 @@ class CrudView(BaseView):
 
     def render(self, data, remove_col=None):
         if not data:
-            self._error(f"No {self.label.lower()} found.")
+            self.error(f"No {self.label.lower()} found.")
             return
 
         if remove_col is not None:

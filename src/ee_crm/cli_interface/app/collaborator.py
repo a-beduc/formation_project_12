@@ -57,9 +57,8 @@ def create(data_collaborator, no_prompt):
     password = click.prompt('create password (8 char, 1 upper, 1 lower, '
                             '1 number)', hide_input=True)
     password_2 = click.prompt('confirm password', hide_input=True)
-    if password != password_2:
-        click.echo('passwords do not match')
-        raise SystemExit(1)
+
+    UserManager.verify_plain_password_match(password, password_2)
 
     cl_data = clean_input_fields(data_collaborator) or {}
     norm_data = normalize_fields(cl_data, KEYS_MAP) or {}
@@ -67,7 +66,7 @@ def create(data_collaborator, no_prompt):
 
     controller.create(username, password, **comp_data)
 
-    click.echo(f"User {username} successfully created")
+    BaseView.success(f"User {username} successfully created")
 
 
 @click.command()
@@ -91,7 +90,7 @@ def create(data_collaborator, no_prompt):
 def read(pk, filters, sorts, remove_columns):
     output = cli_read(pk, filters, sorts, CollaboratorManager, KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
-    CollaboratorView().render(output, remove_col=remove_col)
+    CollaboratorCrudView().render(output, remove_col=remove_col)
 
 
 @click.command()
@@ -108,7 +107,7 @@ def read(pk, filters, sorts, remove_columns):
 def update(pk, data_collaborator, no_prompt):
     cli_update(pk, data_collaborator, no_prompt, CollaboratorManager,
                PROMPT_UPDATE, KEYS_MAP)
-    click.echo(f"Collaborator successfully updated")
+    CollaboratorCrudView().success(f"Collaborator successfully updated")
 
 
 @click.command()
@@ -117,7 +116,7 @@ def update(pk, data_collaborator, no_prompt):
               help="Collaborator's unique id, pk: INT >= 1")
 def delete(pk):
     cli_delete(pk, CollaboratorManager)
-    click.echo(f"Collaborator successfully deleted")
+    BaseView.success(f"Collaborator successfully deleted")
 
 
 @click.command()
@@ -134,7 +133,7 @@ def assign(pk, role):
     """
     controller = CollaboratorManager()
     controller.change_collaborator_role(pk, role)
-    click.echo(f"Collaborator successfully assigned to new role : {role}")
+    BaseView.success(f"Collaborator successfully assigned to new role : {role}")
 
 
 collaborator.add_command(create)

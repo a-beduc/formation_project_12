@@ -41,16 +41,16 @@ def user():
 def read(pk, filters, sorts, remove_columns):
     output = cli_read(pk, filters, sorts, UserManager, KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
-    UserView().render(output, remove_col=remove_col)
+    UserCrudView().render(output, remove_col=remove_col)
 
 
 @click.command("whoami")
 def who_am_i():
     controller = UserManager()
     user_dto, coll_dto = controller.who_am_i()
-    click.echo(f'Logged in as ({user_dto.id}) {user_dto.username} !')
-    click.echo(f'Welcome {coll_dto.first_name} {coll_dto.last_name}, '
-               f'your role is {coll_dto.role}')
+    BaseView.success(f'Logged in as ({user_dto.id}) {user_dto.username} !')
+    BaseView.success(f'Welcome {coll_dto.first_name} {coll_dto.last_name}, '
+                     f'your role is {coll_dto.role}')
 
 
 @click.command("change_username")
@@ -62,11 +62,10 @@ def change_username():
 
     if not click.confirm(f'Confirm changing username from {old_username} '
                          f'to {new_username} ?'):
-        click.echo('Aborted')
-        raise SystemExit(1)
+        raise controller.error_cls('Aborted')
 
     controller.update_username(old_username, plain_password, new_username)
-    click.echo(f'Username successfully updated : {new_username}')
+    BaseView.success(f'Username successfully updated : {new_username}')
 
 
 @click.command("change_password")
@@ -77,16 +76,15 @@ def change_password():
     new_plain_password = click.prompt('New password', hide_input=True)
     confirm_new_plain_password = click.prompt('Confirm new password',
                                               hide_input=True)
-    if not new_plain_password == confirm_new_plain_password:
-        click.echo('New passwords do not match')
-        raise SystemExit(1)
+
+    UserManager.verify_plain_password_match(old_plain_password,
+                                            new_plain_password)
 
     if not click.confirm(f'Confirm changing your password ?'):
-        click.echo('Aborted')
-        raise SystemExit(1)
+        raise controller.error_cls('Aborted')
 
     controller.update_username(username, old_plain_password, new_plain_password)
-    click.echo("Password successfully updated")
+    BaseView.success("Password successfully updated")
 
 
 user.add_command(read)
