@@ -15,10 +15,11 @@ class BaseService(ABC):
 
     def create(self, **obj_value):
         # need to prepare **obj_value in children classes
-        obj = self.model_cls.builder(**obj_value)
         with self.uow:
+            obj = self.model_cls.builder(**obj_value)
             self._repo.add(obj)
             self.uow.commit()
+            return (self.dto_cls.from_domain(obj),)
 
     def retrieve(self, obj_id):
         with self.uow:

@@ -1,3 +1,4 @@
+from ee_crm.config import setup_file_logger
 from ee_crm.domain.model import AuthUser, Collaborator, Role
 from ee_crm.exceptions import CollaboratorServiceError, CollaboratorDomainError
 from ee_crm.services.app.base import BaseService
@@ -44,6 +45,8 @@ class CollaboratorService(BaseService):
                                                 **obj_value)
             self._repo.add(collaborator)
             self.uow.commit()
+
+            return (self.dto_cls.from_domain(collaborator),)
 
     def remove(self, collaborator_id=None, user_id=None):
         with self.uow:
