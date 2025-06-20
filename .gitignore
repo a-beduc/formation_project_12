@@ -6,3 +6,5 @@ tempo_sql_reset/commands.txt
 z_manual/
 .coverage
 __pycache__.py
+htmlcov/
+.logs/

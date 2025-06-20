@@ -17,7 +17,7 @@ def cli_create(data_input, no_prompt, ctrl_class, prompt_field, keys_map):
     cl_data = clean_input_fields(data_input)
     norm_data = normalize_fields(cl_data, keys_map) or {}
     crea_data = cli_prompt(norm_data, no_prompt, prompt_field)
-    controller.create(**crea_data)
+    return controller.create(**crea_data)
 
 
 def cli_read(pk, filters, sorts, ctrl_class, keys_map):
@@ -31,10 +31,8 @@ def cli_read(pk, filters, sorts, ctrl_class, keys_map):
 
 def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
     controller = ctrl_class()
-    class_dto = controller.read(pk)
 
-    if not click.confirm(f"Update {controller.label} : ({pk}) "
-                         f"'{class_dto[0].last_name}' ?"):
+    if not click.confirm(f"Update {controller.label} : ({pk}) ?"):
         err = ctrl_class.error_cls("Aborted by user")
         err.threat = "warning"
         err.tips = 'You must press "Y" to confirm update, try again'
@@ -49,10 +47,8 @@ def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
 
 def cli_delete(pk, ctrl_class):
     controller = ctrl_class()
-    class_dto = controller.read(pk)
 
-    if not click.confirm(f"Delete {controller.label} : ({pk}) "
-                         f"'{class_dto[0].last_name}' ?"):
+    if not click.confirm(f"Delete {controller.label} : ({pk}) ?"):
         err = ctrl_class.error_cls("Aborted by user")
         err.threat = "warning"
         err.tips = 'You must press "Y" to confirm deletion, try again'

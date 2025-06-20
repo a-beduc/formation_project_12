@@ -38,9 +38,11 @@ def contract():
 @click.option("-np", "--no-prompt", is_flag=True, default=False,
               help="flag to turn off prompting to get additional data")
 def create(data_contract, no_prompt):
-    cli_create(data_contract, no_prompt, ContractManager,
-               PROMPT_FIELDS, KEYS_MAP)
-    BaseView.success("Contract successfully created")
+    output = cli_create(data_contract, no_prompt, ContractManager,
+                        PROMPT_FIELDS, KEYS_MAP)
+    viewer = ContractCrudView()
+    viewer.success("Contract successfully created")
+    viewer.render(output)
 
 
 @click.command()

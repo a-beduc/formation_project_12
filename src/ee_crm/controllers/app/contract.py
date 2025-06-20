@@ -7,6 +7,7 @@ from ee_crm.controllers.permission import permission, is_sales, \
     is_management, is_contract_associated_salesman, contract_has_salesman, \
     contract_is_signed
 from ee_crm.exceptions import ContractManagerError, InputError
+from ee_crm.loggers import log_sentry_message_event, setup_file_logger
 from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 from ee_crm.services.app.contracts import ContractService
 
@@ -23,6 +24,25 @@ class ContractManager(BaseManager):
     }
     _default_service = ContractService(SqlAlchemyUnitOfWork())
     error_cls = ContractManagerError
+
+    @staticmethod
+    def _local_logging_db_action(action, result, resource_id, accountable_id):
+        logger = setup_file_logger(name=__name__, filename="ACID")
+        logger.info(f'controller ::: Contract ::: {action} ::: '
+                    f'by collaborator ({accountable_id}) ::: '
+                    f'{result} ({resource_id})')
+
+    def _sentry_logging_db_action(self, action, resource_id, accountable_id,
+                                  message, level="info", **kwargs):
+        tags = {
+            "action": action,
+            "resource": self.label.lower(),
+            "resource_id": str(resource_id),
+            "accountable_id": str(accountable_id)}
+        extra = kwargs.get('extra', None)
+        user = {"id": accountable_id}
+        log_sentry_message_event(message, level,
+                                 tags=tags, extra=extra, user=user)
 
     @staticmethod
     def _validate_signed(filters):
@@ -68,9 +88,16 @@ class ContractManager(BaseManager):
         return super().delete(pk=pk)
 
     @permission(requirements=(is_sales & is_contract_associated_salesman))
-    def sign(self, pk):
+    def sign(self, pk, **kwargs):
         pk = self._validate_pk_type(pk)
         self.service.sign_contract(pk)
+
+        resource_id = pk
+        accountable_id = kwargs.get('auth')['c_id']
+        self._local_logging_db_action("Sign",
+                                      "Contract signed",
+                                      resource_id,
+                                      accountable_id)
 
     @permission(requirements=(is_sales & is_contract_associated_salesman &
                               ~contract_is_signed))

@@ -1,5 +1,7 @@
-import os
+from datetime import date
 from dotenv import load_dotenv
+import logging
+import os
 from pathlib import Path
 
 
@@ -29,3 +31,12 @@ def get_token_access_lifetime():
 
 def get_token_refresh_lifetime():
     return int(os.getenv('REFRESH_LIFETIME'))
+
+
+def get_sentry_dsn():
+    return os.getenv('SENTRY_DSN')
+
+
+def get_local_log_dir():
+    return str(Path(__file__).resolve().parent /
+               os.getenv('LOCAL_LOG_STORAGE'))

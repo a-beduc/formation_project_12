@@ -17,7 +17,8 @@ _EXPAND_ACCEPTED_KEYS = {
     "location": {"lo", "location"},
     "attendee": {"at", "attendee"},
     "notes": {"no", "notes"},
-    "supporter_id": {"su", "si", "supporter", "supporter id", "supporter_id"},
+    "supporter_id": {"su", "si", "supporter", "supporter id", "supporter_id",
+                     "support_id", "support id"},
     "contract_id": {"co", "ci", "contract", "contract id", "contract_id"}
 }
 KEYS_MAP = map_accepted_key(_EXPAND_ACCEPTED_KEYS)
@@ -56,9 +57,11 @@ def event():
 @click.option("-np", "--no-prompt", is_flag=True, default=False,
               help="flag to turn off prompting to get additional data")
 def create(data_event, no_prompt):
-    cli_create(data_event, no_prompt, EventManager,
-               PROMPT_CREATE, KEYS_MAP)
-    BaseView.success("Event successfully created")
+    output = cli_create(data_event, no_prompt, EventManager,
+                        PROMPT_CREATE, KEYS_MAP)
+    viewer = EventCrudView()
+    viewer.success("Event successfully created")
+    viewer.render(output)
 
 
 @click.command()

@@ -42,7 +42,8 @@ class BaseManager(ABC):
 
     def create(self, **kwargs):
         data = self._validate_fields(kwargs)
-        self.service.create(**data)
+        obj_dto = self.service.create(**data)
+        return obj_dto
 
     def read(self, pk=None, filters=None, sort=None):
         if pk:

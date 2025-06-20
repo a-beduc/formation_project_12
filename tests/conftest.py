@@ -236,6 +236,7 @@ def uow():
 @pytest.fixture
 def fake_service(mocker):
     service = mocker.Mock()
+    service.create.return_value = tuple()
     service.retrieve.return_value = tuple()
     service.retrieve_all.return_value = tuple()
     service.filter.return_value = tuple()

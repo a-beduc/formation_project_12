@@ -45,6 +45,8 @@ class CollaboratorService(BaseService):
             self._repo.add(collaborator)
             self.uow.commit()
 
+            return (self.dto_cls.from_domain(collaborator),)
+
     def remove(self, collaborator_id=None, user_id=None):
         with self.uow:
             if collaborator_id:

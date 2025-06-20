@@ -46,9 +46,11 @@ def client():
 @click.option("-np", "--no-prompt", is_flag=True, default=False,
               help="flag to turn off prompting to get additional data")
 def create(data_client, no_prompt):
-    cli_create(data_client, no_prompt, ClientManager,
-               PROMPT_FIELDS, KEYS_MAP)
-    BaseView.success("Client successfully created")
+    output = cli_create(data_client, no_prompt, ClientManager,
+                        PROMPT_FIELDS, KEYS_MAP)
+    viewer = ClientCrudView()
+    viewer.success("Client successfully created")
+    viewer.render(output)
 
 
 @click.command()

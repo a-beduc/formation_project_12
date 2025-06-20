@@ -26,7 +26,7 @@ PROMPT_CREATE = (
     ("first_name", "string"),
     ("email", "string"),
     ("phone_number", "20 char max"),
-    ("role", "3-5")
+    ("role", "DEACTIVATED, MANAGEMENT, SALES, SUPPORT")
 )
 
 PROMPT_UPDATE = (
@@ -64,9 +64,11 @@ def create(data_collaborator, no_prompt):
     norm_data = normalize_fields(cl_data, KEYS_MAP) or {}
     comp_data = cli_prompt(norm_data, no_prompt, PROMPT_CREATE)
 
-    controller.create(username, password, **comp_data)
+    output = controller.create(username, password, **comp_data)
 
-    BaseView.success(f"User {username} successfully created")
+    viewer = CollaboratorCrudView()
+    viewer.success(f"User {username} successfully created")
+    viewer.render(output)
 
 
 @click.command()
