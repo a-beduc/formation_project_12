@@ -21,7 +21,8 @@ dev = [
     "pytest",
     "pytest-mock",
     "coverage",
-    "pytest-cov"
+    "pytest-cov",
+    "sentry-sdk"
 ]
 
 [project.scripts]
@@ -34,6 +35,7 @@ where = ["src"]
 pythonpath = "src"
 
 [tool.coverage.run]
+source = ["src/ee_crm"]
 omit = [
     "tests/*",
     "pyproject.toml",

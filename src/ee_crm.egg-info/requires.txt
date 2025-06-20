@@ -10,3 +10,4 @@ pytest
 pytest-mock
 coverage
 pytest-cov
+sentry-sdk

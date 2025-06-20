@@ -12,6 +12,7 @@ pytest-mock = "*"
 setuptools = "*"
 coverage = "*"
 pytest-cov = "*"
+sentry-sdk = "*"
 
 [requires]
 python_version = "3.12"
