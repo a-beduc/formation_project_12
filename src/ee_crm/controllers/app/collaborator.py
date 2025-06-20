@@ -1,4 +1,4 @@
-from ee_crm.config import setup_file_logger
+from ee_crm.loggers import setup_file_logger, log_sentry_message_event
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_management, is_self
 from ee_crm.controllers.utils import verify_positive_int, verify_string
@@ -29,11 +29,23 @@ class CollaboratorManager(BaseManager):
         return fields_dict
 
     @staticmethod
-    def _logging_acid_action(action, result, resource_id, accountable_id):
+    def _local_logging_db_action(action, result, resource_id, accountable_id):
         logger = setup_file_logger(name=__name__, filename="ACID")
         logger.info(f'controller ::: Collaborator ::: {action} ::: '
                     f'by collaborator ({accountable_id}) ::: '
                     f'{result} ({resource_id})')
+
+    def _sentry_logging_db_action(self, action, resource_id, accountable_id,
+                                  message, level="info", **kwargs):
+        tags = {
+            "action": action,
+            "resource": self.label.lower(),
+            "resource_id": str(resource_id),
+            "accountable_id": str(accountable_id)}
+        extra = kwargs.get('extra', None)
+        user = {"id": accountable_id}
+        log_sentry_message_event(message, level,
+                                 tags=tags, extra=extra, user=user)
 
     @permission(requirements=is_management)
     def create(self, username, plain_password, **kwargs):
@@ -54,10 +66,17 @@ class CollaboratorManager(BaseManager):
 
         resource_id = collaborator_dto[0].id
         accountable_id = kwargs.get('auth')['c_id']
-        self._logging_acid_action("Create",
-                                  "New collaborator",
-                                  resource_id,
-                                  accountable_id)
+
+        self._local_logging_db_action("Create",
+                                      "New collaborator",
+                                      resource_id,
+                                      accountable_id)
+
+        self._sentry_logging_db_action("create",
+                                       resource_id,
+                                       accountable_id,
+                                       "Collaborator created",
+                                       extra={"username": username})
 
         return collaborator_dto
 
@@ -79,10 +98,15 @@ class CollaboratorManager(BaseManager):
 
         resource_id = pk
         accountable_id = kwargs.get('auth')['c_id']
-        self._logging_acid_action("Update",
-                                  "Updated collaborator",
-                                  resource_id,
-                                  accountable_id)
+        self._local_logging_db_action("Update",
+                                      "Updated collaborator",
+                                      resource_id,
+                                      accountable_id)
+
+        self._sentry_logging_db_action("update",
+                                       resource_id,
+                                       accountable_id,
+                                       "Collaborator updated")
 
     @permission(requirements=(is_management | is_self))
     def delete(self, pk, **kwargs):
@@ -91,10 +115,15 @@ class CollaboratorManager(BaseManager):
 
         resource_id = pk
         accountable_id = kwargs.get('auth')['c_id']
-        self._logging_acid_action("Delete",
-                                  "Removed collaborator",
-                                  resource_id,
-                                  accountable_id)
+        self._local_logging_db_action("Delete",
+                                      "Removed collaborator",
+                                      resource_id,
+                                      accountable_id)
+
+        self._sentry_logging_db_action("delete",
+                                       resource_id,
+                                       accountable_id,
+                                       "Collaborator deleted")
 
     @permission(requirements=is_management)
     def change_collaborator_role(self, pk, role, **kwargs):
@@ -104,8 +133,15 @@ class CollaboratorManager(BaseManager):
 
         resource_id = pk
         accountable_id = kwargs.get('auth')['c_id']
-        self._logging_acid_action(
+
+        self._local_logging_db_action(
             "Change Role",
             f'Role "{Role(role).name}" for collaborator',
             resource_id,
             accountable_id)
+
+        self._sentry_logging_db_action("change_role",
+                                       resource_id,
+                                       accountable_id,
+                                       f"Collaborator's Role changed to "
+                                       f"{Role(role).name}")
