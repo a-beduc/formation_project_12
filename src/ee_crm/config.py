@@ -33,31 +33,10 @@ def get_token_refresh_lifetime():
     return int(os.getenv('REFRESH_LIFETIME'))
 
 
+def get_sentry_dsn():
+    return os.getenv('SENTRY_DSN')
+
+
 def get_local_log_dir():
-    return os.getenv('LOCAL_LOG_STORAGE')
-
-
-def _create_or_find_log_storage(filename=None):
-    log_path = f"{get_local_log_dir()}/{date.today()}_eecrm_{filename}.log"
-    path = Path(log_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-def setup_file_logger(name="default", filename="default"):
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-
-    log_path = _create_or_find_log_storage(filename)
-
-    fh = logging.FileHandler(log_path, mode="a", encoding="utf-8")
-    formatter = logging.Formatter(
-        "{asctime} - {name} - {levelname} - {message}",
-        style="{",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
-    fh.setFormatter(formatter)
-    fh.setLevel(logging.INFO)
-    logger.addHandler(fh)
-
-    return logger
+    return str(Path(__file__).resolve().parent /
+               os.getenv('LOCAL_LOG_STORAGE'))
