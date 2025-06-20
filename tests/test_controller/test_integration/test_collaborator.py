@@ -7,7 +7,13 @@ from ee_crm.services.app.collaborators import CollaboratorService, \
     CollaboratorServiceError
 from ee_crm.services.app.users import UserService
 from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.domain.model import Role
+
+
+@pytest.fixture(autouse=True)
+def mock_logger(mocker):
+    mock = mocker.Mock()
+    mocker.patch('ee_crm.controllers.app.collaborator.setup_file_logger',
+                 return_value=mock)
 
 
 @pytest.fixture(autouse=True)

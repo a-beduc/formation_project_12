@@ -6,6 +6,12 @@ from ee_crm.domain.model import Role, CollaboratorDomainError
 from ee_crm.controllers.permission import AuthorizationDenied
 
 
+@pytest.fixture(autouse=True)
+def mock_logger(mocker):
+    mock = mocker.Mock()
+    mocker.patch('ee_crm.controllers.app.collaborator.setup_file_logger',
+                 return_value=mock)
+
 @pytest.fixture
 def collaborators_dto():
     coll_a = CollaboratorDTO(
@@ -107,6 +113,8 @@ def test_read_filter_sort_by_unknown_field(fake_service, collaborators_dto,
 def test_create_collaborator_minimal_data(fake_service,
                                           bypass_permission_manager):
     fake_service.role_sanitizer.return_value = Role.DEACTIVATED
+    fake_service.create.return_value = (CollaboratorDTO(id=1),)
+
     controller = CollaboratorManager(fake_service)
     controller.create(username="Alfred", plain_password="Password1")
     fake_service.create.assert_called_once_with(
@@ -119,6 +127,8 @@ def test_create_collaborator_minimal_data(fake_service,
 def test_create_collaborator_with_support_role(fake_service,
                                                bypass_permission_manager):
     fake_service.role_sanitizer.return_value = Role.SUPPORT
+    fake_service.create.return_value = (CollaboratorDTO(id=1),)
+
     controller = CollaboratorManager(fake_service)
     controller.create(username="Banner", plain_password="Password1",
                       role="SUPPORT")

@@ -42,6 +42,11 @@ class CollaboratorManager(BaseManager):
         self.service.create(username, plain_password, role=role,
                             **validated_data)
 
+        collaborator_dto = self.service.create(username, plain_password,
+                                               role=role, **validated_data)
+
+        return collaborator_dto
+
     @permission
     def read(self, pk=None, filters=None, sort=None):
         return super().read(pk=pk, filters=filters, sort=sort)
