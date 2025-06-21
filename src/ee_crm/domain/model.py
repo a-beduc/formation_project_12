@@ -169,7 +169,7 @@ class Collaborator:
             "email": ColVal.validate_email,
             "phone_number": ColVal.validate_phone_number,
             "role": ColVal.validate_role,
-            "user_id": ColVal.validate_id
+            "user_id": ColVal.validate_positive_int
         }
 
         for k, v in data.items():
@@ -256,7 +256,7 @@ class Client:
             "email": CliVal.validate_email,
             "phone_number": CliVal.validate_phone_number,
             "company": CliVal.validate_str,
-            "salesman_id": CliVal.validate_id
+            "salesman_id": CliVal.validate_positive_int
         }
 
         for k, v in data.items():
@@ -375,7 +375,7 @@ class Contract:
 
         val_map = {
             "total_amount": ConVal.validate_price,
-            "client_id": ConVal.validate_id
+            "client_id": ConVal.validate_positive_int
         }
 
         for k, v in data.items():
@@ -443,9 +443,9 @@ class Event:
             "start_time": EveVal.validate_date,
             "end_time": EveVal.validate_date,
             "location": EveVal.validate_str,
-            "attendee": EveVal.validate_str,
+            "attendee": EveVal.validate_positive_int,
             "notes": EveVal.validate_notes,
-            "contract_id": EveVal.validate_id,
+            "contract_id": EveVal.validate_positive_int,
         }
 
         for k, v in data.items():

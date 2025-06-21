@@ -2,7 +2,7 @@ import pytest
 
 from ee_crm.controllers.app.collaborator import CollaboratorManager
 from ee_crm.controllers.app.user import UserManager
-from ee_crm.controllers.permission import AuthorizationDenied
+from ee_crm.controllers.auth.permission import AuthorizationDenied
 from ee_crm.services.app.collaborators import CollaboratorService, \
     CollaboratorServiceError
 from ee_crm.services.app.users import UserService
@@ -14,15 +14,17 @@ def mock_logger(mocker):
     mock = mocker.Mock()
     mocker.patch('ee_crm.controllers.app.collaborator.setup_file_logger',
                  return_value=mock)
+    mocker.patch('ee_crm.controllers.app.contract.log_sentry_message_event',
+                 return_value=mock)
 
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
-    mocker.patch("ee_crm.controllers.permission.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.collaborator.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.collaborator.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.user.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.user.DEFAULT_UOW",
                  return_value=in_memory_uow())
 
 
@@ -154,7 +156,7 @@ def test_update_collaborator_not_self(init_db_table_collaborator,
     controller = CollaboratorManager(CollaboratorService(in_memory_uow()))
     data = {"last_name": "new_last_name"}
     with pytest.raises(AuthorizationDenied,
-                       match=r"Permission error in "
+                       match=r"Permission error \(ABAC\) in "
                              r"\(is_management or is_self\)"):
         controller.update(pk=1, **data)
 

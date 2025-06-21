@@ -75,7 +75,7 @@ def read(pk, filters, sorts, remove_columns):
               help="Contract's unique id, pk: INT >= 1")
 def delete(pk):
     cli_delete(pk, ContractManager)
-    BaseView.success(f"Client successfully deleted")
+    BaseView.success(f"Contract successfully deleted")
 
 
 contract.add_command(create)

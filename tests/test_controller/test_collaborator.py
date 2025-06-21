@@ -3,7 +3,7 @@ import pytest
 from ee_crm.controllers.app.collaborator import CollaboratorManager
 from ee_crm.services.dto import CollaboratorDTO
 from ee_crm.domain.model import Role, CollaboratorDomainError
-from ee_crm.controllers.permission import AuthorizationDenied
+from ee_crm.controllers.auth.permission import AuthorizationDenied
 
 
 @pytest.fixture(autouse=True)
@@ -11,6 +11,9 @@ def mock_logger(mocker):
     mock = mocker.Mock()
     mocker.patch('ee_crm.controllers.app.collaborator.setup_file_logger',
                  return_value=mock)
+    mocker.patch('ee_crm.controllers.app.contract.log_sentry_message_event',
+                 return_value=mock)
+
 
 @pytest.fixture
 def collaborators_dto():
@@ -150,13 +153,14 @@ def test_create_collaborator_with_bad_role(fake_service,
 
 
 def test_create_permission_denied(fake_service, mocker):
-    mocker.patch("ee_crm.controllers.permission.verify_token",
+    mocker.patch("ee_crm.controllers.auth.permission.is_authenticated",
                  return_value={"sub": "user", "c_id": 13, "role": 5,
                                "name": "Bruce Banner"})
     controller = CollaboratorManager(fake_service)
 
     with pytest.raises(AuthorizationDenied,
-                       match="Permission error in is_management"):
+                       match=r"Permission error \(RBAC\) in "
+                             r"\('collaborator:create',\)."):
         controller.create(username="Banner", plain_password="Password1")
 
 

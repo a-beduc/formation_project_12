@@ -1,16 +1,16 @@
 import pytest
 
 from ee_crm.controllers.app.event import EventManager
-from ee_crm.controllers.permission import AuthorizationDenied
+from ee_crm.controllers.auth.permission import AuthorizationDenied
 from ee_crm.services.app.events import EventService, EventServiceError
 from ee_crm.services.dto import EventDTO
 
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
-    mocker.patch("ee_crm.controllers.permission.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.event.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.event.DEFAULT_UOW",
                  return_value=in_memory_uow())
 
 
@@ -108,7 +108,7 @@ def test_sales_cant_update_event_with_support(
 
     with pytest.raises(
             AuthorizationDenied,
-            match=r"Permission error in "
+            match=r"Permission error \(ABAC\) in "
                   r"\(\(not event_has_support and "
                   r"is_event_associated_salesman\) or "
                   r"is_event_associated_support\)"):
@@ -143,17 +143,17 @@ def test_support_cant_update_other_events(
 
     with pytest.raises(
             AuthorizationDenied,
-            match=r"Permission error in "
+            match=r"Permission error \(ABAC\) in "
                   r"\(\(not event_has_support and "
                   r"is_event_associated_salesman\) or "
                   r"is_event_associated_support\)"):
         controller.update(3, **data)
 
 
-def test_support_can_delete_his_event(
+def test_manager_can_delete_any_event(
         in_memory_uow, init_db_table_collaborator, init_db_table_client,
         init_db_table_contract, init_db_table_event,
-        bypass_permission_support):
+        bypass_permission_manager):
     controller = EventManager(EventService(in_memory_uow()))
     list_event = controller.read()
     assert len(list_event) == 4

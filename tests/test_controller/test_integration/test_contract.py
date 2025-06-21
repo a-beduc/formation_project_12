@@ -3,17 +3,26 @@ from datetime import datetime
 
 from ee_crm.controllers.app.contract import ContractManager, \
     ContractManagerError
-from ee_crm.controllers.permission import AuthorizationDenied
+from ee_crm.controllers.auth.permission import AuthorizationDenied
 from ee_crm.domain.model import ContractDomainError
 from ee_crm.services.app.contracts import ContractService, ContractServiceError
 from ee_crm.services.dto import ContractDTO
 
 
 @pytest.fixture(autouse=True)
+def mock_logger(mocker):
+    mock = mocker.Mock()
+    mocker.patch('ee_crm.controllers.app.contract.setup_file_logger',
+                 return_value=mock)
+    mocker.patch('ee_crm.controllers.app.contract.log_sentry_message_event',
+                 return_value=mock)
+
+
+@pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
-    mocker.patch("ee_crm.controllers.permission.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.contract.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.contract.DEFAULT_UOW",
                  return_value=in_memory_uow())
 
 
@@ -92,7 +101,8 @@ def test_try_create_contract_wrong_role(init_db_table_collaborator,
     data = {"client_id": 3}
 
     with pytest.raises(AuthorizationDenied,
-                       match="Permission error in is_management"):
+                       match=r"Permission error \(RBAC\) in "
+                             r"\('contract:create',\)."):
         controller.create(**data)
 
 
@@ -150,10 +160,9 @@ def test_try_delete_contract_not_my_client(
     controller = ContractManager(ContractService(in_memory_uow()))
     with pytest.raises(
             AuthorizationDenied,
-            match=r"Permission error in "
-                  r"\(\(is_management and not contract_has_salesman\) "
-                  r"or "
-                  r"\(is_sales and is_contract_associated_salesman\)\)"):
+            match=r"Permission error \(ABAC\) in "
+                  r"\(is_contract_associated_salesman or "
+                  r"\(is_management and not contract_has_salesman\)\)"):
         controller.delete(pk=1)
 
 
@@ -163,10 +172,9 @@ def test_manager_try_delete_contract_of_salesman(
     controller = ContractManager(ContractService(in_memory_uow()))
     with pytest.raises(
             AuthorizationDenied,
-            match=r"Permission error in "
-                  r"\(\(is_management and not contract_has_salesman\) "
-                  r"or "
-                  r"\(is_sales and is_contract_associated_salesman\)\)"):
+            match=r"Permission error \(ABAC\) in "
+                  r"\(is_contract_associated_salesman or "
+                  r"\(is_management and not contract_has_salesman\)\)"):
         controller.delete(pk=3)
 
 
@@ -207,7 +215,8 @@ def test_salesman_try_sign_contract_of_not_his_client(
 
     with pytest.raises(
             AuthorizationDenied,
-            match="Permission error in"):
+            match=r"Permission error \(ABAC\) in "
+                  r"is_contract_associated_salesman"):
         controller.sign(4)
 
 
@@ -251,9 +260,9 @@ def test_salesman_try_change_total_contract_signed(
 
     with pytest.raises(
         AuthorizationDenied,
-        match=r"Permission error in "
-              r"\(\(is_sales and is_contract_associated_salesman\) and "
-              r"not contract_is_signed\)"):
+        match=r"Permission error \(ABAC\) in "
+              r"\(is_contract_associated_salesman "
+              r"and not contract_is_signed\)"):
         controller.change_total(pk=2, total=300)
 
 
@@ -329,8 +338,7 @@ def test_salesman_pay_contract_not_signed(
     assert contract.signed is False
 
     with pytest.raises(AuthorizationDenied,
-                       match=r"Permission error in "
-                             r"\(\(is_sales and "
-                             r"is_contract_associated_salesman\) and "
-                             r"contract_is_signed\)"):
+                       match=r"Permission error \(ABAC\) in "
+                             r"\(is_contract_associated_salesman "
+                             r"and contract_is_signed\)"):
         controller.pay(3, 100.0)

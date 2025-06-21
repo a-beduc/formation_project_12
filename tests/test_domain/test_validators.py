@@ -80,7 +80,7 @@ def test_validate_phone_number_fail(value_id, err_msg):
 
 
 def test_validate_id_success():
-    v.CollaboratorValidator.validate_id(5)
+    v.CollaboratorValidator.validate_positive_int(5)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +92,7 @@ def test_validate_id_success():
 )
 def test_validate_id_fail(value_id, err_msg):
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
-        v.CollaboratorValidator.validate_id(value_id)
+        v.CollaboratorValidator.validate_positive_int(value_id)
 
 
 @pytest.mark.parametrize(

@@ -1,11 +1,12 @@
+from ee_crm.controllers.auth.predicate import is_management, is_self
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.loggers import setup_file_logger, log_sentry_message_event
 from ee_crm.controllers.app.base import BaseManager
-from ee_crm.controllers.permission import permission, is_management, is_self
+from ee_crm.controllers.auth.permission import permission
 from ee_crm.controllers.utils import verify_positive_int, verify_string
 from ee_crm.domain.model import Role
 from ee_crm.exceptions import CollaboratorManagerError
 from ee_crm.services.app.collaborators import CollaboratorService
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class CollaboratorManager(BaseManager):
@@ -19,7 +20,7 @@ class CollaboratorManager(BaseManager):
         "role": verify_string,
         "user_id": verify_positive_int
     }
-    _default_service = CollaboratorService(SqlAlchemyUnitOfWork())
+    _default_service = CollaboratorService(DEFAULT_UOW())
     error_cls = CollaboratorManagerError
 
     def _validate_fields(self, fields):
@@ -32,7 +33,7 @@ class CollaboratorManager(BaseManager):
     def _local_logging_db_action(action, result, resource_id, accountable_id):
         logger = setup_file_logger(name=__name__, filename="ACID")
         logger.info(f'controller ::: Collaborator ::: {action} ::: '
-                    f'by collaborator ({accountable_id}) ::: '
+                    f'By collaborator ({accountable_id}) ::: '
                     f'{result} ({resource_id})')
 
     def _sentry_logging_db_action(self, action, resource_id, accountable_id,
@@ -47,7 +48,7 @@ class CollaboratorManager(BaseManager):
         log_sentry_message_event(message, level,
                                  tags=tags, extra=extra, user=user)
 
-    @permission(requirements=is_management)
+    @permission("collaborator:create")
     def create(self, username, plain_password, **kwargs):
         create_fields = {
             "last_name",
@@ -80,11 +81,12 @@ class CollaboratorManager(BaseManager):
 
         return collaborator_dto
 
-    @permission
+    @permission("collaborator:read")
     def read(self, pk=None, filters=None, sort=None):
         return super().read(pk=pk, filters=filters, sort=sort)
 
-    @permission(requirements=(is_management | is_self))
+    @permission("collaborator:update_any", "collaborator:update_self",
+                abac=(is_management | is_self))
     def update(self, pk, **kwargs):
         update_fields = {
             "last_name",
@@ -108,7 +110,8 @@ class CollaboratorManager(BaseManager):
                                        accountable_id,
                                        "Collaborator updated")
 
-    @permission(requirements=(is_management | is_self))
+    @permission("collaborator:delete_any", "collaborator:delete_self",
+                abac=(is_management | is_self))
     def delete(self, pk, **kwargs):
         pk = self._validate_pk_type(pk)
         self.service.remove(collaborator_id=pk, user_id=pk)
@@ -125,7 +128,7 @@ class CollaboratorManager(BaseManager):
                                        accountable_id,
                                        "Collaborator deleted")
 
-    @permission(requirements=is_management)
+    @permission("collaborator:modify_role")
     def change_collaborator_role(self, pk, role, **kwargs):
         pk = self._validate_pk_type(pk)
         role = self.service.role_sanitizer(role, strict=True)

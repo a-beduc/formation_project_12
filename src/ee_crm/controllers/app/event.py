@@ -1,12 +1,12 @@
 from ee_crm.controllers.app.base import BaseManager
-from ee_crm.controllers.permission import permission, is_sales, \
-    is_management, event_has_support, is_event_associated_support, \
-    is_event_associated_salesman
+from ee_crm.controllers.auth.permission import permission
+from ee_crm.controllers.auth.predicate import event_has_support, \
+    is_event_associated_salesman, is_event_associated_support, is_management
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_string, \
     verify_datetime
 from ee_crm.exceptions import EventManagerError
 from ee_crm.services.app.events import EventService
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class EventManager(BaseManager):
@@ -22,10 +22,10 @@ class EventManager(BaseManager):
         "supporter_id": verify_positive_int,
         "contract_id": verify_positive_int
     }
-    _default_service = EventService(SqlAlchemyUnitOfWork())
+    _default_service = EventService(DEFAULT_UOW())
     error_cls = EventManagerError
 
-    @permission(requirements=is_sales)
+    @permission("event:create")
     def create(self, **kwargs):
         create_fields = {
             "title",
@@ -39,13 +39,13 @@ class EventManager(BaseManager):
         create_data = {k: v for k, v in kwargs.items() if k in create_fields}
         return super().create(**create_data)
 
-    @permission
+    @permission("event:read")
     def read(self, pk=None, filters=None, sort=None):
         return super().read(pk=pk, filters=filters, sort=sort)
 
-    @permission(requirements=((~event_has_support &
-                               is_event_associated_salesman) |
-                              is_event_associated_support))
+    @permission("event:update_own", "event:update_unassigned",
+                abac=((~event_has_support & is_event_associated_salesman) |
+                      is_event_associated_support))
     def update(self, pk, **kwargs):
         update_fields = {
             "title",
@@ -58,13 +58,13 @@ class EventManager(BaseManager):
         update_data = {k: v for k, v in kwargs.items() if k in update_fields}
         return super().update(pk=pk, **update_data)
 
-    @permission(requirements=((~event_has_support &
-                               is_event_associated_salesman) |
-                              is_event_associated_support))
+    @permission("event:delete_unassigned", "event:delete",
+                abac=((~event_has_support & is_event_associated_salesman) |
+                      is_management))
     def delete(self, pk, **kwargs):
         return super().delete(pk=pk)
 
-    @permission(requirements=is_management)
+    @permission("event:modify_support")
     def change_support(self, pk, support_id):
         pk = self._validate_pk_type(pk)
         support_id = self._validate_pk_type(support_id)
