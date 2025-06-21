@@ -7,9 +7,9 @@ from ee_crm.services.app.users import UserService
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
-    mocker.patch("ee_crm.controllers.permission.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.user.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.user.DEFAULT_UOW",
                  return_value=in_memory_uow())
 
 

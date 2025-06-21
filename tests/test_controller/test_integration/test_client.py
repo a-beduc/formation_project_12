@@ -2,16 +2,16 @@ import pytest
 
 
 from ee_crm.controllers.app.client import ClientManager
-from ee_crm.controllers.permission import AuthorizationDenied
+from ee_crm.controllers.auth.permission import AuthorizationDenied
 from ee_crm.services.app.clients import ClientService
 from ee_crm.services.dto import ClientDTO
 
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
-    mocker.patch("ee_crm.controllers.permission.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
-    mocker.patch("ee_crm.controllers.app.client.SqlAlchemyUnitOfWork",
+    mocker.patch("ee_crm.controllers.app.client.DEFAULT_UOW",
                  return_value=in_memory_uow())
 
 
@@ -142,7 +142,9 @@ def test_update_client_not_my_client(init_db_table_collaborator,
 
     with pytest.raises(
             AuthorizationDenied,
-            match="Permission error in is_client_associated_salesman"):
+            match=r"Permission error \(ABAC\) in "
+                  r"\(is_client_associated_salesman or "
+                  r"\(is_management and not client_has_salesman\)\)"):
         controller.update(pk=1, **data)
 
 
@@ -180,7 +182,9 @@ def test_delete_not_my_client_o(init_db_table_collaborator,
     assert len(list_client_before) == 4
     with pytest.raises(
             AuthorizationDenied,
-            match="Permission error in is_client_associated_salesman"):
+            match=r"Permission error \(ABAC\) in "
+                  r"\(is_client_associated_salesman or "
+                  r"\(is_management and not client_has_salesman\)\)"):
         controller.delete(1)
 
     list_client_after = controller.read()
