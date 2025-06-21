@@ -45,7 +45,8 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()
         self.users = repo.SqlAlchemyUserRepository(self.session)
-        self.collaborators = repo.SqlAlchemyCollaboratorRepository(self.session)
+        self.collaborators = repo.SqlAlchemyCollaboratorRepository(
+            self.session)
         self.clients = repo.SqlAlchemyClientRepository(self.session)
         self.contracts = repo.SqlAlchemyContractRepository(self.session)
         self.events = repo.SqlAlchemyEventRepository(self.session)

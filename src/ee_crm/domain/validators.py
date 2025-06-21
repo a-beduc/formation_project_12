@@ -57,7 +57,7 @@ class BaseValidator(ABC):
             cls._raise(err, tips)
 
     @classmethod
-    def validate_id(cls, k_id):
+    def validate_positive_int(cls, k_id):
         if not isinstance(k_id, int) or k_id <= 0:
             err = "Invalid id, must be a positive integer"
             tips = f"The pk \"{k_id}\" isn't valid."

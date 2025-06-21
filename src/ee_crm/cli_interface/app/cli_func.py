@@ -40,6 +40,12 @@ def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
 
     cl_data = clean_input_fields(data_input) or {}
     norm_data = normalize_fields(cl_data, keys_map) or {}
+
+    if not no_prompt:
+        if not click.confirm(
+                "Do you want be asked input about every fields ?"):
+            no_prompt = True
+
     upd_data = cli_prompt(norm_data, no_prompt, prompt_field)
 
     controller.update(pk, **upd_data)
