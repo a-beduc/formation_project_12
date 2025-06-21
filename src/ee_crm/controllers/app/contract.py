@@ -1,13 +1,14 @@
 from math import trunc
 
 from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.auth.predicate import \
+    is_contract_associated_salesman, is_management, contract_is_signed, \
+    contract_has_salesman
 from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_bool, \
     verify_positive_float, verify_datetime
-from ee_crm.controllers.permission import permission, is_sales, \
-    is_management, is_contract_associated_salesman, contract_has_salesman, \
-    contract_is_signed
-from ee_crm.exceptions import ContractManagerError, InputError
+from ee_crm.controllers.auth.permission import permission
+from ee_crm.exceptions import ContractManagerError
 from ee_crm.loggers import log_sentry_message_event, setup_file_logger
 from ee_crm.services.app.contracts import ContractService
 
@@ -29,7 +30,7 @@ class ContractManager(BaseManager):
     def _local_logging_db_action(action, result, resource_id, accountable_id):
         logger = setup_file_logger(name=__name__, filename="ACID")
         logger.info(f'controller ::: Contract ::: {action} ::: '
-                    f'by collaborator ({accountable_id}) ::: '
+                    f'By collaborator ({accountable_id}) ::: '
                     f'{result} ({resource_id})')
 
     def _sentry_logging_db_action(self, action, resource_id, accountable_id,
@@ -60,7 +61,7 @@ class ContractManager(BaseManager):
             filters.pop("signed", None)
         return filters
 
-    @permission(requirements=is_management)
+    @permission("contract:create")
     def create(self, **kwargs):
         create_fields = {
             "total_amount",
@@ -69,7 +70,7 @@ class ContractManager(BaseManager):
         create_data = {k: v for k, v in kwargs.items() if k in create_fields}
         return super().create(**create_data)
 
-    @permission
+    @permission("contract:read")
     def read(self, pk=None, filters=None, sort=None):
         if filters:
             filters = self._validate_signed(filters)
@@ -82,12 +83,14 @@ class ContractManager(BaseManager):
                     "appropriate commands.")
         raise err
 
-    @permission(requirements=(is_management & ~contract_has_salesman) |
-                             (is_sales & is_contract_associated_salesman))
+    @permission("contract:delete_own", "contract:delete_unassigned",
+                abac=(is_contract_associated_salesman |
+                      (is_management & ~contract_has_salesman)))
     def delete(self, pk, **kwargs):
         return super().delete(pk=pk)
 
-    @permission(requirements=(is_sales & is_contract_associated_salesman))
+    @permission("contract:sign_own",
+                abac=is_contract_associated_salesman)
     def sign(self, pk, **kwargs):
         pk = self._validate_pk_type(pk)
         self.service.sign_contract(pk)
@@ -99,16 +102,16 @@ class ContractManager(BaseManager):
                                       resource_id,
                                       accountable_id)
 
-    @permission(requirements=(is_sales & is_contract_associated_salesman &
-                              ~contract_is_signed))
+    @permission("contract:modify_total_own",
+                abac=(is_contract_associated_salesman & ~contract_is_signed))
     def change_total(self, pk, total):
         pk = self._validate_pk_type(pk)
         total = self._validate_types("total_amount", total)
         total = trunc(total * 100) / 100
         self.service.modify_total_amount(pk, total)
 
-    @permission(requirements=(is_sales & is_contract_associated_salesman &
-                              contract_is_signed))
+    @permission("contract:pay_own",
+                abac=(is_contract_associated_salesman & contract_is_signed))
     def pay(self, pk, amount):
         pk = self._validate_pk_type(pk)
         amount = self._validate_types("paid_amount", amount)
