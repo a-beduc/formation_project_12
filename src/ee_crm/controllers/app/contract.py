@@ -1,6 +1,7 @@
 from math import trunc
 
 from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_bool, \
     verify_positive_float, verify_datetime
 from ee_crm.controllers.permission import permission, is_sales, \
@@ -8,7 +9,6 @@ from ee_crm.controllers.permission import permission, is_sales, \
     contract_is_signed
 from ee_crm.exceptions import ContractManagerError, InputError
 from ee_crm.loggers import log_sentry_message_event, setup_file_logger
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 from ee_crm.services.app.contracts import ContractService
 
 
@@ -22,7 +22,7 @@ class ContractManager(BaseManager):
         "client_id": verify_positive_int,
         "created_at": verify_datetime,
     }
-    _default_service = ContractService(SqlAlchemyUnitOfWork())
+    _default_service = ContractService(DEFAULT_UOW())
     error_cls = ContractManagerError
 
     @staticmethod

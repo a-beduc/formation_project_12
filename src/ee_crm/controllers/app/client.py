@@ -1,11 +1,11 @@
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_sales, \
     is_client_associated_salesman
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_string, \
     verify_datetime
 from ee_crm.exceptions import ClientManagerError
 from ee_crm.services.app.clients import ClientService
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class ClientManager(BaseManager):
@@ -21,7 +21,7 @@ class ClientManager(BaseManager):
         "updated_at": verify_datetime,
         "salesman_id": verify_positive_int
     }
-    _default_service = ClientService(SqlAlchemyUnitOfWork())
+    _default_service = ClientService(DEFAULT_UOW())
     error_cls = ClientManagerError
 
     @permission(requirements=is_sales)

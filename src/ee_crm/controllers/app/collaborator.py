@@ -1,3 +1,4 @@
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.loggers import setup_file_logger, log_sentry_message_event
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_management, is_self
@@ -5,7 +6,6 @@ from ee_crm.controllers.utils import verify_positive_int, verify_string
 from ee_crm.domain.model import Role
 from ee_crm.exceptions import CollaboratorManagerError
 from ee_crm.services.app.collaborators import CollaboratorService
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class CollaboratorManager(BaseManager):
@@ -19,7 +19,7 @@ class CollaboratorManager(BaseManager):
         "role": verify_string,
         "user_id": verify_positive_int
     }
-    _default_service = CollaboratorService(SqlAlchemyUnitOfWork())
+    _default_service = CollaboratorService(DEFAULT_UOW())
     error_cls = CollaboratorManagerError
 
     def _validate_fields(self, fields):

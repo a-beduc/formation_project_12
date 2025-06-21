@@ -2,11 +2,11 @@ from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.permission import permission, is_sales, \
     is_management, event_has_support, is_event_associated_support, \
     is_event_associated_salesman
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_string, \
     verify_datetime
 from ee_crm.exceptions import EventManagerError
 from ee_crm.services.app.events import EventService
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 class EventManager(BaseManager):
@@ -22,7 +22,7 @@ class EventManager(BaseManager):
         "supporter_id": verify_positive_int,
         "contract_id": verify_positive_int
     }
-    _default_service = EventService(SqlAlchemyUnitOfWork())
+    _default_service = EventService(DEFAULT_UOW())
     error_cls = EventManagerError
 
     @permission(requirements=is_sales)
