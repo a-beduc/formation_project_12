@@ -29,8 +29,15 @@ eecrm [resource] [action] [options]
   * [update](#update-1)
   * [delete](#delete-1)
 * [Contracts](#contracts)
-  * 
-* Events
+  * [create](#create-2)
+  * [read](#read-3)
+  * [delete](#delete-2)
+* [Events](#events)
+  * [create](#create-3)
+  * [read](#read-4)
+  * [update](#update-2)
+  * [delete](#delete-3)
+
 
 ## Authentication
 
@@ -364,5 +371,3 @@ Delete an event. The ``-pk`` "option" is really a required parameter, it is need
 | Option                         | Args      | Description                                              | Repeatable | Example         |
 |--------------------------------|-----------|----------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific event based on its ID | No         | `-pk 3`         |
-
-
