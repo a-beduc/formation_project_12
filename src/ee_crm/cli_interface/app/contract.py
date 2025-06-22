@@ -11,7 +11,7 @@ from ee_crm.controllers.app.contract import ContractManager
 _EXPAND_ACCEPTED_KEYS = {
         "id": {"id"},
         "total_amount": {"ta", "total amount", "total_amount"},
-        "paid_amount": {"pa", "first name", "paid_amount"},
+        "due_amount": {"da", "due amount", "due_amount"},
         "signed": {"si", "signed"},
         "client_id": {"cl", "ci", "client id", "client_id"},
         "created_at": {"ca", "created at", "created_at"}

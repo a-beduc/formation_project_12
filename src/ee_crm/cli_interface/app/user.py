@@ -53,7 +53,7 @@ def who_am_i():
                      f'your role is {coll_dto.role}')
 
 
-@click.command("change_username")
+@click.command("change-username")
 def change_username():
     controller = UserManager()
     old_username = click.prompt("Current username")
@@ -68,7 +68,7 @@ def change_username():
     BaseView.success(f'Username successfully updated : {new_username}')
 
 
-@click.command("change_password")
+@click.command("change-password")
 def change_password():
     controller = UserManager()
     username = click.prompt("Username")
@@ -77,8 +77,8 @@ def change_password():
     confirm_new_plain_password = click.prompt('Confirm new password',
                                               hide_input=True)
 
-    UserManager.verify_plain_password_match(old_plain_password,
-                                            new_plain_password)
+    UserManager.verify_plain_password_match(new_plain_password,
+                                            confirm_new_plain_password)
 
     if not click.confirm(f'Confirm changing your password ?'):
         raise controller.error_cls('Aborted')
