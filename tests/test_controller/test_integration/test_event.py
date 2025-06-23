@@ -230,3 +230,17 @@ def test_manager_cant_assign_sales_as_event_support(
     with pytest.raises(EventServiceError,
                        match="Can only assign supports to event"):
         controller.change_support(pk=3, support_id=2)
+
+
+def test_manager_can_unassign_support_from_event(
+        in_memory_uow, init_db_table_collaborator, init_db_table_client,
+        init_db_table_contract, init_db_table_event,
+        bypass_permission_manager):
+    controller = EventManager(EventService(in_memory_uow()))
+    event = controller.read(2)[0]
+    assert event.supporter_id == 3
+
+    controller.change_support(pk=2, unassign_flag=True)
+
+    event = controller.read(2)[0]
+    assert event.supporter_id is None
