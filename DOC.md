@@ -22,7 +22,7 @@ eecrm [resource] [action] [options]
   * [read](#read--1)
   * [update](#update-)
   * [delete](#delete-)
-  * [assign](#assign-)
+  * [assign-role](#assign-role-)
 * [Clients](#clients-)
   * [create](#create--1)
   * [read](#read--2)
@@ -32,11 +32,15 @@ eecrm [resource] [action] [options]
   * [create](#create--2)
   * [read](#read--3)
   * [delete](#delete--2)
+  * [new-total](#new-total-)
+  * [sign](#sign-)
+  * [pay](#pay-)
 * [Events](#events-)
   * [create](#create--3)
   * [read](#read--4)
   * [update](#update--2)
   * [delete](#delete--3)
+  * [assign-support](#assign-support-)
 
 
 ## Authentication [[↑]](#content-table)
@@ -156,11 +160,11 @@ Delete a collaborator. The ``-pk`` "option" is really a required parameter, it i
 |--------------------------------|-----------|------------------------------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific collaborator based on its ID              | No         | `-pk 3`         |
 
-### assign [[↑]](#content-table)
+### assign-role [[↑]](#content-table)
 ```bash 
-eecrm collaborator assign [OPTIONS] 
+eecrm collaborator assign-role [OPTIONS] 
 ```
-Delete a collaborator. The ``-pk`` "option" is really a required parameter, it is needed to select the resource to delete.
+Change a collaborator's Role. The ``-pk`` "option" is really a required parameter, it is needed to select the right collaborator.
 
 | Option                            | Args  | Description                                                     | Repeatable | Example           |
 |-----------------------------------|-------|-----------------------------------------------------------------|------------|-------------------|
@@ -295,6 +299,47 @@ Delete a contract. The ``-pk`` "option" is really a required parameter, it is ne
 |--------------------------------|-----------|-------------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific contract based on its ID | No         | `-pk 3`         |
 
+### new-total [[↑]](#content-table)
+```bash 
+eecrm event new-total [OPTIONS] 
+```
+Change a contract total amount. The ``-pk`` "option" is really a 
+required parameter, it is needed to select the event to modify. This command 
+will fail if the contract is already signed, as you can only modify total of 
+unsigned contracts.
+
+| Option                                                     | Args    | Description                                                 | Repeatable | Example      |
+|------------------------------------------------------------|---------|-------------------------------------------------------------|------------|--------------|
+| **[ REQUIRED ]** `-pk`, `-PK`,                             | `int`   | **[ REQUIRED ]** Select a specific contract based on its ID | No         | `-pk 3`      |
+| **[ REQUIRED ]** `-a`, `-ta`, `--amount`, `--total-amount` | `float` | **[ REQUIRED ]** New total price for the contract           | No         | `-a 1000.05` |
+
+
+### sign [[↑]](#content-table)
+```bash 
+eecrm event sign [OPTIONS] 
+```
+Sign a contract. The ``-pk`` "option" is really a 
+required parameter, it is needed to select the event to modify. This command 
+will do nothing if the contract is already signed.
+
+| Option                                                     | Args    | Description                                                 | Repeatable | Example      |
+|------------------------------------------------------------|---------|-------------------------------------------------------------|------------|--------------|
+| **[ REQUIRED ]** `-pk`, `-PK`,                             | `int`   | **[ REQUIRED ]** Select a specific contract based on its ID | No         | `-pk 3`      |
+
+### pay [[↑]](#content-table)
+```bash 
+eecrm event pay [OPTIONS] 
+```
+Change a contract total amount. The ``-pk`` "option" is really a 
+required parameter, it is needed to select the event to modify. This command 
+will fail if the contract has not been signed yet, as you can only add payment 
+for a signed contract.
+
+| Option                                                     | Args    | Description                                                   | Repeatable | Example    |
+|------------------------------------------------------------|---------|---------------------------------------------------------------|------------|------------|
+| **[ REQUIRED ]** `-pk`, `-PK`,                             | `int`   | **[ REQUIRED ]** Select a specific contract based on its ID   | No         | `-pk 3`    |
+| **[ REQUIRED ]** `-a`, `-ta`, `--amount`, `--total-amount` | `float` | **[ REQUIRED ]** Payment made by the client for this contract | No         | `-a 70.56` |
+
 
 ## Events [[↑]](#content-table)
 
@@ -371,3 +416,19 @@ Delete an event. The ``-pk`` "option" is really a required parameter, it is need
 | Option                         | Args      | Description                                              | Repeatable | Example         |
 |--------------------------------|-----------|----------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific event based on its ID | No         | `-pk 3`         |
+
+### assign-support [[↑]](#content-table)
+```bash 
+eecrm event assign-support [OPTIONS] 
+```
+Change an event designated supporter. The ``-pk`` "option" is really a 
+required parameter, it is needed to select the event to modify. You can 
+remove any supporter with the flag `--unassign`, if raised it will remove 
+any support for this event. If you raise the flag, you can ignore the option
+`--supporter`.
+
+| Option                                                                          | Args   | Description                                                     | Repeatable | Example  |
+|---------------------------------------------------------------------------------|--------|-----------------------------------------------------------------|------------|----------|
+| **[ REQUIRED ]** `-pk`, `-PK`,                                                  | `int`  | **[ REQUIRED ]** Select a specific event based on its ID        | No         | `-pk 3`  |
+| **[ REQUIRED ]** `-si`, `-sui`, `-co`, `-cui`, `--supporter`, `--collaborator`, | `int`  | **[ REQUIRED ]** Select a specific collaborator based on its ID | No         | `-si 12` |
+| `-ua`, `--unassign`,                                                            | `None` | Flag, when raised it will remove the supporter from this event  | No         | `-ua`    |

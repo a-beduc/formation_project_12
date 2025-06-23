@@ -44,6 +44,12 @@ class ContractService(BaseService):
     def sign_contract(self, contract_id):
         with self.uow:
             contract = self._repo.get(contract_id)
+            if contract.signed:
+                err = ContractServiceError("This contract is already signed")
+                err.threat = "warning"
+                err.tips = ("This contract is already signed. "
+                            "It can't be unsigned or signed again.")
+                raise err
             contract.sign()
             self.uow.commit()
 

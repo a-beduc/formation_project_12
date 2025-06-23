@@ -117,4 +117,3 @@ class ContractManager(BaseManager):
         amount = self._validate_types("paid_amount", amount)
         amount = trunc(amount * 100) / 100
         self.service.pay_amount(pk, amount)
-
