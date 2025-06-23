@@ -33,20 +33,22 @@ class EventService(BaseService):
                      if k in self.model_cls.updatable_fields()}
         return super().create(contract_id=contract_id, **obj_value)
 
-    def assign_support(self, event_id, supporter_id):
+    def assign_support(self, event_id, supporter_id=None):
         with self.uow:
-            supporter = self.uow.collaborators.get(supporter_id)
-            if supporter is None:
-                err = self.error_cls("Can't find collaborator")
-                err.tips = (f"The supporter_id {supporter_id} isn't linked "
-                            f"to a collaborator in the database.")
-                raise err
-            if supporter.role != Role.SUPPORT:
-                err = self.error_cls("Can only assign supports to event")
-                err.tips = (f"The supporter_id {supporter_id} isn't linked "
-                            f"to a collaborator with the role SUPPORTER "
-                            f"in the database.")
-                raise err
+            if supporter_id is not None:
+                supporter = self.uow.collaborators.get(supporter_id)
+                if supporter is None:
+                    err = self.error_cls("Can't find collaborator")
+                    err.tips = (f"The supporter_id {supporter_id} isn't "
+                                f"linked to a collaborator in the database.")
+                    raise err
+                if supporter.role != Role.SUPPORT:
+                    err = self.error_cls("Can only assign supports to event")
+                    err.tips = (f"The supporter_id {supporter_id} isn't linked "
+                                f"to a collaborator with the role SUPPORTER "
+                                f"in the database.")
+                    raise err
+
             event = self._repo.get(event_id)
             event.supporter_id = supporter_id
             self.uow.commit()

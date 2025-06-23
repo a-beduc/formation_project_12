@@ -114,6 +114,23 @@ def delete(pk):
     BaseView.success(f"Event successfully deleted")
 
 
+@click.command()
+@click.option("-pk", "-PK", "-ei", "-eid", "--event_id",
+              type=click.IntRange(min_open=1),
+              help="Event's unique id, pk: INT >= 1")
+@click.option("-ui", "-uid", "-si", "-sui", "--supporter",
+              type=click.IntRange(min_open=1),
+              help="Collaborator's unique id, pk: INT >= 1")
+@click.option("-ua", "--unassign", is_flag=True, default=False,
+              help="flag to remove the support without replacing them.")
+def support(event_id, supporter, unassign):
+    if unassign is True:
+        supporter = None
+    controller = EventManager()
+    controller.change_support(event_id, supporter, unassign)
+    BaseView.success(f"Event ({event_id}) successfully updated")
+
+
 event.add_command(create)
 event.add_command(read)
 event.add_command(update)

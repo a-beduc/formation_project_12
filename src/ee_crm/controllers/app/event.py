@@ -65,7 +65,10 @@ class EventManager(BaseManager):
         return super().delete(pk=pk)
 
     @permission("event:modify_support")
-    def change_support(self, pk, support_id):
+    def change_support(self, pk, support_id=None, unassign_flag=False):
         pk = self._validate_pk_type(pk)
-        support_id = self._validate_pk_type(support_id)
+        if unassign_flag:
+            support_id = None
+        else:
+            support_id = self._validate_pk_type(support_id)
         self.service.assign_support(pk, support_id)
