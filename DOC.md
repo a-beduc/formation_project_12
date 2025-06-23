@@ -9,39 +9,39 @@ eecrm [resource] [action] [options]
 ```
 
 ## Content table
-* [Authentication](#authentication)
-  * [login](#login)
-  * [logout](#logout)
-  * [whoami](#whoami)
-* [Users](#users)
-  * [read](#read)
-  * [change-username](#change-username)
-  * [change-password](#change-password)
-* [Collaborators](#collaborators)
-  * [create](#create)
-  * [read](#read-1)
-  * [update](#update)
-  * [delete](#delete)
-  * [assign](#assign)
-* [Clients](#clients)
-  * [create](#create-1)
-  * [read](#read-2)
-  * [update](#update-1)
-  * [delete](#delete-1)
-* [Contracts](#contracts)
-  * [create](#create-2)
-  * [read](#read-3)
-  * [delete](#delete-2)
-* [Events](#events)
-  * [create](#create-3)
-  * [read](#read-4)
-  * [update](#update-2)
-  * [delete](#delete-3)
+* [Authentication](#authentication-)
+  * [login](#login-)
+  * [logout](#logout-)
+  * [whoami](#whoami-)
+* [Users](#users-)
+  * [read](#read-)
+  * [change-username](#change-username-)
+  * [change-password](#change-password-)
+* [Collaborators](#collaborators-)
+  * [create](#create-)
+  * [read](#read--1)
+  * [update](#update-)
+  * [delete](#delete-)
+  * [assign](#assign-)
+* [Clients](#clients-)
+  * [create](#create--1)
+  * [read](#read--2)
+  * [update](#update--1)
+  * [delete](#delete--1)
+* [Contracts](#contracts-)
+  * [create](#create--2)
+  * [read](#read--3)
+  * [delete](#delete--2)
+* [Events](#events-)
+  * [create](#create--3)
+  * [read](#read--4)
+  * [update](#update--2)
+  * [delete](#delete--3)
 
 
-## Authentication
+## Authentication [[↑]](#content-table)
 
-### login
+### login [[↑]](#content-table)
 ```bash 
 eecrm login
 ```
@@ -49,21 +49,21 @@ Start a prompt to ask the user for its credentials. Create a temporary
 JWT token in a local file to serve as authentication for following 
 commands. 
 
-### logout
+### logout [[↑]](#content-table)
 ```bash 
 eecrm logout
 ```
 Erase the content of the directory used for storing the JWT token.
 
-### whoami
+### whoami [[↑]](#content-table)
 ```bash 
 eecrm whoami
 ```
 Display information about the logged-in user to the terminal.
 
-## Users
+## Users [[↑]](#content-table)
 
-### read
+### read [[↑]](#content-table)
 ```bash 
 eecrm user read [OPTIONS] 
 ```
@@ -80,15 +80,15 @@ Display a list of user or a specific one using its unique ID with the -pk option
 * id
 * username, us, un, "user name"
 
-### change-username
+### change-username [[↑]](#content-table)
 Start a prompt to ask the user about its credentials to confirm identity and the new username it wants to use.
 
-### change-password
+### change-password [[↑]](#content-table)
 Start a prompt to ask the user about its credentials to confirm identity and the new password it wants to use.
 
-## Collaborators
+## Collaborators [[↑]](#content-table)
 
-### create
+### create [[↑]](#content-table)
 ```bash 
 eecrm collaborator create [OPTIONS] 
 ```
@@ -106,7 +106,7 @@ Create a new user and its associated collaborator. Start a prompt to ask for at 
 * phone_number, ph, "phone number",
 * role, ro
 
-### read
+### read [[↑]](#content-table)
 ```bash 
 eecrm collaborator read [OPTIONS] 
 ```
@@ -128,7 +128,7 @@ Display a list of collaborators or a specific one using its unique ID with the -
 * role, ro
 * user_id, ui, uid, "user id"
 
-### update
+### update [[↑]](#content-table)
 ```bash 
 eecrm collaborator update [OPTIONS] 
 ```
@@ -146,7 +146,7 @@ Update a collaborator data fields. Start a prompt to ask for data field. The ``-
 * email, at, e_mail
 * phone_number, ph, "phone number"
 
-### delete
+### delete [[↑]](#content-table)
 ```bash 
 eecrm collaborator delete [OPTIONS] 
 ```
@@ -156,7 +156,7 @@ Delete a collaborator. The ``-pk`` "option" is really a required parameter, it i
 |--------------------------------|-----------|------------------------------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific collaborator based on its ID              | No         | `-pk 3`         |
 
-### assign
+### assign [[↑]](#content-table)
 ```bash 
 eecrm collaborator assign [OPTIONS] 
 ```
@@ -173,9 +173,9 @@ Delete a collaborator. The ``-pk`` "option" is really a required parameter, it i
 * SALES, sales, 4
 * SUPPORT, support, 5
 
-## Clients
+## Clients [[↑]](#content-table)
 
-### create
+### create [[↑]](#content-table)
 ```bash 
 eecrm client create [OPTIONS] 
 ```
@@ -193,7 +193,7 @@ Create a new client. Start a prompt to ask for missing fields.
 * phone_number, ph, "phone number"
 * company, co
 
-### read
+### read [[↑]](#content-table)
 ```bash 
 eecrm client read [OPTIONS] 
 ```
@@ -217,7 +217,7 @@ Display a list of clients or a specific one using its unique ID with the -pk opt
 * updated_at, ua, "updated at"
 * salesman_id, sa, si, "salesman id", salesman
 
-### update
+### update [[↑]](#content-table)
 ```bash 
 eecrm client update [OPTIONS] 
 ```
@@ -236,7 +236,7 @@ Update a client data fields. Start a prompt to ask for data field. The ``-pk`` "
 * phone_number, ph, "phone number"
 * company, co
 
-### delete
+### delete [[↑]](#content-table)
 ```bash 
 eecrm client delete [OPTIONS] 
 ```
@@ -246,9 +246,9 @@ Delete a client. The ``-pk`` "option" is really a required parameter, it is need
 |--------------------------------|-----------|-----------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific client based on its ID | No         | `-pk 3`         |
 
-## Contracts
+## Contracts [[↑]](#content-table)
 
-### create
+### create [[↑]](#content-table)
 ```bash 
 eecrm contract create [OPTIONS] 
 ```
@@ -264,7 +264,7 @@ Create a new contract. Start a prompt to ask for missing fields.
 * client_id, cl, ci, "client id"
 
 
-### read
+### read [[↑]](#content-table)
 ```bash 
 eecrm contract read [OPTIONS] 
 ```
@@ -285,7 +285,7 @@ Display a list of contracts or a specific one using its unique ID with the -pk o
 * client_id, cl, ci, "client id"
 * created_at, ca, "created at"
 
-### delete
+### delete [[↑]](#content-table)
 ```bash 
 eecrm contract delete [OPTIONS] 
 ```
@@ -296,9 +296,9 @@ Delete a contract. The ``-pk`` "option" is really a required parameter, it is ne
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific contract based on its ID | No         | `-pk 3`         |
 
 
-## Events
+## Events [[↑]](#content-table)
 
-### create
+### create [[↑]](#content-table)
 ```bash 
 eecrm event create [OPTIONS] 
 ```
@@ -318,7 +318,7 @@ Create a new event. Start a prompt to ask for missing fields.
 * notes, no
 * contract_id, co, ci, contract, "contract id"
 
-### read
+### read [[↑]](#content-table)
 ```bash 
 eecrm event read [OPTIONS] 
 ```
@@ -342,7 +342,7 @@ Display a list of events or a specific one using its unique ID with the -pk opti
 * supporter_id, su, si, supporter, "supporter id", support_id, "support id"
 * contract_id, co, ci, contract, "contract id"
 
-### update
+### update [[↑]](#content-table)
 ```bash 
 eecrm event update [OPTIONS] 
 ```
@@ -362,7 +362,7 @@ Update an event data fields. Start a prompt to ask for data field. The ``-pk`` "
 * attendee, at
 * notes, no
 
-### delete
+### delete [[↑]](#content-table)
 ```bash 
 eecrm event delete [OPTIONS] 
 ```
