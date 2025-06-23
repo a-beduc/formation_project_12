@@ -3,6 +3,7 @@ import pytest
 from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
                                  ContractDomainError)
 from ee_crm.domain.validators import ContractValidatorError
+from ee_crm.exceptions import ContractServiceError
 from ee_crm.services.app.contracts import ContractService
 
 
@@ -80,7 +81,9 @@ def test_sign_contract(init_uow):
     service.sign_contract(1)
 
     # does nothing
-    service.sign_contract(1)
+    with pytest.raises(ContractServiceError,
+                       match="This contract is already signed"):
+        service.sign_contract(1)
 
     contract = service.retrieve(1)
     assert contract[0].signed is True

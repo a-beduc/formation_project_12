@@ -228,7 +228,9 @@ def test_salesman_sign_contract_already_signed(
     contract_signed = controller.read(2)[0]
     assert contract_signed.signed is True
 
-    controller.sign(2)
+    with pytest.raises(ContractServiceError,
+                       match="This contract is already signed"):
+        controller.sign(2)
 
     # nothing happens
     contract_signed = controller.read(2)[0]
