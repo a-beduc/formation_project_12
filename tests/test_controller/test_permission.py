@@ -1,6 +1,7 @@
 import pytest
 
-from ee_crm.controllers.auth.permission import permission
+from ee_crm.controllers.auth.permission import permission, \
+    _map_func_signature_and_value
 from ee_crm.controllers.auth import predicate
 from ee_crm.controllers.auth.predicate import is_authenticated, is_self, \
     is_management, is_sales, is_support
@@ -73,6 +74,30 @@ def mock_perms(mocker):
                                rbac["SUPPORT"]),
     }
     mocker.patch('ee_crm.controllers.auth.permission.PERMS', perms)
+
+
+def test_map_func_signature_and_value_1():
+    def func(a, b, c=10, *args, kwa_a=1, kwa_b=2, **kwargs):
+        pass
+
+    args_value = (1, 2, 3, 4)
+    kwargs_value = {"kwa_c": 50}
+    expected = {"a": 1, "b": 2, "c": 3, "args": (4,),
+                "kwa_a": 1, "kwa_b": 2, "kwa_c": 50}
+    assert (_map_func_signature_and_value(func, *args_value, **kwargs_value) ==
+            expected)
+
+
+def test_map_func_signature_and_value_2():
+    def func(a, b, c=10, d=20, e=30, f=40, *args, kwa_a=1, kwa_b=2, **kwargs):
+        pass
+
+    args_value = (1, 2)
+    kwargs_value = {"kwa_a": 20}
+    expected = {"a": 1, "b": 2, "c": 10, "d": 20, "e": 30, "f": 40, "args": (),
+                "kwa_a": 20, "kwa_b": 2}
+    assert (_map_func_signature_and_value(func, *args_value, **kwargs_value) ==
+            expected)
 
 
 @pytest.mark.parametrize(
