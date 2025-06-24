@@ -72,3 +72,28 @@ class EventManager(BaseManager):
         else:
             support_id = self._validate_pk_type(support_id)
         self.service.assign_support(pk, support_id)
+
+    @permission("event:read")
+    def user_associated_resource(self, filters, sort, **kwargs):
+        if filters is None:
+            filters = {}
+        filters['supporter_id'] = kwargs['auth']['c_id']
+        return super().read(pk=None, filters=filters, sort=sort)
+
+    @permission("event:read")
+    def unassigned_events(self, filters, sort):
+        if filters is None:
+            filters = {}
+        validated_filters = self._validate_fields(filters)
+        validated_filters['supporter_id'] = None
+        output_dto = self.service.filter(sort=sort, **validated_filters)
+        return output_dto
+
+    @permission("event:read")
+    def orphan_events(self, filters, sort):
+        if filters is None:
+            filters = {}
+        validated_filters = self._validate_fields(filters)
+        validated_filters['contract_id'] = None
+        output_dto = self.service.filter(sort=sort, **validated_filters)
+        return output_dto
