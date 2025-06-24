@@ -2,9 +2,11 @@ from math import trunc
 
 import click
 
-from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, cli_delete
+from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, cli_delete, \
+    cli_clean
 from ee_crm.cli_interface.utils import map_accepted_key, \
-    normalize_remove_columns
+    normalize_remove_columns, clean_input_fields, normalize_fields, clean_sort, \
+    normalize_sort
 from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.cli_interface.views.view_contract import ContractCrudView
 from ee_crm.controllers.app.contract import ContractManager
@@ -124,9 +126,70 @@ def pay(pk, amount):
                      f"{new_amount}.")
 
 
+@click.command()
+@click.option("-nop", "--unpaid",
+              is_flag=True, default=False,
+              help="Filter out fully paid contracts")
+@click.option("-nos", "--unsigned",
+              is_flag=True, default=False,
+              help="Filter out fully signed contracts")
+@click.option("-noe", "--no-event",
+              is_flag=True, default=False,
+              help="Filter out contracts linked to an event")
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def show_mine(unpaid, unsigned, no_event, filters, sorts, remove_columns):
+    controller = ContractManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.user_associated_contracts(unpaid, unsigned, no_event,
+                                                  norm_filters, norm_sorts)
+
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+
+    ContractCrudView().render(output, remove_col=remove_col)
+
+
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def orphan(filters, sorts, remove_columns):
+    controller = ContractManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.orphan_contracts(norm_filters, norm_sorts)
+
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    ContractCrudView().render(output, remove_col=remove_col)
+
+
 contract.add_command(create)
 contract.add_command(read)
 contract.add_command(delete)
 contract.add_command(sign)
 contract.add_command(new_total)
 contract.add_command(pay)
+contract.add_command(show_mine)
+contract.add_command(orphan)

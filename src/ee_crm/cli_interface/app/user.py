@@ -48,8 +48,9 @@ def read(pk, filters, sorts, remove_columns):
 def who_am_i():
     controller = UserManager()
     user_dto, coll_dto = controller.who_am_i()
-    BaseView.success(f'Logged in as ({user_dto.id}) {user_dto.username} !')
-    BaseView.success(f'Welcome {coll_dto.first_name} {coll_dto.last_name}, '
+    BaseView.success(f'Logged in as uid:{user_dto.id} - {user_dto.username} !')
+    BaseView.success(f'Welcome cid:{coll_dto.id} - {coll_dto.first_name} '
+                     f'{coll_dto.last_name}, '
                      f'your role is {coll_dto.role}')
 
 

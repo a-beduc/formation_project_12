@@ -1,9 +1,10 @@
 import click
 
 from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, \
-    cli_update, cli_delete
+    cli_update, cli_delete, cli_mine, cli_clean
 from ee_crm.cli_interface.utils import map_accepted_key, \
-    normalize_remove_columns
+    normalize_remove_columns, clean_input_fields, normalize_fields, clean_sort, \
+    normalize_sort
 from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.cli_interface.views.view_event import EventCrudView
 from ee_crm.controllers.app.event import EventManager
@@ -114,16 +115,16 @@ def delete(pk):
     BaseView.success(f"Event successfully deleted")
 
 
-@click.command()
-@click.option("-pk", "-PK", "-ei", "-eid", "--event_id",
+@click.command("assign-support")
+@click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
               help="Event's unique id, pk: INT >= 1")
-@click.option("-ui", "-uid", "-si", "-sui", "--supporter",
+@click.option("-si", "-sui", "-co", "-cui", "--supporter", "--collaborator",
               type=click.IntRange(min_open=1),
               help="Collaborator's unique id, pk: INT >= 1")
 @click.option("-ua", "--unassign", is_flag=True, default=False,
               help="flag to remove the support without replacing them.")
-def support(event_id, supporter, unassign):
+def assign_support(event_id, supporter, unassign):
     if unassign is True:
         supporter = None
     controller = EventManager()
@@ -131,7 +132,80 @@ def support(event_id, supporter, unassign):
     BaseView.success(f"Event ({event_id}) successfully updated")
 
 
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def show_mine(filters, sorts, remove_columns):
+    output = cli_mine(filters, sorts, EventManager, KEYS_MAP)
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    EventCrudView().render(output, remove_col=remove_col)
+
+
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def unassigned(filters, sorts, remove_columns):
+    controller = EventManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.unassigned_events(norm_filters, norm_sorts)
+
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    EventCrudView().render(output, remove_col=remove_col)
+
+
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def orphan(filters, sorts, remove_columns):
+    controller = EventManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.orphan_events(norm_filters, norm_sorts)
+
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    EventCrudView().render(output, remove_col=remove_col)
+
+
 event.add_command(create)
 event.add_command(read)
 event.add_command(update)
 event.add_command(delete)
+event.add_command(assign_support)
+event.add_command(show_mine)
+event.add_command(unassigned)
+event.add_command(orphan)

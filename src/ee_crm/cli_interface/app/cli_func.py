@@ -3,6 +3,14 @@ from ee_crm.cli_interface.utils import clean_input_fields, normalize_fields, \
     clean_sort, normalize_sort
 
 
+def cli_clean(filters, sorts, keys_map):
+    cl_filters = clean_input_fields(filters)
+    norm_filters = normalize_fields(cl_filters, keys_map)
+    cl_sorts = clean_sort(sorts)
+    norm_sorts = normalize_sort(cl_sorts, keys_map)
+    return norm_filters, norm_sorts
+
+
 def cli_prompt(data, no_prompt, prompt_field):
     if no_prompt:
         return data
@@ -22,10 +30,7 @@ def cli_create(data_input, no_prompt, ctrl_class, prompt_field, keys_map):
 
 def cli_read(pk, filters, sorts, ctrl_class, keys_map):
     controller = ctrl_class()
-    cl_filters = clean_input_fields(filters)
-    norm_filters = normalize_fields(cl_filters, keys_map)
-    cl_sorts = clean_sort(sorts)
-    norm_sorts = normalize_sort(cl_sorts, keys_map)
+    norm_filters, norm_sorts = cli_clean(filters, sorts, keys_map)
     return controller.read(pk, norm_filters, norm_sorts)
 
 
@@ -61,3 +66,9 @@ def cli_delete(pk, ctrl_class):
         raise err
 
     controller.delete(pk)
+
+
+def cli_mine(filters, sorts, ctrl_class, keys_map):
+    controller = ctrl_class()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, keys_map)
+    return controller.user_associated_resource(norm_filters, norm_sorts)

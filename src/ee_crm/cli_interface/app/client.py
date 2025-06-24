@@ -1,7 +1,7 @@
 import click
 
 from ee_crm.cli_interface.app.cli_func import cli_create, cli_read, \
-    cli_update, cli_delete
+    cli_update, cli_delete, cli_clean
 from ee_crm.cli_interface.utils import map_accepted_key, \
     normalize_remove_columns
 from ee_crm.cli_interface.views.view_base import BaseView
@@ -104,7 +104,55 @@ def delete(pk):
     BaseView.success(f"Client successfully deleted")
 
 
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def show_mine(filters, sorts, remove_columns):
+    controller = ClientManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.user_associated_resource(norm_filters, norm_sorts)
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    ClientCrudView().render(output, remove_col=remove_col)
+
+
+@click.command()
+@click.option("-f", "--filters", "--filter",
+              type=click.STRING,
+              nargs=2,
+              multiple=True,
+              help="KEY VALUE pair to apply a filter")
+@click.option("-s", "--sorts", "--sort",
+              type=click.STRING,
+              multiple=True,
+              help="Ordered KEYs to apply a sort to the result of the query "
+                   "field:asc, field:desc")
+@click.option("-rc", "--remove-columns", "--remove-column",
+              type=click.STRING,
+              multiple=True,
+              help="Columns names to remove from result")
+def orphan(filters, sorts, remove_columns):
+    controller = ClientManager()
+    norm_filters, norm_sorts = cli_clean(filters, sorts, KEYS_MAP)
+    output = controller.orphan_clients(norm_filters, norm_sorts)
+    remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
+    ClientCrudView().render(output, remove_col=remove_col)
+
+
 client.add_command(create)
 client.add_command(read)
 client.add_command(update)
 client.add_command(delete)
+client.add_command(show_mine)
+client.add_command(orphan)
