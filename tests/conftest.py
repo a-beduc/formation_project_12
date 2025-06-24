@@ -8,7 +8,8 @@ from ee_crm.adapters.orm import (user_table, role_table, collaborator_table,
 from ee_crm.adapters.orm import mapper_registry, start_mappers
 
 
-from ee_crm.adapters.repositories import AbstractRepository
+from ee_crm.adapters.repositories import AbstractRepository, \
+    ContractAbstractRepository
 from ee_crm.services.unit_of_work import (AbstractUnitOfWork,
                                           SqlAlchemyUnitOfWork)
 
@@ -116,7 +117,7 @@ def init_db_table_contract(session):
         "(100.0, 20.0, '2025-05-02 00:00:02', true, 2), "
         "(100.0, 0.0, '2025-05-03 00:00:03', false, 3), "
         "(100.0, 0.0, '2025-05-04 00:00:04', false, 4), "
-        "(100.0, 0.0, '2025-05-05 00:00:05', true, 3), "
+        "(100.0, 100.0, '2025-05-05 00:00:05', true, 3), "
         "(200.0, 0.0, '2025-05-05 00:00:05', true, 3 )"
     )
     session.execute(stmt)
@@ -192,6 +193,11 @@ class FakeRepository(AbstractRepository):
                     for attr, value in filters.items())),
             None
         )
+
+
+class FakeContractRepository(FakeRepository, ContractAbstractRepository):
+    def retrieve_collaborator_contracts(self, collaborator_id):
+        return True
 
 
 class MockSession:
