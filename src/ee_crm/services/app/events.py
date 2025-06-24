@@ -29,6 +29,11 @@ class EventService(BaseService):
                             "signed yet. It must be signed before an event "
                             "can be created.")
                 raise err
+            if getattr(contract, "event", None) is not None:
+                err = EventServiceError("Event already exists.")
+                err.tips = (f"The event for this contract already exists. See "
+                            f"event ({contract.event.id}).")
+                raise err
         obj_value = {k: v for k, v in kwargs.items()
                      if k in self.model_cls.updatable_fields()}
         return super().create(contract_id=contract_id, **obj_value)
@@ -52,9 +57,3 @@ class EventService(BaseService):
             event = self._repo.get(event_id)
             event.supporter_id = supporter_id
             self.uow.commit()
-
-    def retrieve_associated_client(self, event_id):
-        with self.uow:
-            event = self._repo.get(event_id)
-            client = event.contract.client
-            return (ClientDTO.from_domain(client),)

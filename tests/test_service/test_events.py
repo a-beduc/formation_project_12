@@ -51,6 +51,9 @@ def init_uow(uow, fake_repo):
     uow.events = fake_repo(
         init=(eve_a, eve_b)
     )
+
+    uow.contracts._store[5].event = eve_a
+    uow.contracts._store[4].event = eve_b
     return uow
 
 
@@ -99,6 +102,16 @@ def test_create_event_contract_not_signed_fail(init_uow):
 
     with pytest.raises(EventServiceError, match="Can't create event for "
                                                 "unsigned contracts"):
+        service.create(**data)
+
+
+def test_create_event_already_exists_fail(init_uow):
+    data = {
+        "title": "test event !",
+        "contract_id": 5
+    }
+    service = EventService(init_uow)
+    with pytest.raises(EventServiceError, match="Event already exists."):
         service.create(**data)
 
 
