@@ -189,3 +189,27 @@ def test_delete_not_my_client_o(init_db_table_collaborator,
 
     list_client_after = controller.read()
     assert len(list_client_after) == 4
+
+
+def test_user_associated_clients(init_db_table_collaborator,
+                                 init_db_table_client,
+                                 bypass_permission_sales,
+                                 in_memory_uow):
+    controller = ClientManager(ClientService(in_memory_uow()))
+    clients = controller.user_associated_resource(sort=None, filters=None)
+
+    assert len(clients) == 2
+    assert clients[0].id == 2
+    assert clients[1].id == 3
+
+
+def test_orphan_clients(init_db_table_collaborator,
+                        init_db_table_client,
+                        bypass_permission_sales,
+                        in_memory_uow):
+
+    controller = ClientManager(ClientService(in_memory_uow()))
+    clients = controller.orphan_clients(sort=None, filters=None)
+
+    assert len(clients) == 1
+    assert clients[0].id == 4
