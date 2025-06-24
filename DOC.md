@@ -28,6 +28,8 @@ eecrm [resource] [action] [options]
   * [read](#read--2)
   * [update](#update--1)
   * [delete](#delete--1)
+  * [show-mine](#show-mine-)
+  * [orphan](#orphan-)
 * [Contracts](#contracts-)
   * [create](#create--2)
   * [read](#read--3)
@@ -35,12 +37,17 @@ eecrm [resource] [action] [options]
   * [new-total](#new-total-)
   * [sign](#sign-)
   * [pay](#pay-)
+  * [show-mine](#show-mine--1)
+  * [orphan](#orphan--1)
 * [Events](#events-)
   * [create](#create--3)
   * [read](#read--4)
   * [update](#update--2)
   * [delete](#delete--3)
   * [assign-support](#assign-support-)
+  * [show-mine](#show-mine--2)
+  * [unassigned](#unassigned-)
+  * [orphan](#orphan--2)
 
 
 ## Authentication [[↑]](#content-table)
@@ -250,6 +257,54 @@ Delete a client. The ``-pk`` "option" is really a required parameter, it is need
 |--------------------------------|-----------|-----------------------------------------------------------|------------|-----------------|
 | **[ REQUIRED ]** `-pk`, `-PK`, | `int`     | **[ REQUIRED ]** Select a specific client based on its ID | No         | `-pk 3`         |
 
+### show-mine [[↑]](#content-table)
+```bash 
+eecrm client show-mine [OPTIONS] 
+```
+Display a list of clients whose salesman is the current logged-in user. Without options, it will display
+every client linked to the logged-in user.
+
+| Option                   | Args      | Description                                | Repeatable | Example         |
+|--------------------------|-----------|--------------------------------------------|------------|-----------------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field              | Yes        | `-f ln Daniels` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                  | Yes        | `-s at`         |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result | Yes        | `-rc ca`        |
+
+#### --- Keywords for options using fields
+* id
+* last_name, ln, "last name"
+* first_name, fn, "first name"
+* email, at, e_mail
+* phone_number, ph, "phone number"
+* company, co
+* created_at, ca, "create at"
+* updated_at, ua, "updated at"
+* salesman_id, sa, si, "salesman id", salesman
+
+
+### orphan [[↑]](#content-table)
+```bash 
+eecrm client orphan [OPTIONS] 
+```
+Display a list of clients without a salesman.
+
+| Option                   | Args      | Description                                | Repeatable | Example         |
+|--------------------------|-----------|--------------------------------------------|------------|-----------------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field              | Yes        | `-f ln Daniels` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                  | Yes        | `-s at`         |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result | Yes        | `-rc ca`        |
+
+#### --- Keywords for options using fields
+* id
+* last_name, ln, "last name"
+* first_name, fn, "first name"
+* email, at, e_mail
+* phone_number, ph, "phone number"
+* company, co
+* created_at, ca, "create at"
+* updated_at, ua, "updated at"
+* salesman_id, sa, si, "salesman id", salesman
+
 ## Contracts [[↑]](#content-table)
 
 ### create [[↑]](#content-table)
@@ -301,7 +356,7 @@ Delete a contract. The ``-pk`` "option" is really a required parameter, it is ne
 
 ### new-total [[↑]](#content-table)
 ```bash 
-eecrm event new-total [OPTIONS] 
+eecrm contract new-total [OPTIONS] 
 ```
 Change a contract total amount. The ``-pk`` "option" is really a 
 required parameter, it is needed to select the event to modify. This command 
@@ -316,7 +371,7 @@ unsigned contracts.
 
 ### sign [[↑]](#content-table)
 ```bash 
-eecrm event sign [OPTIONS] 
+eecrm contract sign [OPTIONS] 
 ```
 Sign a contract. The ``-pk`` "option" is really a 
 required parameter, it is needed to select the event to modify. This command 
@@ -328,7 +383,7 @@ will do nothing if the contract is already signed.
 
 ### pay [[↑]](#content-table)
 ```bash 
-eecrm event pay [OPTIONS] 
+eecrm contract pay [OPTIONS] 
 ```
 Change a contract total amount. The ``-pk`` "option" is really a 
 required parameter, it is needed to select the event to modify. This command 
@@ -340,6 +395,49 @@ for a signed contract.
 | **[ REQUIRED ]** `-pk`, `-PK`,                             | `int`   | **[ REQUIRED ]** Select a specific contract based on its ID   | No         | `-pk 3`    |
 | **[ REQUIRED ]** `-a`, `-ta`, `--amount`, `--total-amount` | `float` | **[ REQUIRED ]** Payment made by the client for this contract | No         | `-a 70.56` |
 
+### show-mine [[↑]](#content-table)
+```bash 
+eecrm contract show-mine [OPTIONS] 
+```
+Display contracts linked to the logged-in user's clients. Without options, it will display
+every contracts linked to the logged-in user.
+
+| Option                   | Args      | Description                                   | Repeatable | Example   |
+|--------------------------|-----------|-----------------------------------------------|------------|-----------|
+| `-nop`, `--unpaid`,      | `None`    | Flag to filter out fully paid contracts       | No         | `-nop`    |
+| `-nos`, `--unsigned`     | `None`    | Flag to filter out signed contracts           | No         | `-nos`    |
+| `-noe`, `--no-event`     | `None`    | Flag to filter out contracts without an event | No         | `-noe`    |
+| `-f`, `--filter`         | `str str` | Filter with one or more field                 | Yes        | `-f ci 5` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                     | Yes        | `-s ca`   |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result    | Yes        | `-rc si`  |
+
+#### --- Keywords for options using fields
+* id
+* total_amount, ta, "total amount"
+* due_amount, da, "due amount"
+* signed, si
+* client_id, cl, ci, "client id"
+* created_at, ca, "created at"
+
+### orphan [[↑]](#content-table)
+```bash 
+eecrm contract orphan [OPTIONS] 
+```
+Display a list of contracts without a client.
+
+| Option                   | Args      | Description                                 | Repeatable | Example   |
+|--------------------------|-----------|---------------------------------------------|------------|-----------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field               | Yes        | `-f ci 5` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                   | Yes        | `-s ca`   |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result  | Yes        | `-rc si`  |
+
+#### --- Keywords for options using fields
+* id
+* total_amount, ta, "total amount"
+* due_amount, da, "due amount"
+* signed, si
+* client_id, cl, ci, "client id"
+* created_at, ca, "created at"
 
 ## Events [[↑]](#content-table)
 
@@ -432,3 +530,71 @@ any support for this event. If you raise the flag, you can ignore the option
 | **[ REQUIRED ]** `-pk`, `-PK`,                                                  | `int`  | **[ REQUIRED ]** Select a specific event based on its ID        | No         | `-pk 3`  |
 | **[ REQUIRED ]** `-si`, `-sui`, `-co`, `-cui`, `--supporter`, `--collaborator`, | `int`  | **[ REQUIRED ]** Select a specific collaborator based on its ID | No         | `-si 12` |
 | `-ua`, `--unassign`,                                                            | `None` | Flag, when raised it will remove the supporter from this event  | No         | `-ua`    |
+
+### show-mine [[↑]](#content-table)
+```bash 
+eecrm event show-mine [OPTIONS] 
+```
+Display events linked to the logged-in user's clients. Without options, it will display
+every event linked to the logged-in user.
+
+| Option                   | Args      | Description                                | Repeatable | Example             |
+|--------------------------|-----------|--------------------------------------------|------------|---------------------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field              | Yes        | `-f ti "Tea party"` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                  | Yes        | `-s at`             |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result | Yes        | `-rc ca`            |
+
+#### --- Keywords for options using fields
+* id
+* title, ti
+* start_time, st, "start time"
+* end_time, et, "end time"
+* location, lo
+* attendee, at
+* notes, no
+* supporter_id, su, si, supporter, "supporter id", support_id, "support id"
+* contract_id, co, ci, contract, "contract id"
+
+### unassigned [[↑]](#content-table)
+```bash 
+eecrm event unassigned [OPTIONS] 
+```
+Display a list of events without a support member.
+
+| Option                   | Args      | Description                                | Repeatable | Example             |
+|--------------------------|-----------|--------------------------------------------|------------|---------------------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field              | Yes        | `-f ti "Tea party"` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                  | Yes        | `-s at`             |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result | Yes        | `-rc ca`            |
+
+#### --- Keywords for options using fields
+* id
+* title, ti
+* start_time, st, "start time"
+* end_time, et, "end time"
+* location, lo
+* attendee, at
+* notes, no
+* contract_id, co, ci, contract, "contract id"
+
+### orphan [[↑]](#content-table)
+```bash 
+eecrm event orphan [OPTIONS] 
+```
+Display a list of events without a contract.
+
+| Option                   | Args      | Description                                | Repeatable | Example             |
+|--------------------------|-----------|--------------------------------------------|------------|---------------------|
+| `-f`, `--filter`         | `str str` | Filter with one or more field              | Yes        | `-f ti "Tea party"` |
+| `-s`, `--sort`           | `str`     | Sort by one or more field                  | Yes        | `-s at`             |
+| `-rc`, `--remove-column` | `str`     | Remove one or more columns from the result | Yes        | `-rc ca`            |
+
+#### --- Keywords for options using fields
+* id
+* title, ti
+* start_time, st, "start time"
+* end_time, et, "end time"
+* location, lo
+* attendee, at
+* notes, no
+* supporter_id, su, si, supporter, "supporter id", support_id, "support id"
