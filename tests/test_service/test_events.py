@@ -2,7 +2,7 @@ import pytest
 
 from datetime import datetime
 
-from ee_crm.domain.model import Collaborator, Role, Contract, Event
+from ee_crm.domain.model import Collaborator, Role, Contract, Event, Client
 from ee_crm.services.app.events import EventService, EventServiceError
 
 
@@ -16,12 +16,27 @@ def init_uow(uow, fake_repo):
                           _role_id=Role.MANAGEMENT, _user_id=3)
     uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
+    cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
+    cli_b = Client(last_name="cl_ln_b", first_name="cl_fn_b", _salesman_id=1)
+    cli_c = Client(last_name="cl_ln_c", first_name="cl_fn_c", _salesman_id=2)
+    uow.clients = fake_repo(init=(cli_a, cli_b, cli_c))
+
+    cli_a.salesman = uow.collaborators.get(1)
+    cli_b.salesman = uow.collaborators.get(1)
+    cli_c.salesman = uow.collaborators.get(2)
+
     con_a = Contract(_total_amount=100.00, _client_id=1)
     con_b = Contract(_total_amount=200.00, _client_id=1)
     con_c = Contract(_total_amount=300.00, _client_id=2, _signed=True)
     con_d = Contract(_total_amount=400.00, _client_id=2, _signed=True)
     con_e = Contract(_total_amount=500.00, _client_id=4, _signed=True,
                      _paid_amount=200.00)
+
+    con_a.client = uow.clients.get(1)
+    con_b.client = uow.clients.get(1)
+    con_c.client = uow.clients.get(2)
+    con_d.client = uow.clients.get(2)
+    con_e.client = None
 
     uow.contracts = fake_repo(
         init=(con_a, con_b, con_c, con_d, con_e)
@@ -31,9 +46,14 @@ def init_uow(uow, fake_repo):
                   end_time=datetime(2025, 1, 2), location="address a",
                   attendee=30, notes="notes a", supporter_id=2, _contract_id=5)
     eve_b = Event(_contract_id=4)
+    eve_a.contract = uow.contracts.get(5)
+    eve_b.contract = uow.contracts.get(4)
     uow.events = fake_repo(
         init=(eve_a, eve_b)
     )
+
+    uow.contracts._store[5].event = eve_a
+    uow.contracts._store[4].event = eve_b
     return uow
 
 
@@ -85,6 +105,16 @@ def test_create_event_contract_not_signed_fail(init_uow):
         service.create(**data)
 
 
+def test_create_event_already_exists_fail(init_uow):
+    data = {
+        "title": "test event !",
+        "contract_id": 5
+    }
+    service = EventService(init_uow)
+    with pytest.raises(EventServiceError, match="Event already exists."):
+        service.create(**data)
+
+
 def test_assign_support_success(init_uow):
     service = EventService(init_uow)
     service.assign_support(event_id=2, supporter_id=2)
@@ -104,3 +134,15 @@ def test_assign_support_collaborator_wrong_role_fail(init_uow):
     with pytest.raises(EventServiceError,
                        match="Can only assign supports to event"):
         service.assign_support(event_id=2, supporter_id=1)
+
+
+def test_assign_support_remove_support(init_uow):
+    service = EventService(init_uow)
+
+    support_id_before = service.retrieve(1)[0].supporter_id
+    assert support_id_before == 2
+
+    service.assign_support(event_id=1)
+
+    support_id_after = service.retrieve(1)[0].supporter_id
+    assert support_id_after is None

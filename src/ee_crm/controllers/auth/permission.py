@@ -12,7 +12,7 @@ from ee_crm.services.auth.permissions import PermissionService
 def _map_func_signature_and_value(func, *args, **kwargs):
     # source : https://www.geeksforgeeks.org/python-get-function-signature/
     ctx = {}
-    # get func positional args name
+    # get func positional args name before *args, **kwargs
     arg_names = func.__code__.co_varnames[:func.__code__.co_argcount]
 
     # map func args name with values (not defaults one)
@@ -21,10 +21,14 @@ def _map_func_signature_and_value(func, *args, **kwargs):
     args_dict['args'] = args[len(arg_names):]
 
     # map the defaults values of positional args if not given
+    # func(a, b, c=10, d=20) will return (10, 20)
     defaults_args_value = func.__defaults__
     if defaults_args_value:
-        defaults_arg_names = dict(zip(arg_names, defaults_args_value))
-        for name, default in defaults_arg_names.items():
+        # func(a, b, c=10, d=20) will return ("c", "d")
+        defaults_arg_names = arg_names[-len(defaults_args_value):]
+        defaults_arg_names_and_value = (
+            dict(zip(defaults_arg_names, defaults_args_value)))
+        for name, default in defaults_arg_names_and_value.items():
             args_dict.setdefault(name, default)
     ctx.update(args_dict)
 
@@ -55,7 +59,6 @@ def permission(*rbac, abac=None, kw_auth=True):
 
             # RBAC
             role_name = Role(auth['role']).name
-            perm_temp = PERMS[role_name]
             any_perm = set(rbac).intersection(PERMS[role_name])
             if not any_perm:
                 err = AuthorizationDenied(

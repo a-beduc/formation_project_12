@@ -65,6 +65,6 @@ class UserManager(BaseManager):
     def verify_plain_password_match(cls, plain_password_1, plain_password_2):
         if not plain_password_1 == plain_password_2:
             err = cls.error_cls("passwords do not match")
-            err.tips("The given passwords do not match, verify any typo and "
-                     "try again")
+            err.tips = ("The given passwords do not match, verify any typo "
+                        "and try again")
             raise err

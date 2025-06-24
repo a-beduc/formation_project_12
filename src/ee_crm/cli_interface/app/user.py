@@ -48,12 +48,13 @@ def read(pk, filters, sorts, remove_columns):
 def who_am_i():
     controller = UserManager()
     user_dto, coll_dto = controller.who_am_i()
-    BaseView.success(f'Logged in as ({user_dto.id}) {user_dto.username} !')
-    BaseView.success(f'Welcome {coll_dto.first_name} {coll_dto.last_name}, '
+    BaseView.success(f'Logged in as uid:{user_dto.id} - {user_dto.username} !')
+    BaseView.success(f'Welcome cid:{coll_dto.id} - {coll_dto.first_name} '
+                     f'{coll_dto.last_name}, '
                      f'your role is {coll_dto.role}')
 
 
-@click.command("change_username")
+@click.command("change-username")
 def change_username():
     controller = UserManager()
     old_username = click.prompt("Current username")
@@ -68,7 +69,7 @@ def change_username():
     BaseView.success(f'Username successfully updated : {new_username}')
 
 
-@click.command("change_password")
+@click.command("change-password")
 def change_password():
     controller = UserManager()
     username = click.prompt("Username")
@@ -77,8 +78,8 @@ def change_password():
     confirm_new_plain_password = click.prompt('Confirm new password',
                                               hide_input=True)
 
-    UserManager.verify_plain_password_match(old_plain_password,
-                                            new_plain_password)
+    UserManager.verify_plain_password_match(new_plain_password,
+                                            confirm_new_plain_password)
 
     if not click.confirm(f'Confirm changing your password ?'):
         raise controller.error_cls('Aborted')

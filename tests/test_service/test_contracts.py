@@ -3,6 +3,7 @@ import pytest
 from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
                                  ContractDomainError)
 from ee_crm.domain.validators import ContractValidatorError
+from ee_crm.exceptions import ContractServiceError
 from ee_crm.services.app.contracts import ContractService
 
 
@@ -60,7 +61,7 @@ def test_create_contract_success(init_uow):
     assert contract.calculate_due_amount() == 600.00
 
 
-def test_create_contract_failure(init_uow):
+def test_create_contract_failure_bad_price(init_uow):
     data = {
         "client_id": 1,
         "total_amount": -600
@@ -69,6 +70,17 @@ def test_create_contract_failure(init_uow):
 
     with pytest.raises(ContractValidatorError,
                        match="Invalid price value, must be positive"):
+        service.create(**data)
+
+def test_create_contract_failure_bad_client(init_uow):
+    data = {
+        "client_id": 13,
+        "total_amount": 600
+    }
+    service = ContractService(init_uow)
+
+    with pytest.raises(ContractServiceError,
+                       match="Contract must be linked to a client"):
         service.create(**data)
 
 
@@ -80,7 +92,9 @@ def test_sign_contract(init_uow):
     service.sign_contract(1)
 
     # does nothing
-    service.sign_contract(1)
+    with pytest.raises(ContractServiceError,
+                       match="This contract is already signed"):
+        service.sign_contract(1)
 
     contract = service.retrieve(1)
     assert contract[0].signed is True

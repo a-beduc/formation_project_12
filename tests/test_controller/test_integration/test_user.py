@@ -87,3 +87,9 @@ def test_update_password_fail(init_db_table_users, bypass_permission_manager,
     with pytest.raises(UserManagerError,
                        match="You can't modify someone else password."):
         controller.update_password("user_one", "oldPASSWORD1", "newPASSWORD1")
+
+
+def test_verify_plain_password():
+    with pytest.raises(UserManagerError, match="passwords do not match"):
+        UserManager.verify_plain_password_match("Password1", "Oops-wrong")
+

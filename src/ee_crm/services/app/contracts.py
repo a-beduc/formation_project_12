@@ -44,6 +44,12 @@ class ContractService(BaseService):
     def sign_contract(self, contract_id):
         with self.uow:
             contract = self._repo.get(contract_id)
+            if contract.signed:
+                err = ContractServiceError("This contract is already signed")
+                err.threat = "warning"
+                err.tips = ("This contract is already signed. "
+                            "It can't be unsigned or signed again.")
+                raise err
             contract.sign()
             self.uow.commit()
 
@@ -59,14 +65,19 @@ class ContractService(BaseService):
             contract.register_payment(amount)
             self.uow.commit()
 
-    def retrieve_associated_client(self, contract_id):
+    def retrieve_collaborator_contracts(self,
+                                        collaborator_id,
+                                        only_unpaid=False,
+                                        only_unsigned=False,
+                                        only_no_event=False,
+                                        sort=None, **kwargs):
+        filters = {k: v for k, v in kwargs.items()
+                   if k in self.model_cls.filterable_fields()}
         with self.uow:
-            contract = self._repo.get(contract_id)
-            try:
-                client = contract.client
-                return (ClientDTO.from_domain(client),)
-            except AttributeError:
-                err = ContractServiceError("No associated client")
-                err.tips = (f"The contract_id {contract_id} isn't linked to a "
-                            f"client in the database.")
-                raise err
+            contracts = self._repo.get_contracts_collaborator(
+                collaborator_id,
+                only_unpaid=only_unpaid,
+                only_unsigned=only_unsigned,
+                only_no_event=only_no_event,
+                sort=sort, **filters)
+            return tuple([self.dto_cls.from_domain(c) for c in contracts])

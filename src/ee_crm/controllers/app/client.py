@@ -61,3 +61,19 @@ class ClientManager(BaseManager):
                       (is_management & ~client_has_salesman)))
     def delete(self, pk, **kwargs):
         return super().delete(pk=pk)
+
+    @permission("client:read")
+    def user_associated_resource(self, filters, sort, **kwargs):
+        if filters is None:
+            filters = {}
+        filters['salesman_id'] = kwargs['auth']['c_id']
+        return super().read(pk=None, filters=filters, sort=sort)
+
+    @permission("client:read")
+    def orphan_clients(self, filters, sort):
+        if filters is None:
+            filters = {}
+        validated_filters = self._validate_fields(filters)
+        validated_filters['salesman_id'] = None
+        output_dto = self.service.filter(sort=sort, **validated_filters)
+        return output_dto

@@ -13,7 +13,7 @@ def verify_positive_int(value):
         err.tips = "The given value must be an integer (ex:5 or 13)."
         raise err
 
-    if value_int <= 0:
+    if value_int < 0:
         err = InputError("Input must be a positive Integer")
         err.tips = "The given value must be positive (ex:5 or 13)."
         raise err
@@ -37,7 +37,7 @@ def verify_positive_float(value):
         err.tips = "The given value must be a valid price (ex:12.5 or 15.97)."
         raise err
 
-    if value_float <= 0:
+    if value_float < 0:
         err = InputError("Input must be a positive Float")
         err.tips = "The given value must be a valid price (ex:12.5 or 15.97)."
         raise err
@@ -46,12 +46,7 @@ def verify_positive_float(value):
 
 
 def verify_string(value):
-    try:
-        return str(value)
-    except ValueError:
-        err = InputError("Input must be a valid string")
-        err.tips = 'The given value must be a text (ex:"Hello World").'
-        raise err
+    return str(value)
 
 
 def verify_bool(value):
@@ -71,10 +66,10 @@ def verify_datetime(value):
             'the following pattern : '
             '"YYYY-MM-DD HH:MM:SS".')
     if isinstance(value, datetime):
-        return value
+        return value.replace(microsecond=0)
     elif isinstance(value, str):
         try:
-            return datetime.fromisoformat(value)
+            return datetime.fromisoformat(value).replace(microsecond=0)
         except ValueError:
             err = InputError("Input must be a valid Datetime")
             err.tips = f"The given value must be a valid date. {info}"

@@ -47,6 +47,17 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
 
+class ContractAbstractRepository(ABC):
+    @abstractmethod
+    def get_contracts_collaborator(self,
+                                   collaborator_id,
+                                   only_unpaid=False,
+                                   only_unsigned=False,
+                                   only_no_event=False,
+                                   sort=None, **filters):
+        raise NotImplementedError
+
+
 class SqlAlchemyRepository(AbstractRepository):
     model_cls = None
 
@@ -68,7 +79,7 @@ class SqlAlchemyRepository(AbstractRepository):
             attr = getattr(self.model_cls, field)
             if is_desc is True:
                 order_output.append(attr.desc())
-            elif is_desc is False:
+            else:
                 order_output.append(attr.asc())
         return tuple(order_output)
 
@@ -115,8 +126,38 @@ class SqlAlchemyClientRepository(SqlAlchemyRepository):
     model_cls = Client
 
 
-class SqlAlchemyContractRepository(SqlAlchemyRepository):
+class SqlAlchemyContractRepository(SqlAlchemyRepository,
+                                   ContractAbstractRepository):
     model_cls = Contract
+
+    def get_contracts_collaborator(self,
+                                   collaborator_id,
+                                   only_unpaid=False,
+                                   only_unsigned=False,
+                                   only_no_event=False,
+                                   sort=None, **filters):
+        orm_filters = self._translate_filters(filters)
+
+        query = (self.session.query(self.model_cls)
+                 .filter_by(**orm_filters)
+                 .join(Client)
+                 .filter(Client.salesman_id == collaborator_id))
+
+        if only_unpaid is True:
+            query = query.filter(self.model_cls.calculate_due() > 0)
+
+        if only_unsigned is True:
+            # self.model_cls.signed is False doesn't work for some reason
+            query = query.filter((self.model_cls.signed == False))
+
+        if only_no_event is True:
+            # self.model_cls.event is None doesn't work for some reason
+            query = query.filter((self.model_cls.event == None))
+
+        if sort is not None:
+            order = self._translate_sort(sort)
+            query = query.order_by(*order)
+        return query.all()
 
 
 class SqlAlchemyEventRepository(SqlAlchemyRepository):

@@ -2,6 +2,7 @@ import pytest
 
 from ee_crm.controllers.app.event import EventManager
 from ee_crm.controllers.auth.permission import AuthorizationDenied
+from ee_crm.exceptions import EventManagerError
 from ee_crm.services.app.events import EventService, EventServiceError
 from ee_crm.services.dto import EventDTO
 
@@ -78,6 +79,38 @@ def test_create_event_minimal(init_db_table_collaborator,
 
     assert len(controller.read()) == 5
     assert controller.read()[4].contract_id == 6
+
+
+def test_create_event_bad_date(init_db_table_collaborator,
+                               init_db_table_client,
+                               init_db_table_contract,
+                               init_db_table_event,
+                               in_memory_uow,
+                               bypass_permission_sales):
+    controller = EventManager(EventService(in_memory_uow()))
+    data = {"contract_id": "6",
+            "start_time": "bad date"}
+
+    assert len(controller.read()) == 4
+    with pytest.raises(EventManagerError,
+                       match="Input must be a valid Datetime"):
+        controller.create(**data)
+
+
+def test_create_event_bad_int(init_db_table_collaborator,
+                               init_db_table_client,
+                               init_db_table_contract,
+                               init_db_table_event,
+                               in_memory_uow,
+                               bypass_permission_sales):
+    controller = EventManager(EventService(in_memory_uow()))
+    data = {"contract_id": "6",
+            "attendee": "bad value"}
+
+    assert len(controller.read()) == 4
+    with pytest.raises(EventManagerError,
+                       match="Input must be a valid positive Integer"):
+        controller.create(**data)
 
 
 def test_sales_update_event_without_support(
@@ -230,3 +263,49 @@ def test_manager_cant_assign_sales_as_event_support(
     with pytest.raises(EventServiceError,
                        match="Can only assign supports to event"):
         controller.change_support(pk=3, support_id=2)
+
+
+def test_manager_can_unassign_support_from_event(
+        in_memory_uow, init_db_table_collaborator, init_db_table_client,
+        init_db_table_contract, init_db_table_event,
+        bypass_permission_manager):
+    controller = EventManager(EventService(in_memory_uow()))
+    event = controller.read(2)[0]
+    assert event.supporter_id == 3
+
+    controller.change_support(pk=2, unassign_flag=True)
+
+    event = controller.read(2)[0]
+    assert event.supporter_id is None
+
+
+def test_user_associated_events(
+        in_memory_uow, init_db_table_collaborator, init_db_table_client,
+        init_db_table_contract, init_db_table_event,
+        bypass_permission_support):
+    controller = EventManager(EventService(in_memory_uow()))
+    events = controller.user_associated_resource(filters=None, sort=None)
+    assert len(events) == 2
+    assert events[0].id == 1
+    assert events[1].id == 2
+
+
+def test_unassigned_events(
+        in_memory_uow, init_db_table_collaborator, init_db_table_client,
+        init_db_table_contract, init_db_table_event,
+        bypass_permission_manager):
+    controller = EventManager(EventService(in_memory_uow()))
+    events = controller.unassigned_events(filters=None, sort=None)
+    assert len(events) == 2
+    assert events[0].id == 3
+    assert events[1].id == 4
+
+
+def test_orphan_events(
+        in_memory_uow, init_db_table_collaborator, init_db_table_client,
+        init_db_table_contract, init_db_table_event,
+        bypass_permission_manager):
+    controller = EventManager(EventService(in_memory_uow()))
+    events = controller.orphan_events(filters=None, sort=None)
+    assert len(events) == 1
+    assert events[0].id == 4

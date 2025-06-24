@@ -122,24 +122,33 @@ def delete(pk):
 
 
 @click.command()
-@click.argument("pk",
-                type=click.IntRange(min_open=1))
-@click.argument("role",
-                type=click.STRING)
-def assign(pk, role):
-    """
-    Take two arguments, PK and ROLE.
-
-    PK : collaborator ID ;
-    ROLE : one of [DEACTIVATED, MANAGEMENT, SALES, SUPPORT]
-    """
+@click.option("-pk", "-PK",
+              type=click.IntRange(min_open=1),
+              help="Collaborator's unique id, pk: INT >= 1")
+@click.option("-ro", "--role",
+              type=click.Choice(
+                  [
+                      1,
+                      "DEACTIVATED",
+                      3,
+                      "MANAGEMENT",
+                      4,
+                      "SALES",
+                      5,
+                      "SUPPORT"
+                  ]
+              ),
+              nargs=1,
+              help="One of [DEACTIVATED, MANAGEMENT, SALES, SUPPORT]")
+def assign_role(pk, role):
     controller = CollaboratorManager()
     controller.change_collaborator_role(pk, role)
-    BaseView.success(f"Collaborator successfully assigned to new role : {role}")
+    BaseView.success(
+        f"Collaborator successfully assigned to new role : {role}")
 
 
 collaborator.add_command(create)
 collaborator.add_command(read)
 collaborator.add_command(update)
 collaborator.add_command(delete)
-collaborator.add_command(assign)
+collaborator.add_command(assign_role)

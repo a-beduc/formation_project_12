@@ -102,6 +102,12 @@ class ContractManager(BaseManager):
                                       resource_id,
                                       accountable_id)
 
+        self._sentry_logging_db_action("Sign",
+                                       resource_id,
+                                       accountable_id,
+                                       "Contract signed",
+                                       extra={"contract_id": pk})
+
     @permission("contract:modify_total_own",
                 abac=(is_contract_associated_salesman & ~contract_is_signed))
     def change_total(self, pk, total):
@@ -118,3 +124,31 @@ class ContractManager(BaseManager):
         amount = trunc(amount * 100) / 100
         self.service.pay_amount(pk, amount)
 
+    @permission("contract:read")
+    def user_associated_contracts(self,
+                                  only_unpaid,
+                                  only_unsigned,
+                                  only_no_event,
+                                  filters,
+                                  sort, **kwargs):
+        collaborator_id = int(kwargs['auth']['c_id'])
+        if filters is None:
+            validated_filters = {}
+        else:
+            filters = self._validate_signed(filters)
+            validated_filters = self._validate_fields(filters)
+        return self.service.retrieve_collaborator_contracts(
+            collaborator_id,
+            only_unpaid,
+            only_unsigned,
+            only_no_event,
+            sort, **validated_filters)
+
+    @permission("contract:read")
+    def orphan_contracts(self, filters, sort):
+        if filters is None:
+            filters = {}
+        validated_filters = self._validate_fields(filters)
+        validated_filters['client_id'] = None
+        output_dto = self.service.filter(sort=sort, **validated_filters)
+        return output_dto

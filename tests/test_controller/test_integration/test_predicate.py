@@ -7,7 +7,7 @@ from ee_crm.controllers.auth.predicate import (
     contract_is_signed,
     event_has_support,
     is_event_associated_support,
-    is_event_associated_salesman,
+    is_event_associated_salesman, client_has_salesman,
 )
 from ee_crm.services.auth.permissions import PermissionService
 
@@ -102,3 +102,11 @@ def test_can_invert_is_event_associated_salesman(perm_service):
 
     ctx_2 = {"auth": payload, "pk": 1, "perm_service": perm_service}
     assert (~is_event_associated_salesman)(ctx_2) is True
+
+
+def test_client_has_salesman(perm_service):
+    ctx_1 = {"pk": 2, "perm_service": perm_service}
+    assert client_has_salesman(ctx_1) is True
+
+    ctx_2 = {"pk": 4, "perm_service": perm_service}
+    assert client_has_salesman(ctx_2) is False

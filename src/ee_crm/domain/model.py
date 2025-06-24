@@ -4,6 +4,8 @@ from datetime import datetime
 from enum import IntEnum
 from math import trunc
 
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+
 from ee_crm.domain.validators import (
     AuthUserValidator as AuthVal,
     CollaboratorValidator as ColVal,
@@ -23,7 +25,7 @@ class AuthUser:
 
     _private_aliases = {"username": "_username"}
 
-    @property
+    @hybrid_property
     def username(self):
         return self._username
 
@@ -110,11 +112,11 @@ class Collaborator:
     _private_aliases = {"user_id": "_user_id",
                         "role": "_role_id"}
 
-    @property
+    @hybrid_property
     def user_id(self):
         return self._user_id
 
-    @property
+    @hybrid_property
     def role(self):
         return Role(self._role_id)
 
@@ -200,15 +202,15 @@ class Client:
                         "updated_at": "_updated_at",
                         "salesman_id": "_salesman_id", }
 
-    @property
+    @hybrid_property
     def created_at(self):
         return self._created_at
 
-    @property
+    @hybrid_property
     def updated_at(self):
         return self._updated_at
 
-    @property
+    @hybrid_property
     def salesman_id(self):
         return self._salesman_id
 
@@ -285,7 +287,11 @@ class Contract:
                         "signed": "_signed",
                         "client_id": "_client_id"}
 
-    @property
+    @hybrid_method
+    def calculate_due(self):
+        return self._total_amount - self._paid_amount
+
+    @hybrid_property
     def total_amount(self):
         return self._total_amount
 
@@ -293,15 +299,15 @@ class Contract:
     def total_amount(self, new_total):
         self.change_total_amount(new_total)
 
-    @property
+    @hybrid_property
     def paid_amount(self):
         return self._paid_amount
 
-    @property
+    @hybrid_property
     def signed(self):
         return self._signed
 
-    @property
+    @hybrid_property
     def client_id(self):
         return self._client_id
 
@@ -405,7 +411,7 @@ class Event:
 
     _private_aliases = {"contract_id": "_contract_id"}
 
-    @property
+    @hybrid_property
     def contract_id(self):
         return self._contract_id
 

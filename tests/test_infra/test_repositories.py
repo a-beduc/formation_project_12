@@ -200,3 +200,53 @@ def test_can_retrieve_client_from_event(
     event = repo_event.get(2)
     client = repo_client.get(3)
     assert client == event.contract.client
+
+
+def test_can_retrieve_contracts_from_collaborator(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client, init_db_table_collaborator):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    collaborator_id = 2
+    contracts = repo_contract.get_contracts_collaborator(collaborator_id)
+    assert len(contracts) == 4
+
+
+def test_can_retrieve_contracts_from_collaborator_only_unsigned(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client, init_db_table_collaborator):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    collaborator_id = 2
+    contracts = repo_contract.get_contracts_collaborator(collaborator_id,
+                                                         only_unsigned=True)
+    assert len(contracts) == 1
+
+
+def test_can_retrieve_contracts_from_collaborator_only_unpaid(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client, init_db_table_collaborator):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    collaborator_id = 2
+    contracts = repo_contract.get_contracts_collaborator(collaborator_id,
+                                                         only_unpaid=True)
+    assert len(contracts) == 3
+
+
+def test_can_retrieve_contracts_from_collaborator_only_no_event(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client, init_db_table_collaborator):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    collaborator_id = 2
+    contracts = repo_contract.get_contracts_collaborator(collaborator_id,
+                                                         only_no_event=True)
+    assert len(contracts) == 2
+
+
+def test_can_retrieve_contracts_from_collaborator_and_sort(
+        session, init_db_table_event, init_db_table_contract,
+        init_db_table_client, init_db_table_collaborator):
+    repo_contract = repository.SqlAlchemyContractRepository(session)
+    collaborator_id = 2
+    contracts = repo_contract.get_contracts_collaborator(collaborator_id,
+                                                         sort=(("id", True),))
+    assert len(contracts) == 4
+    assert contracts[0].id == 6
