@@ -61,7 +61,7 @@ def test_create_contract_success(init_uow):
     assert contract.calculate_due_amount() == 600.00
 
 
-def test_create_contract_failure(init_uow):
+def test_create_contract_failure_bad_price(init_uow):
     data = {
         "client_id": 1,
         "total_amount": -600
@@ -70,6 +70,17 @@ def test_create_contract_failure(init_uow):
 
     with pytest.raises(ContractValidatorError,
                        match="Invalid price value, must be positive"):
+        service.create(**data)
+
+def test_create_contract_failure_bad_client(init_uow):
+    data = {
+        "client_id": 13,
+        "total_amount": 600
+    }
+    service = ContractService(init_uow)
+
+    with pytest.raises(ContractServiceError,
+                       match="Contract must be linked to a client"):
         service.create(**data)
 
 
