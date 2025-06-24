@@ -58,6 +58,28 @@ def test_filter_contracts_signed(init_db_table_contract,
     assert signed_contracts[0].client_id == 1
 
 
+def test_filter_contracts_unsigned(init_db_table_contract,
+                                   bypass_permission_sales, in_memory_uow):
+    controller = ContractManager(ContractService(in_memory_uow()))
+    filters = {"signed": "NO"}
+    signed_contracts = controller.read(filters=filters)
+
+    assert len(signed_contracts) == 2
+    assert isinstance(signed_contracts[0], ContractDTO)
+    assert signed_contracts[0].client_id == 3
+
+
+def test_filter_contracts_total_amount(init_db_table_contract,
+                                       bypass_permission_sales, in_memory_uow):
+    controller = ContractManager(ContractService(in_memory_uow()))
+    filters = {"total_amount": 100.0}
+    signed_contracts = controller.read(filters=filters)
+
+    assert len(signed_contracts) == 5
+    assert isinstance(signed_contracts[0], ContractDTO)
+    assert signed_contracts[0].client_id == 1
+
+
 def test_sort_contracts_reverse_signed(init_db_table_contract,
                                        bypass_permission_sales,
                                        in_memory_uow):
@@ -90,6 +112,20 @@ def test_create_contract_minimal(init_db_table_collaborator,
     assert contract.signed is False
     assert contract.client_id == 3
     assert isinstance(contract.created_at, datetime)
+
+
+def test_create_contract_bad_data(init_db_table_collaborator,
+                                  init_db_table_client,
+                                  init_db_table_contract,
+                                  bypass_permission_manager,
+                                  in_memory_uow):
+    controller = ContractManager(ContractService(in_memory_uow()))
+    data = {"client_id": 3,
+            "total_amount": "bad data type"}
+
+    with pytest.raises(ContractManagerError,
+                       match="Input must be a valid Float"):
+        controller.create(**data)
 
 
 def test_try_create_contract_wrong_role(init_db_table_collaborator,
