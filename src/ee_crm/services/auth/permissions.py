@@ -33,6 +33,7 @@ class PermissionService:
     def get_event_associated_salesman(self, event_id):
         with self.uow:
             try:
-                return self.uow.events.get(event_id).contract.client.salesman_id
+                return self.uow.events.get(
+                    event_id).contract.client.salesman_id
             except AttributeError:
                 return None
