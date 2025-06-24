@@ -73,7 +73,7 @@ class CollaboratorManager(BaseManager):
                                       resource_id,
                                       accountable_id)
 
-        self._sentry_logging_db_action("create",
+        self._sentry_logging_db_action("Create",
                                        resource_id,
                                        accountable_id,
                                        "Collaborator created",
