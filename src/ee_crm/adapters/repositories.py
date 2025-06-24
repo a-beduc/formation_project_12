@@ -141,14 +141,14 @@ class SqlAlchemyContractRepository(SqlAlchemyRepository,
         query = (self.session.query(self.model_cls)
                  .filter_by(**orm_filters)
                  .join(Client)
-                 .filter(Client.salesman_id == collaborator_id))
+                 .filter(Client.salesman_id_sql == collaborator_id))
 
         if only_unpaid is True:
-            query = query.filter(self.model_cls.calculate_due() > 0)
+            query = query.filter((self.model_cls.due_amount_sql > 0))
 
         if only_unsigned is True:
             # self.model_cls.signed is False doesn't work for some reason
-            query = query.filter((self.model_cls.signed == False))
+            query = query.filter((self.model_cls.signed_sql == False))
 
         if only_no_event is True:
             # self.model_cls.event is None doesn't work for some reason
