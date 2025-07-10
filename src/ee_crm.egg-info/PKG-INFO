@@ -9,9 +9,4 @@ Requires-Dist: python-dotenv>=1
 Requires-Dist: psycopg[binary]>=3.1
 Requires-Dist: argon2-cffi>=25
 Requires-Dist: pyjwt>=2
-Provides-Extra: dev
-Requires-Dist: pytest; extra == "dev"
-Requires-Dist: pytest-mock; extra == "dev"
-Requires-Dist: coverage; extra == "dev"
-Requires-Dist: pytest-cov; extra == "dev"
-Requires-Dist: sentry-sdk; extra == "dev"
+Requires-Dist: sentry-sdk

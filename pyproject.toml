@@ -13,16 +13,16 @@ dependencies = [
     "python-dotenv>=1",
     "psycopg[binary]>=3.1",
     "argon2-cffi>=25",
-    "pyjwt>=2"
+    "pyjwt>=2",
+    "sentry-sdk"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest",
     "pytest-mock",
     "coverage",
     "pytest-cov",
-    "sentry-sdk"
 ]
 
 [project.scripts]
