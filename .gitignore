@@ -8,3 +8,4 @@ z_manual/
 __pycache__.py
 htmlcov/
 .logs/
+ee_crm.egg-info/
