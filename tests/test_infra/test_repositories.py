@@ -1,5 +1,5 @@
-from ee_crm.domain.model import AuthUser, Collaborator
 import ee_crm.adapters.repositories as repository
+from ee_crm.domain.model import AuthUser, Collaborator
 
 
 def test_repository_can_retrieve_user(session, init_db_table_users):

@@ -1,5 +1,4 @@
 import pytest
-from click.testing import CliRunner
 
 from ee_crm.cli_interface.app.cli_func import cli_clean, cli_prompt, \
     cli_create, cli_read, cli_update, cli_confirm, cli_delete, cli_mine

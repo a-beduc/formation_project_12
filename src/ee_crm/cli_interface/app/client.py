@@ -8,7 +8,6 @@ from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.cli_interface.views.view_client import ClientCrudView
 from ee_crm.controllers.app.client import ClientManager
 
-
 _EXPAND_ACCEPTED_KEYS = {
     "id": {"id"},
     "last_name": {"ln", "last name", "last_name"},

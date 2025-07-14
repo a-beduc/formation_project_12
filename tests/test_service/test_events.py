@@ -1,6 +1,6 @@
-import pytest
-
 from datetime import datetime
+
+import pytest
 
 from ee_crm.domain.model import Collaborator, Role, Contract, Event, Client
 from ee_crm.services.app.events import EventService, EventServiceError

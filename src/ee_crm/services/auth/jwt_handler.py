@@ -1,7 +1,8 @@
 import datetime
 import json
-import jwt
 from pathlib import Path
+
+import jwt
 
 from ee_crm.config import get_secret_key, get_token_store_path, \
     get_token_access_lifetime, get_token_refresh_lifetime

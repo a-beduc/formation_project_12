@@ -1,8 +1,9 @@
-from argon2 import PasswordHasher, exceptions
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
 from math import trunc
+
+from argon2 import PasswordHasher, exceptions
 
 from ee_crm.domain.validators import (
     AuthUserValidator as AuthVal,

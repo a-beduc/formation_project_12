@@ -1,6 +1,5 @@
 import pytest
 
-
 from ee_crm.controllers.app.client import ClientManager
 from ee_crm.controllers.auth.permission import AuthorizationDenied
 from ee_crm.services.app.clients import ClientService

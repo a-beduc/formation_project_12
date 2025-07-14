@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime
+
+import pytest
 
 from ee_crm.controllers.app.contract import ContractManager, \
     ContractManagerError

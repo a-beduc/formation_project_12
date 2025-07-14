@@ -1,8 +1,8 @@
 import pytest
 
 from ee_crm.controllers.app.user import UserManager, UserManagerError
-from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
 from ee_crm.services.app.users import UserService
+from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
 
 
 @pytest.fixture(autouse=True)

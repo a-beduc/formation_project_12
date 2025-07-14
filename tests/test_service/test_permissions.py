@@ -1,5 +1,3 @@
-import pytest
-
 from ee_crm.services.auth.permissions import PermissionService
 
 

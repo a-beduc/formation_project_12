@@ -1,11 +1,11 @@
 import click
 
-from ee_crm.cli_interface.authentication import login, logout
 from ee_crm.cli_interface.app.client import client
 from ee_crm.cli_interface.app.collaborator import collaborator
 from ee_crm.cli_interface.app.contract import contract
 from ee_crm.cli_interface.app.event import event
 from ee_crm.cli_interface.app.user import user, who_am_i
+from ee_crm.cli_interface.authentication import login, logout
 
 
 @click.group

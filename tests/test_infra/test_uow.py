@@ -1,7 +1,7 @@
 import pytest
 
-from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 from ee_crm.domain.model import AuthUser
+from ee_crm.services.unit_of_work import SqlAlchemyUnitOfWork
 
 
 def test_uow_can_retrieve_user(session_factory, init_db_table_users):

@@ -7,7 +7,6 @@ from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.cli_interface.views.view_user import UserCrudView
 from ee_crm.controllers.app.user import UserManager
 
-
 _EXPAND_ACCEPTED_KEYS = {
     "id": {"id"},
     "username": {"us", "un", "user name", "username"}

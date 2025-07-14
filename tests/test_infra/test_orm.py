@@ -1,5 +1,6 @@
-from ee_crm.domain.model import AuthUser, Collaborator, Client
 import datetime
+
+from ee_crm.domain.model import AuthUser, Collaborator, Client
 
 
 class TestAuthUserOrm:

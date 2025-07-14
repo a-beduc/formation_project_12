@@ -4,7 +4,6 @@ from sqlalchemy.orm import registry, relationship, synonym, column_property
 
 from ee_crm.domain.model import AuthUser, Collaborator, Client, Contract, Event
 
-
 mapper_registry = registry()
 
 user_table = Table(

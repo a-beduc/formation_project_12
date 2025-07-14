@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from ee_crm.controllers.auth.authentication import login, logout

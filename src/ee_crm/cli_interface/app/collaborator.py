@@ -9,7 +9,6 @@ from ee_crm.cli_interface.views.view_collaborator import CollaboratorCrudView
 from ee_crm.controllers.app.collaborator import CollaboratorManager
 from ee_crm.controllers.app.user import UserManager
 
-
 _EXPAND_ACCEPTED_KEYS = {
     "id": {"id"},
     "last_name": {"ln", "last name", "last_name"},

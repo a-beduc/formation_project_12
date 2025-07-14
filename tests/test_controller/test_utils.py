@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime
+
+import pytest
 
 from ee_crm.controllers.utils import verify_positive_int, \
     verify_positive_float, verify_string, verify_bool, verify_datetime

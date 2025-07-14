@@ -1,13 +1,10 @@
 import pytest
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
+from ee_crm.adapters.orm import mapper_registry, start_mappers
 from ee_crm.adapters.orm import (user_table, role_table, collaborator_table,
                                  client_table, contract_table, event_table)
-from ee_crm.adapters.orm import mapper_registry, start_mappers
-
-
 from ee_crm.adapters.repositories import AbstractRepository, \
     ContractAbstractRepository
 from ee_crm.services.unit_of_work import (AbstractUnitOfWork,

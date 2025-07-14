@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from ee_crm.domain.model import AuthUser, Collaborator, Client, Contract, Event
 
 

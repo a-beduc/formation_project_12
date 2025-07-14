@@ -1,11 +1,11 @@
-from ee_crm.controllers.auth.predicate import is_management, is_self
-from ee_crm.controllers.default_uow import DEFAULT_UOW
-from ee_crm.loggers import setup_file_logger, log_sentry_message_event
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.auth.permission import permission
+from ee_crm.controllers.auth.predicate import is_management, is_self
+from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_string
 from ee_crm.domain.model import Role
 from ee_crm.exceptions import CollaboratorManagerError
+from ee_crm.loggers import setup_file_logger, log_sentry_message_event
 from ee_crm.services.app.collaborators import CollaboratorService
 
 

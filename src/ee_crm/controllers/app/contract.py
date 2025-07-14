@@ -1,13 +1,13 @@
 from math import trunc
 
 from ee_crm.controllers.app.base import BaseManager
+from ee_crm.controllers.auth.permission import permission
 from ee_crm.controllers.auth.predicate import \
     is_contract_associated_salesman, is_management, contract_is_signed, \
     contract_has_salesman
 from ee_crm.controllers.default_uow import DEFAULT_UOW
 from ee_crm.controllers.utils import verify_positive_int, verify_bool, \
     verify_positive_float, verify_datetime
-from ee_crm.controllers.auth.permission import permission
 from ee_crm.exceptions import ContractManagerError
 from ee_crm.loggers import log_sentry_message_event, setup_file_logger
 from ee_crm.services.app.contracts import ContractService

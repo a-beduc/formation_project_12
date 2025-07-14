@@ -1,10 +1,9 @@
-import pytest
-
 import datetime
 import json
 
-from ee_crm.services.auth import jwt_handler
+import pytest
 
+from ee_crm.services.auth import jwt_handler
 
 # 2025-01-01 01:01:01
 FAKE_TIME = datetime.datetime(2025, 1, 1, 1, 1, 1)

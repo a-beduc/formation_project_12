@@ -1,8 +1,8 @@
 import pytest
 
+from ee_crm.controllers.auth import predicate
 from ee_crm.controllers.auth.permission import permission, \
     _map_func_signature_and_value
-from ee_crm.controllers.auth import predicate
 from ee_crm.controllers.auth.predicate import is_authenticated, is_self, \
     is_management, is_sales, is_support
 from ee_crm.exceptions import AuthorizationDenied

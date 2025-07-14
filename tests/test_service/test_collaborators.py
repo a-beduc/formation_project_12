@@ -1,11 +1,11 @@
 import pytest
 
-from ee_crm.services.app.collaborators import (CollaboratorService,
-                                               CollaboratorServiceError)
-from ee_crm.services.dto import CollaboratorDTO
 from ee_crm.domain.model import (AuthUser, Collaborator, Role,
                                  CollaboratorDomainError)
 from ee_crm.domain.validators import AuthUserValidatorError
+from ee_crm.services.app.collaborators import (CollaboratorService,
+                                               CollaboratorServiceError)
+from ee_crm.services.dto import CollaboratorDTO
 
 
 @pytest.fixture

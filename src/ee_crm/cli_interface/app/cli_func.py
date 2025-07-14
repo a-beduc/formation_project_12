@@ -1,4 +1,5 @@
 import click
+
 from ee_crm.cli_interface.utils import clean_input_fields, normalize_fields, \
     clean_sort, normalize_sort
 
@@ -34,14 +35,19 @@ def cli_read(pk, filters, sorts, ctrl_class, keys_map):
     return controller.read(pk, norm_filters, norm_sorts)
 
 
+def cli_confirm(pk, ctrl_inst, msg):
+    if not click.confirm(f"Update {ctrl_inst.label} : ({pk}) ?"):
+        err = ctrl_inst.error_cls("Aborted by user")
+        err.threat = "warning"
+        err.tips = msg
+        raise err
+
+
 def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
     controller = ctrl_class()
 
-    if not click.confirm(f"Update {controller.label} : ({pk}) ?"):
-        err = ctrl_class.error_cls("Aborted by user")
-        err.threat = "warning"
-        err.tips = 'You must press "Y" to confirm update, try again'
-        raise err
+    cli_confirm(pk, controller,
+                msg='You must press "Y" to confirm update, try again')
 
     cl_data = clean_input_fields(data_input) or {}
     norm_data = normalize_fields(cl_data, keys_map) or {}
@@ -59,11 +65,8 @@ def cli_update(pk, data_input, no_prompt, ctrl_class, prompt_field, keys_map):
 def cli_delete(pk, ctrl_class):
     controller = ctrl_class()
 
-    if not click.confirm(f"Delete {controller.label} : ({pk}) ?"):
-        err = ctrl_class.error_cls("Aborted by user")
-        err.threat = "warning"
-        err.tips = 'You must press "Y" to confirm deletion, try again'
-        raise err
+    cli_confirm(pk, controller,
+                msg='You must press "Y" to confirm deletion, try again')
 
     controller.delete(pk)
 
