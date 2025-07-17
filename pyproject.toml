@@ -14,7 +14,7 @@ dependencies = [
     "psycopg[binary]>=3.1",
     "argon2-cffi>=25",
     "pyjwt>=2",
-    "sentry-sdk"
+    "sentry-sdk",
 ]
 
 [dependency-groups]
