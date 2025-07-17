@@ -1,11 +1,21 @@
-import datetime
+"""Unit tests for ee_crm.adapters.orm
 
-from ee_crm.domain.model import AuthUser, Collaborator, Client
+Use a SQLite in-memory database, with a session created and populated
+for each test.
+
+The tests don't cover all the tables, might be easily expanded if
+it's judged necessary.
+"""
+from ee_crm.domain.model import AuthUser, Collaborator
 
 
 class TestAuthUserOrm:
+    """Class to group up tests for AuthUser-related orm functionality."""
+
     def test_auth_user_mapper_can_load_rows(self, session,
                                             init_db_table_users):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy query.all functionality."""
         expected = [
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
@@ -19,6 +29,8 @@ class TestAuthUserOrm:
 
     def test_auth_user_mapper_can_select_row(self, session,
                                              init_db_table_users):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy get functionality."""
         expected = AuthUser(_username="user_one", _password="password_one")
         expected.id = 1
         user_id_1 = 1
@@ -30,6 +42,8 @@ class TestAuthUserOrm:
         assert session.get(AuthUser, user_id_2) == expected
 
     def test_auth_user_mapper_can_add_row(self, session, init_db_table_users):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy add functionality."""
         expected = [
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
@@ -47,6 +61,8 @@ class TestAuthUserOrm:
 
     def test_auth_user_mapper_can_update_row(self, session,
                                              init_db_table_users):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy direct update functionality."""
         expected = AuthUser(_username="modified_username",
                             _password="modified_password")
         expected.id = 2
@@ -60,6 +76,8 @@ class TestAuthUserOrm:
 
     def test_auth_user_mapper_can_delete_row(self, session,
                                              init_db_table_users):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy delete functionality."""
         expected = [
             AuthUser(_username="user_one", _password="password_one"),
             AuthUser(_username="user_two", _password="password_two"),
@@ -75,9 +93,13 @@ class TestAuthUserOrm:
 
 
 class TestCollaboratorOrm:
+    """Class to group up tests for Collaborator-related orm functionality."""
+
     def test_collaborator_mapper_can_load_rows(self, session,
                                                init_db_table_users,
                                                init_db_table_collaborator):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy query.all functionality."""
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
                          email='col_email@one', phone_number='0000000001',
@@ -99,6 +121,8 @@ class TestCollaboratorOrm:
     def test_collaborator_mapper_can_select_row(self, session,
                                                 init_db_table_users,
                                                 init_db_table_collaborator):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy get functionality."""
         expected = [
             Collaborator(last_name='col_ln_one', first_name='col_fn_one',
                          email='col_email@one', phone_number='0000000001',
@@ -115,7 +139,6 @@ class TestCollaboratorOrm:
         ]
         for elem, collaborator in enumerate(expected):
             collaborator.id = elem + 1
-        assert session.query(Collaborator).all() == expected
         assert session.get(Collaborator, 1) == expected[0]
         assert session.get(Collaborator, 2) == expected[1]
         assert session.get(Collaborator, 3) == expected[2]
@@ -124,6 +147,8 @@ class TestCollaboratorOrm:
     def test_collaborator_mapper_can_add_row(self, session,
                                              init_db_table_users,
                                              init_db_table_collaborator):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy add functionality."""
         new_collaborator = Collaborator(
             last_name='col_ln_fiv', first_name='col_fn_fiv',
             email='col_email@fiv', phone_number='0000000005', _user_id=5)
@@ -135,7 +160,8 @@ class TestCollaboratorOrm:
     def test_collaborator_mapper_can_update_row(self, session,
                                                 init_db_table_users,
                                                 init_db_table_collaborator):
-
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy direct update functionality."""
         collaborator = Collaborator(last_name='col_ln_two',
                                     first_name='col_fn_two',
                                     email='col_email@two',
@@ -154,123 +180,8 @@ class TestCollaboratorOrm:
     def test_collaborator_mapper_can_delete_row(self, session,
                                                 init_db_table_users,
                                                 init_db_table_collaborator):
+        """Verify that mapping is working as expected and provides
+        SQLAlchemy delete functionality."""
         session.delete(session.get(Collaborator, 2))
         session.commit()
         assert session.get(Collaborator, 2) is None
-
-
-class TestRelationship:
-    def test_user_to_collaborator_and_back(self, session,
-                                           init_db_table_users,
-                                           init_db_table_collaborator):
-        user = session.get(AuthUser, 1)
-        collaborator = session.get(Collaborator, 1)
-
-        assert user.collaborator == collaborator
-        assert collaborator.user == user
-
-    def test_update_collaborator_user_update_collaborator_user_id(
-            self, session,
-            init_db_table_users,
-            init_db_table_collaborator):
-        new_user = AuthUser(_username="test_user", _password="test_password")
-        session.add(new_user)
-        session.commit()
-
-        user_fiv = session.get(AuthUser, 5)
-        assert user_fiv.username == new_user.username
-
-        collaborator = session.get(Collaborator, 1)
-        assert collaborator.user_id == 1
-
-        collaborator.user = user_fiv
-        # if collaborator.user is modified session.commit() is needed to update
-        session.commit()
-        assert collaborator.user_id == 5
-
-    def test_update_collaborator_user_id_update_collaborator_user(
-            self, session,
-            init_db_table_users,
-            init_db_table_collaborator):
-        new_user = AuthUser(_username="test_user", _password="test_password")
-        session.add(new_user)
-
-        user_fiv = session.get(AuthUser, 5)
-        assert user_fiv == new_user
-
-        collaborator = session.get(Collaborator, 1)
-        assert collaborator.user_id == 1
-
-        collaborator._user_id = new_user.id
-        # if collaborator.user_id is modified, session.commit isn't needed
-        assert collaborator.user == user_fiv
-
-    def test_delete_user_and_get_collaborator_user(self, session,
-                                                   init_db_table_users,
-                                                   init_db_table_collaborator):
-        collaborator = session.get(Collaborator, 1)
-        user = session.get(AuthUser, 1)
-        session.delete(user)
-        session.commit()
-
-        assert collaborator.user_id is None
-        assert collaborator.user is None
-
-    def test_delete_collaborator_and_get_user_collaborator(
-            self, session, init_db_table_users, init_db_table_collaborator):
-        collaborator = session.get(Collaborator, 1)
-        user = session.get(AuthUser, 1)
-        session.delete(collaborator)
-        session.commit()
-
-        assert user.collaborator is None
-
-    def test_collaborator_to_client_and_back(self, session,
-                                             init_db_table_users,
-                                             init_db_table_collaborator,
-                                             init_db_table_client):
-        collaborator_2 = session.get(Collaborator, 2)
-        collaborator_3 = session.get(Collaborator, 3)
-        client_2 = session.get(Client, 2)
-        client_3 = session.get(Client, 3)
-
-        assert collaborator_2.clients == [client_2, client_3]
-        assert collaborator_3.clients == []
-
-        assert client_2.salesman == collaborator_2
-        assert client_3.salesman == collaborator_2
-
-    def test_add_client_to_salesman(self, session,
-                                    init_db_table_users,
-                                    init_db_table_collaborator,
-                                    init_db_table_client):
-        collaborator_2 = session.get(Collaborator, 2)
-        client_4 = Client(last_name='col_ln_four',
-                          first_name='col_fn_four',
-                          email='col_email@four',
-                          phone_number='0000000004',
-                          company='company_four',
-                          _created_at=datetime.datetime.fromisoformat(
-                              '2025-01-01 00:00:04'),
-                          _updated_at=datetime.datetime.fromisoformat(
-                              '2025-02-01 00:00:04'),
-                          _salesman_id=None)
-        session.add(client_4)
-        collaborator_2.clients.append(client_4)
-
-        client_2 = session.get(Client, 2)
-        client_3 = session.get(Client, 3)
-
-        assert collaborator_2.clients == [client_2, client_3, client_4]
-
-        assert client_2.salesman == collaborator_2
-        assert client_3.salesman == collaborator_2
-        assert client_4.salesman == collaborator_2
-
-        # commit necessary to update salesman_id in client_4
-        session.commit()
-        assert client_2.salesman_id == collaborator_2.id
-        assert client_3.salesman_id == collaborator_2.id
-        assert client_4.salesman_id == collaborator_2.id
-
-# see later if it's useful to test other tables

@@ -1,3 +1,7 @@
+"""Unit tests for ee_crm.domain.validators classes
+
+Tests try to exhaust happy and sad path using pytest parametrization.
+"""
 from datetime import datetime
 
 import pytest
@@ -15,6 +19,7 @@ from ee_crm.domain.model import Role
     ]
 )
 def test_validate_str_success(string):
+    """Test happy paths."""
     v.CollaboratorValidator.validate_str(string)
 
 
@@ -26,6 +31,10 @@ def test_validate_str_success(string):
     ]
 )
 def test_validate_str_fail(string, err_msg):
+    """Test sad paths.
+        * Wrong type,
+        * Too long.
+    """
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
         v.CollaboratorValidator.validate_str(string)
 
@@ -39,6 +48,7 @@ def test_validate_str_fail(string, err_msg):
     ]
 )
 def test_validate_email_success(email):
+    """Test happy paths."""
     v.CollaboratorValidator.validate_email(email)
 
 
@@ -51,6 +61,11 @@ def test_validate_email_success(email):
     ]
 )
 def test_validate_email_fail(email, err_msg):
+    """Test sad paths.
+        * Invalid format, missing @,
+        * Wrong type,
+        * Too long.
+    """
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
         v.CollaboratorValidator.validate_email(email)
 
@@ -64,6 +79,7 @@ def test_validate_email_fail(email, err_msg):
     ]
 )
 def test_validate_phone_number_success(phone_number):
+    """Test happy paths."""
     v.CollaboratorValidator.validate_phone_number(phone_number)
 
 
@@ -75,11 +91,16 @@ def test_validate_phone_number_success(phone_number):
     ]
 )
 def test_validate_phone_number_fail(value_id, err_msg):
+    """Test sad paths.
+        * Wrong type, missing @,
+        * Too long.
+    """
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
         v.CollaboratorValidator.validate_phone_number(value_id)
 
 
 def test_validate_id_success():
+    """Test happy paths."""
     v.CollaboratorValidator.validate_positive_int(5)
 
 
@@ -91,6 +112,10 @@ def test_validate_id_success():
     ]
 )
 def test_validate_id_fail(value_id, err_msg):
+    """Test sad paths.
+        * Negative integer,
+        * Wrong type.
+    """
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
         v.CollaboratorValidator.validate_positive_int(value_id)
 
@@ -104,6 +129,7 @@ def test_validate_id_fail(value_id, err_msg):
     ]
 )
 def test_validate_username_success(username):
+    """Test happy paths."""
     v.AuthUserValidator.validate_username(username)
 
 
@@ -116,6 +142,11 @@ def test_validate_username_success(username):
     ]
 )
 def test_validate_username_fail(username, err_msg):
+    """Test sad paths.
+        * Too short,
+        * Wrong type,
+        * Too long.
+    """
     with pytest.raises(v.AuthUserValidatorError, match=err_msg):
         v.AuthUserValidator.validate_username(username)
 
@@ -128,6 +159,7 @@ def test_validate_username_fail(username, err_msg):
     ]
 )
 def test_validate_password_success(password):
+    """Test happy paths."""
     v.AuthUserValidator.validate_password(password)
 
 
@@ -143,6 +175,14 @@ def test_validate_password_success(password):
     ]
 )
 def test_validate_password_fail(password, err_msg):
+    """Test sad paths.
+        * Too short,
+        * No upper case,
+        * No lower case,
+        * No number,
+        * Wrong type,
+        * Too long.
+    """
     with pytest.raises(v.AuthUserValidatorError, match=err_msg):
         v.AuthUserValidator.validate_password(password)
 
@@ -158,6 +198,7 @@ def test_validate_password_fail(password, err_msg):
     ]
 )
 def test_validate_role_success(role):
+    """Test happy paths."""
     v.CollaboratorValidator.validate_role(role)
 
 
@@ -170,6 +211,11 @@ def test_validate_role_success(role):
     ]
 )
 def test_validate_role_fail(role, err_msg):
+    """Test sad paths.
+        * Wrong type,
+        * Negative integer,
+        * Out of range.
+    """
     with pytest.raises(v.CollaboratorValidatorError, match=err_msg):
         v.CollaboratorValidator.validate_role(role)
 
@@ -184,6 +230,7 @@ def test_validate_role_fail(role, err_msg):
     ]
 )
 def test_validate_price_success(price):
+    """Test happy paths."""
     v.ContractValidator.validate_price(price)
 
 
@@ -195,20 +242,29 @@ def test_validate_price_success(price):
     ]
 )
 def test_validate_price_fail(price, err_msg):
+    """Test sad paths.
+        * Wrong type,
+        * Negative value.
+    """
     with pytest.raises(v.ContractValidatorError, match=err_msg):
         v.ContractValidator.validate_price(price)
 
 
 def test_validate_date_success():
+    """Test happy paths."""
     v.EventValidator.validate_date(datetime.now())
 
 
 def test_validate_date_fail():
+    """Test sad paths.
+        * Wrong type.
+    """
     with pytest.raises(v.EventValidatorError, match="Invalid date type"):
         v.EventValidator.validate_date("2025-01-01")
 
 
-def test_validate_attendee():
+def test_validate_attendee_success():
+    """Test happy paths."""
     v.EventValidator.validate_attendee(60)
 
 
@@ -219,9 +275,14 @@ def test_validate_attendee():
         (-5, "Invalid attendee value, must be a positive integer")
     ]
 )
-def test_validate_attendee(number, err_msg):
+def test_validate_attendee_fail(number, err_msg):
+    """Test sad paths.
+        * Wrong type,
+        * Negative integer.
+    """
     with pytest.raises(v.EventValidatorError, match=err_msg):
         v.EventValidator.validate_attendee(number)
+
 
 @pytest.mark.parametrize(
     'notes',
@@ -231,21 +292,25 @@ def test_validate_attendee(number, err_msg):
     ]
 )
 def test_validate_notes_success(notes):
+    """Test happy paths."""
     v.EventValidator.validate_notes(notes)
 
 
 def test_validate_notes_success_9998_char():
+    """Test happy paths, limit of chatacter."""
     notes = "x"*9998
     v.EventValidator.validate_notes(notes)
 
 
 def test_validate_notes_fail_wrong_type():
+    """Test sad paths, wrong type."""
     err_msg = "Invalid notes type, must be a string"
     with pytest.raises(v.EventValidatorError, match=err_msg):
         v.EventValidator.validate_notes(3161)
 
 
 def test_validate_notes_fail_too_long():
+    """Test sad paths, too long."""
     err_msg = "Notes too long, must be less than 9999 characters"
     with pytest.raises(v.EventValidatorError, match=err_msg):
         v.EventValidator.validate_notes("x" * 10000)
