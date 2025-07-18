@@ -1,3 +1,15 @@
+"""Integration tests for the SqlAlchemyUnitOfWork.
+
+The tests assert that the Unit Of Work (uow) behave as expected when
+handling transaction boundaries (commit, rollback, exit/error).
+
+Fixtures
+    session_factory
+        SQLAlchemy sessionmaker object bound to the in-memory
+        test SQLite database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+"""
 import pytest
 
 from ee_crm.domain.model import AuthUser
@@ -75,6 +87,8 @@ def test_uow_deleting_without_commit_trigger_rollback(session_factory,
 
 
 def test_uow_rollback_on_error(session_factory, init_db_table_users):
+    """Verify that rollback works as expected when an error occurs
+    before committing."""
     class MyException(Exception):
         pass
 
