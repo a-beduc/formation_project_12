@@ -5,6 +5,15 @@ for each test.
 
 The tests don't cover all the tables, might be easily expanded if
 it's judged necessary.
+
+Fixtures
+    session
+        SQLAlchemy session object bound to the in-memory test SQLite
+        database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
 """
 from ee_crm.domain.model import AuthUser, Collaborator
 

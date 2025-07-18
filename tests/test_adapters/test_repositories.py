@@ -8,6 +8,21 @@ populated for each test.
 
 When magic numbers as index of lists, you can find the reference of the
 index in the fixture init_db_table_resource found in tests.conftest
+
+Fixtures
+    session
+        SQLAlchemy session object bound to the in-memory test SQLite
+        database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    init_db_table_client
+        create and populate the table linked to the Client model.
+    init_db_table_contract
+        create and populate the table linked to the Contract model.
+    init_db_table_event
+        create and populate the table linked to the Event model.
 """
 import ee_crm.adapters.repositories as repository
 from ee_crm.domain.model import AuthUser, Collaborator
