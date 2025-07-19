@@ -1,3 +1,7 @@
+"""Unit tests for ee_crm.services.auth.jwt_handler
+
+Test for the payload builders, the token decoding and token flows.
+"""
 import datetime
 import json
 
@@ -14,6 +18,7 @@ SECRET_KEY = 'mysecretkeyissupersecretandnooneknowsit'
 
 @pytest.fixture
 def patch_lifetimes(mocker):
+    """Patch value that should be found in .env"""
     mocker.patch.object(jwt_handler, "get_token_access_lifetime",
                         return_value=ACCESS_LIFETIME)
     mocker.patch.object(jwt_handler, "get_token_refresh_lifetime",
@@ -22,12 +27,16 @@ def patch_lifetimes(mocker):
 
 @pytest.fixture
 def patch_past_time(mocker, patch_lifetimes):
+    """Patch the result of _now to circumvent datetime module."""
     mocker.patch.object(jwt_handler, "_now",
                         return_value=int(FAKE_TIME.timestamp()))
 
 
 @pytest.fixture(autouse=True)
 def patch_storage(tmp_path, mocker):
+    """Patch and use an in-memory directory for storage.
+    auto use added to avoid to forget to patch it and mess with real
+    data."""
     storage = tmp_path / "tokens.json"
     mocker.patch.object(jwt_handler, 'get_token_store_path',
                         return_value=str(storage))
@@ -36,11 +45,13 @@ def patch_storage(tmp_path, mocker):
 
 @pytest.fixture
 def patch_secret(mocker):
+    """Patch value that should be found in .env"""
     mocker.patch.object(jwt_handler, 'get_secret_key',
                         return_value=SECRET_KEY)
 
 
 def make_tokens(data, access_expired=False, refresh_expired=False):
+    """Function to mock the creation of tokens."""
     access_payload = jwt_handler._prepare_access_payload(data)
     if access_expired:
         access_payload['exp'] -= 2 * ACCESS_LIFETIME

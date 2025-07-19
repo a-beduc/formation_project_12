@@ -1,3 +1,14 @@
+"""Unit tests for ee_crm.services.auth.authentication
+
+Fixtures
+    fake_uow
+        fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+
+"""
 import pytest
 
 from ee_crm.domain.model import AuthUser, Collaborator, AuthUserDomainError
@@ -7,6 +18,8 @@ from ee_crm.services.auth.authentication import (
 
 
 class TestAuthenticate:
+    """Class to checks for the AuthenticationService.authenticate"""
+
     def test_authenticate_success(self, mocker, fake_uow, fake_repo):
         user = AuthUser(_username="user_b",
                         _password="Password1")
