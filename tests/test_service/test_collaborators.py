@@ -9,13 +9,13 @@ from ee_crm.services.dto import CollaboratorDTO
 
 
 @pytest.fixture
-def init_uow(uow, fake_repo):
+def init_uow(fake_uow, fake_repo):
     user_a = AuthUser.builder("user_a", "Password1")
     user_b = AuthUser.builder("user_b", "Password2")
     user_c = AuthUser.builder("user_c", "Password3")
     user_d = AuthUser.builder("user_d", "Password4")
     user_e = AuthUser.builder("user_e", "Password5")
-    uow.users = fake_repo(init=(user_a, user_b, user_c, user_d, user_e))
+    fake_uow.users = fake_repo(init=(user_a, user_b, user_c, user_d, user_e))
 
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.MANAGEMENT, _user_id=1)
@@ -27,10 +27,10 @@ def init_uow(uow, fake_repo):
                           _role_id=Role.SUPPORT, _user_id=4)
     coll_e = Collaborator(first_name="fn_e", last_name="ln_e",
                           _role_id=Role.SUPPORT, _user_id=5)
-    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c, coll_d,
+    fake_uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c, coll_d,
                                              coll_e))
 
-    return uow
+    return fake_uow
 
 
 class TestCollaboratorCreation:

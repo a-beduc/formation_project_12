@@ -8,14 +8,14 @@ from ee_crm.services.app.contracts import ContractService
 
 
 @pytest.fixture
-def init_uow(uow, fake_repo):
+def init_uow(fake_uow, fake_repo):
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.SALES, _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b",
                           _role_id=Role.SALES, _user_id=2)
     coll_c = Collaborator(first_name="fn_c", last_name="ln_c",
                           _role_id=Role.MANAGEMENT, _user_id=3)
-    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
+    fake_uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
     cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
     cli_a.salesman = coll_a
@@ -32,7 +32,7 @@ def init_uow(uow, fake_repo):
     cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
     cli_e.salesman = coll_b
 
-    uow.clients = fake_repo(
+    fake_uow.clients = fake_repo(
         init=(cli_a, cli_b, cli_c, cli_d, cli_e))
 
     con_a = Contract(_total_amount=100.00, _client_id=1)
@@ -42,10 +42,10 @@ def init_uow(uow, fake_repo):
     con_e = Contract(_total_amount=500.00, _client_id=4, _signed=True,
                      _paid_amount=200.00)
 
-    uow.contracts = fake_repo(
+    fake_uow.contracts = fake_repo(
         init=(con_a, con_b, con_c, con_d, con_e)
     )
-    return uow
+    return fake_uow
 
 
 def test_create_contract_success(init_uow):

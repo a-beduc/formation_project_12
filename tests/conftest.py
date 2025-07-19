@@ -365,7 +365,7 @@ def fake_repo():
 
 
 @pytest.fixture(scope='function')
-def uow():
+def fake_uow():
     """Create a new instance of the FakeUnitOfWork class."""
     return FakeUnitOfWork()
 
