@@ -1,3 +1,4 @@
+"""Unit tests for ee_crm.services.app.users"""
 import pytest
 
 from ee_crm.domain.model import AuthUser, AuthUserDomainError

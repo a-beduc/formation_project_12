@@ -1,3 +1,12 @@
+"""Unit tests for the ee_crm.services.app.events
+
+Fixture
+    fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+"""
 from datetime import datetime
 
 import pytest
@@ -8,6 +17,8 @@ from ee_crm.services.app.events import EventService, EventServiceError
 
 @pytest.fixture
 def init_uow(fake_uow, fake_repo):
+    """Fixture to initialize the data found in the fake persistence
+    layer."""
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.SALES, _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b",

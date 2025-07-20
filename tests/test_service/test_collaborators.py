@@ -1,15 +1,27 @@
+"""Unit tests for ee_crm.services.app.collaborators
+
+Fixtures
+    fake_uow
+        fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+"""
 import pytest
 
-from ee_crm.domain.model import (AuthUser, Collaborator, Role,
-                                 CollaboratorDomainError)
+from ee_crm.domain.model import AuthUser, Collaborator, Role, \
+    CollaboratorDomainError
 from ee_crm.domain.validators import AuthUserValidatorError
-from ee_crm.services.app.collaborators import (CollaboratorService,
-                                               CollaboratorServiceError)
+from ee_crm.services.app.collaborators import CollaboratorService, \
+    CollaboratorServiceError
 from ee_crm.services.dto import CollaboratorDTO
 
 
 @pytest.fixture
 def init_uow(fake_uow, fake_repo):
+    """Fixture to initialize the data found in the fake persistence
+    layer."""
     user_a = AuthUser.builder("user_a", "Password1")
     user_b = AuthUser.builder("user_b", "Password2")
     user_c = AuthUser.builder("user_c", "Password3")
@@ -33,9 +45,10 @@ def init_uow(fake_uow, fake_repo):
     return fake_uow
 
 
-class TestCollaboratorCreation:
-
+class TestUserCreation:
     def test_user_creation_success(self, init_uow):
+        """Create a Collaborator and it's associated AuthUser and verify
+        their attributes"""
         data = {
             "last_name": "Bobby",
             "first_name": "Robby",
@@ -93,6 +106,8 @@ class TestCollaboratorCreation:
             collaborator_service.create("user_a", "Password1", **data)
 
     def test_user_creation_uow_failure(self, mocker, init_uow):
+        """Verify that if an Exception is raised in the middle of a
+        transaction, a proper rollback assure data integrity."""
         data = {
             "last_name": "Bobby",
             "first_name": "Robby",
@@ -154,7 +169,6 @@ class TestCollaboratorCRUD:
         assert dto_collaborators[4].first_name == "fn_a"
 
     def test_get_all_salesmen(self, init_uow):
-
         service = CollaboratorService(init_uow)
 
         dto_coll_b = CollaboratorDTO.from_domain(init_uow.collaborators.get(2))
@@ -202,48 +216,49 @@ class TestCollaboratorCRUD:
 
 
 @pytest.mark.parametrize(
-    'label, role, strict, expected',
+    'label, role, expected',
     [
-        ('NB_DEACTIVATED', 1, False, Role.DEACTIVATED),
-        ('WD_DEACTIVATED', 'DEACTIVATED', False, Role.DEACTIVATED),
-        ('NB_MANAGEMENT', 3, False, Role.MANAGEMENT),
-        ('WD_MANAGEMENT', 'MANAGEMENT', False, Role.MANAGEMENT),
-        ('NB_SALES', 4, False, Role.SALES),
-        ('WD_SALES', 'SALES', False, Role.SALES),
-        ('NB_SUPPORT', 5, False, Role.SUPPORT),
-        ('WD_SUPPORT', 'SUPPORT', False, Role.SUPPORT),
-        ('UNKNOWN_ROLE', 'UNKNOWN', False, -1),
-        ('ADMIN_ROLE', 'ADMIN', False, Role.ADMIN),
+        ('NB_DEACTIVATED', 1, Role.DEACTIVATED),
+        ('WD_DEACTIVATED', 'DEACTIVATED', Role.DEACTIVATED),
+        ('NB_MANAGEMENT', 3, Role.MANAGEMENT),
+        ('WD_MANAGEMENT', 'MANAGEMENT', Role.MANAGEMENT),
+        ('NB_SALES', 4, Role.SALES),
+        ('WD_SALES', 'SALES', Role.SALES),
+        ('NB_SUPPORT', 5, Role.SUPPORT),
+        ('WD_SUPPORT', 'SUPPORT', Role.SUPPORT),
+        ('UNKNOWN_ROLE', 'UNKNOWN', -1),
+        ('ADMIN_ROLE', 'ADMIN', Role.ADMIN),
     ]
 )
-def test_role_sanitizer_not_strict(init_uow, label, role, strict, expected):
+def test_role_sanitizer_not_strict(init_uow, label, role, expected):
+    """Test that the role sanitizer works as expected.
+    for the label, NB means input integer and WB means input string."""
     service = CollaboratorService(init_uow)
-    result = service.role_sanitizer(role, strict=strict)
+    result = service.role_sanitizer(role, strict=False)
     assert result == expected
 
 
 @pytest.mark.parametrize(
-    'label, role, strict, expected',
+    'label, role, expected',
     [
-        ('NB_DEACTIVATED', 1, True, Role.DEACTIVATED),
-        ('WD_DEACTIVATED','DEACTIVATED', True, Role.DEACTIVATED),
-        ('NB_MANAGEMENT', 3, True, Role.MANAGEMENT),
-        ('WD_MANAGEMENT', 'MANAGEMENT', True, Role.MANAGEMENT),
-        ('NB_SALES', 4, True, Role.SALES),
-        ('WD_SALES', 'SALES', True, Role.SALES),
-        ('NB_SUPPORT', 5, True, Role.SUPPORT),
-        ('WD_SUPPORT', 'SUPPORT', True, Role.SUPPORT),
-        ('UNKNOWN_ROLE', 'UNKNOWN', True, CollaboratorDomainError)
+        ('NB_DEACTIVATED', 1, Role.DEACTIVATED),
+        ('WD_DEACTIVATED', 'DEACTIVATED', Role.DEACTIVATED),
+        ('NB_MANAGEMENT', 3, Role.MANAGEMENT),
+        ('WD_MANAGEMENT', 'MANAGEMENT', Role.MANAGEMENT),
+        ('NB_SALES', 4, Role.SALES),
+        ('WD_SALES', 'SALES', Role.SALES),
+        ('NB_SUPPORT', 5, Role.SUPPORT),
+        ('WD_SUPPORT', 'SUPPORT', Role.SUPPORT),
+        ('UNKNOWN_ROLE', 'UNKNOWN', CollaboratorDomainError)
     ]
 )
-def test_role_sanitizer_strict(init_uow, label, role, strict, expected):
+def test_role_sanitizer_strict(init_uow, label, role, expected):
+    """Test that the role sanitizer works as expected.
+    for the label, NB means input integer and WB means input string."""
     service = CollaboratorService(init_uow)
     if role in {1, 3, 4, 5, 'DEACTIVATED', 'MANAGEMENT', 'SALES', 'SUPPORT'}:
-        result = service.role_sanitizer(role, strict=strict)
+        result = service.role_sanitizer(role, strict=True)
         assert result == expected
     else:
         with pytest.raises(expected):
-            service.role_sanitizer(role, strict=strict)
-
-
-
+            service.role_sanitizer(role, strict=True)

@@ -12,9 +12,8 @@ Fixtures
 import pytest
 
 from ee_crm.domain.model import AuthUser, Collaborator, AuthUserDomainError
-from ee_crm.services.auth.authentication import (
-    AuthenticationService,
-    AuthenticationError)
+from ee_crm.services.auth.authentication import AuthenticationService, \
+    AuthenticationError
 
 
 class TestAuthenticate:
@@ -44,7 +43,8 @@ class TestAuthenticate:
 
         spy_filter_by_username = mocker.spy(fake_uow.users, "filter_one")
         spy_verify = mocker.spy(user, "verify_password")
-        spy_filter_by_user_id = mocker.spy(fake_uow.collaborators, "filter_one")
+        spy_filter_by_user_id = mocker.spy(fake_uow.collaborators,
+                                           "filter_one")
 
         assert service.authenticate("user_b", "Password1") == expected_payload
 
@@ -58,7 +58,8 @@ class TestAuthenticate:
             service = AuthenticationService(fake_uow)
             service.authenticate("not_bob", "pwd")
 
-    def test_authenticate_fail_wrong_password(self, fake_uow, mocker, fake_repo):
+    def test_authenticate_fail_wrong_password(self, fake_uow, mocker,
+                                              fake_repo):
         user = AuthUser(_username="user_b",
                         _password="Password1")
         fake_uow.users = fake_repo(init=(user,))

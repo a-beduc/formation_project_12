@@ -1,3 +1,13 @@
+"""Unit tests for ee_crm.services.app.clients
+
+Fixtures
+    fake_uow
+        fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+"""
 import pytest
 
 from ee_crm.domain.model import Collaborator, Client
@@ -6,6 +16,8 @@ from ee_crm.services.app.clients import ClientService, ClientServiceError
 
 @pytest.fixture
 def init_uow(fake_uow, fake_repo):
+    """Fixture to initialize the data found in the fake persistence
+    layer."""
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a", _role_id=4,
                           _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b", _role_id=4,
@@ -23,136 +35,154 @@ def init_uow(fake_uow, fake_repo):
     return fake_uow
 
 
-class TestClientCRUD:
-    def test_client_creation_success(self, init_uow):
-        client_data = {
-            "salesman_id": 1,
-            "last_name": "new_last_name",
-            "first_name": "new_first_name",
-        }
+def test_client_creation_success(init_uow):
+    """Create client and verify its attributes."""
+    client_data = {
+        "salesman_id": 1,
+        "last_name": "new_last_name",
+        "first_name": "new_first_name",
+    }
 
-        service = ClientService(init_uow)
+    service = ClientService(init_uow)
+    service.create(**client_data)
+    assert init_uow.commited is True
+
+    client = init_uow.clients.get(6)
+    assert client.salesman_id == 1
+    assert client.last_name == "new_last_name"
+    assert client.first_name == "new_first_name"
+    assert client.id == 6
+
+
+def test_client_creation_failure_not_salesman(mocker, init_uow):
+    """Verify that if the linked collaborator is not a salesman an
+    Exception is raised."""
+    client_data = {
+        "last_name": "new_last_name",
+        "first_name": "new_first_name",
+        "unused_payload": "whatever_data",
+        "salesman_id": 3
+    }
+    service = ClientService(init_uow)
+    spy_uow_rollback = mocker.spy(init_uow, "rollback")
+
+    with pytest.raises(ClientServiceError,
+                       match="Only sales people can create clients"
+                       ):
         service.create(**client_data)
-        assert init_uow.commited is True
 
-        client = init_uow.clients.get(6)
-        assert client.salesman_id == 1
-        assert client.last_name == "new_last_name"
-        assert client.first_name == "new_first_name"
-        assert client.id == 6
+    assert spy_uow_rollback.call_count == 1
 
-    def test_client_creation_failure_not_salesman(self, mocker, init_uow):
-        client_data = {
-            "last_name": "new_last_name",
-            "first_name": "new_first_name",
-            "unused_payload": "whatever_data",
-            "salesman_id": 3
-        }
-        service = ClientService(init_uow)
-        spy_uow_rollback = mocker.spy(init_uow, "rollback")
 
-        with pytest.raises(ClientServiceError,
-                           match="Only sales people can create clients"
-                           ):
-            service.create(**client_data)
+def test_client_uow_error(mocker, init_uow):
+    """Verify that if an Exception is raised in the middle of a
+    transaction, a proper rollback assure data integrity."""
+    client_data = {
+        "last_name": "new_last_name",
+        "first_name": "new_first_name",
+        "unused_payload": "whatever_data",
+        "salesman_id": 1
+    }
 
-        assert spy_uow_rollback.call_count == 1
+    def uow_error():
+        raise RuntimeError('db crash')
 
-    def test_client_uow_error(self, mocker, init_uow):
-        client_data = {
-            "last_name": "new_last_name",
-            "first_name": "new_first_name",
-            "unused_payload": "whatever_data",
-            "salesman_id": 1
-        }
+    mocker.patch.object(init_uow, "commit", uow_error)
+    service = ClientService(init_uow)
+    spy_uow_rollback = mocker.spy(init_uow, "rollback")
 
-        def uow_error():
-            raise RuntimeError('db crash')
+    with pytest.raises(RuntimeError):
+        service.create(**client_data)
 
-        mocker.patch.object(init_uow, "commit", uow_error)
-        service = ClientService(init_uow)
-        spy_uow_rollback = mocker.spy(init_uow, "rollback")
+    # rollback called twice because ClientService.create call an uow
+    # ctx manager to do a verification before opening the one to
+    # create.
+    assert spy_uow_rollback.call_count == 2
 
-        with pytest.raises(RuntimeError):
-            service.create(**client_data)
 
-        # rollback called twice because ClientService.create call an uow
-        # ctxt manager to do a verification before opening the one to create.
-        assert spy_uow_rollback.call_count == 2
+def test_get_client_success(init_uow):
+    client_id = 1
+    service = ClientService(init_uow)
+    client_dto = service.retrieve(client_id)
 
-    def test_get_client_success(self, init_uow):
-        client_id = 1
-        service = ClientService(init_uow)
-        client_dto = service.retrieve(client_id)
+    assert client_dto[0].salesman_id == 1
+    assert client_dto[0].id == 1
 
-        assert client_dto[0].salesman_id == 1
-        assert client_dto[0].id == 1
 
-    def test_get_client_failure(self, init_uow):
-        client_id = 10
-        service = ClientService(init_uow)
-        with pytest.raises(ClientServiceError, match="Client not found"):
-            service.retrieve(client_id)
+def test_get_client_failure(init_uow):
+    client_id = 10
+    service = ClientService(init_uow)
+    with pytest.raises(ClientServiceError, match="Client not found"):
+        service.retrieve(client_id)
 
-    def test_get_all_clients_success(self, init_uow):
-        client_id = 1
-        service = ClientService(init_uow)
-        list_clients = service.retrieve_all()
 
-        client_dto = service.retrieve(client_id)
+def test_get_all_clients_success(init_uow):
+    client_id = 1
+    service = ClientService(init_uow)
+    list_clients = service.retrieve_all()
 
-        assert list_clients[0] == client_dto[0]
-        assert len(list_clients) == 5
+    client_dto = service.retrieve(client_id)
 
-    def test_filter_salesman_clients(self, init_uow):
-        service = ClientService(init_uow)
-        salesman_id = 2
-        list_clients = service.filter(salesman_id=salesman_id)
+    assert list_clients[0] == client_dto[0]
+    assert len(list_clients) == 5
 
-        assert len(list_clients) == 3
-        assert list_clients[0].id == 3
-        assert list_clients[0].last_name == "cl_ln_c"
 
-        salesman_id = 3
-        list_clients = service.filter(salesman_id=salesman_id)
+def test_filter_salesman_clients(init_uow):
+    service = ClientService(init_uow)
+    salesman_id = 2
+    list_clients = service.filter(salesman_id=salesman_id)
 
-        assert len(list_clients) == 0
-        assert list_clients == tuple()
+    assert len(list_clients) == 3
+    assert list_clients[0].id == 3
+    assert list_clients[0].last_name == "cl_ln_c"
 
-    def test_delete_client(self, init_uow):
-        service = ClientService(init_uow)
-        client_id = 1
+    salesman_id = 3
+    list_clients = service.filter(salesman_id=salesman_id)
 
-        assert service.retrieve(client_id)[0] is not None
-        service.remove(client_id)
+    assert len(list_clients) == 0
+    assert list_clients == tuple()
 
-        assert init_uow.commited is True
 
-        with pytest.raises(ClientServiceError, match="Client not found"):
-            service.retrieve(client_id)
+def test_delete_client(init_uow):
+    service = ClientService(init_uow)
+    client_id = 1
 
-    def test_update_client(self, init_uow):
-        service = ClientService(init_uow)
-        client_id = 1
-        update_input = {"last_name": "new_last_name", "useless_data": "whatever"}
-        service.modify(client_id, **update_input)
+    assert service.retrieve(client_id)[0] is not None
+    service.remove(client_id)
 
-        assert init_uow.commited is True
-        assert service.retrieve(client_id)[0].last_name == "new_last_name"
+    assert init_uow.commited is True
 
-    def test_sort_clients_by_reverse_salesman_id(self, init_uow):
-        service = ClientService(init_uow)
-        all_clients = service.retrieve_all(sort=(('salesman_id', True),))
+    with pytest.raises(ClientServiceError, match="Client not found"):
+        service.retrieve(client_id)
 
-        assert all_clients[0].last_name == "cl_ln_c"
-        assert all_clients[1].last_name == "cl_ln_d"
-        assert all_clients[2].last_name == "cl_ln_e"
-        assert all_clients[3].last_name == "cl_ln_a"
-        assert all_clients[4].last_name == "cl_ln_b"
 
-    def test_sort_clients_by_wrong_key(self, init_uow):
-        service = ClientService(init_uow)
+def test_update_client(init_uow):
+    """Verify that useless keyword can be passed to the 'modify'
+    func without problems."""
+    service = ClientService(init_uow)
+    client_id = 1
+    update_input = {"last_name": "new_last_name",
+                    "useless_data": "whatever"}
+    service.modify(client_id, **update_input)
 
-        with pytest.raises(ClientServiceError,
-                           match=r"wrong sort key in \['unknown_key'\]"):
-            service.retrieve_all(sort=(('unknown_key', True),))
+    assert init_uow.commited is True
+    assert service.retrieve(client_id)[0].last_name == "new_last_name"
+
+
+def test_sort_clients_by_reverse_salesman_id(init_uow):
+    service = ClientService(init_uow)
+    all_clients = service.retrieve_all(sort=(('salesman_id', True),))
+
+    assert all_clients[0].last_name == "cl_ln_c"
+    assert all_clients[1].last_name == "cl_ln_d"
+    assert all_clients[2].last_name == "cl_ln_e"
+    assert all_clients[3].last_name == "cl_ln_a"
+    assert all_clients[4].last_name == "cl_ln_b"
+
+
+def test_sort_clients_by_wrong_key(init_uow):
+    service = ClientService(init_uow)
+
+    with pytest.raises(ClientServiceError,
+                       match=r"wrong sort key in \['unknown_key'\]"):
+        service.retrieve_all(sort=(('unknown_key', True),))
