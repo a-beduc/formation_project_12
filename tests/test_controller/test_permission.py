@@ -1,3 +1,4 @@
+"""Unit tests for ee_crm.controllers.auth.permission"""
 import pytest
 
 from ee_crm.controllers.auth import predicate
@@ -11,6 +12,8 @@ from ee_crm.services.auth.jwt_handler import BadToken
 
 @pytest.fixture
 def mock_user_management(mocker):
+    """Fixture to mock the payload when authenticating a user with
+    the MANAGEMENT role."""
     payload = {
         'sub': 'user_01',
         'c_id': 1,
@@ -25,6 +28,8 @@ def mock_user_management(mocker):
 
 @pytest.fixture
 def mock_user_sales(mocker):
+    """Fixture to mock the payload when authenticating a user with
+    the SALES role."""
     payload = {
         'sub': 'user_02',
         'c_id': 2,
@@ -39,6 +44,8 @@ def mock_user_sales(mocker):
 
 @pytest.fixture
 def mock_user_support(mocker):
+    """Fixture to mock the payload when authenticating a user with
+    the SUPPORT role."""
     payload = {
         'sub': 'user_03',
         'c_id': 3,
@@ -53,6 +60,7 @@ def mock_user_support(mocker):
 
 @pytest.fixture(autouse=True)
 def mock_perms(mocker):
+    """Fixture to mock RBAC permissions tags."""
     rbac = {
         "BASE": {"mock:base"},
         "COLLABORATOR": {"mock:collaborator"},
@@ -163,6 +171,9 @@ def test_permission_with_kwargs_get_payload(mock_user_management):
 
 
 def test_permission_without_kwargs_dont_get_payload(mock_user_management):
+    """This test verify that the payload of the JWT does not raise an
+    error when the wrapped func doesn't accept additional keyword
+    arguments."""
     @permission("mock:base")
     def test_func():
         pass
@@ -319,8 +330,8 @@ def test_permission_is_self_or_management_success(mock_user_management):
 
 
 def test_permission_is_self_failure_bad_signature(mock_user_support):
-    # reminder, for [is_self] to work, pk must be a part of the signature
-    # of the func
+    """reminder test, for predicate(is_self) to work, pk must be a part
+    of the signature of the wrapped func."""
     @permission("mock:base", abac=is_self)
     def test_func(not_pk, **kwargs):
         pass
