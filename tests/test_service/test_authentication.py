@@ -2,10 +2,10 @@
 
 Fixtures
     fake_uow
-        fake unit of work to interact with a faked persistence layer
+        Fake unit of work to interact with a faked persistence layer
         in an in-memory dict.
     fake_repo
-        fake repository class, when called create an instance of a
+        Fake repository class, when called create an instance of a
         FakeRepository that expose fake repositories for resources.
 
 """

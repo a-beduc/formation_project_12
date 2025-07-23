@@ -4,9 +4,9 @@ Each test confirms that the service returns 'None' when the requested
 resource is missing.
 
 Fixtures
-    fake_repo
-        fake repository class, when called create an instance of a
-        FakeRepository that expose fake repositories for resources.
+    fake_uow
+        Fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
 """
 from ee_crm.services.auth.permissions import PermissionService
 

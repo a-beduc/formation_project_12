@@ -1,10 +1,11 @@
 """Unit tests for the ee_crm.services.app.events
 
 Fixture
-    fake unit of work to interact with a faked persistence layer
+    fake_uow
+        Fake unit of work to interact with a faked persistence layer
         in an in-memory dict.
     fake_repo
-        fake repository class, when called create an instance of a
+        Fake repository class, when called create an instance of a
         FakeRepository that expose fake repositories for resources.
 """
 from datetime import datetime

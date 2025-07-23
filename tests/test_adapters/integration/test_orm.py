@@ -3,6 +3,17 @@
 Tests to verify that dynamically created relationship behave as expected.
 It might be redundant with SQLAlchemy tests, but it assures that the
 addon behaves as needed.
+
+Fixtures
+    session
+        SQLAlchemy session object bound to the in-memory test SQLite
+        database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    init_db_table_client
+        create and populate the table linked to the Client model.
 """
 import datetime
 

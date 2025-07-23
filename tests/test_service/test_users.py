@@ -1,4 +1,13 @@
-"""Unit tests for ee_crm.services.app.users"""
+"""Unit tests for ee_crm.services.app.users
+
+Fixture
+    fake_uow
+        Fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        Fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+"""
 import pytest
 
 from ee_crm.domain.model import AuthUser, AuthUserDomainError

@@ -6,6 +6,7 @@ tempo_sql_reset/commands.txt
 z_manual/
 .coverage
 __pycache__.py
+__pycache__/
 htmlcov/
 .logs/
 ee_crm.egg-info/
