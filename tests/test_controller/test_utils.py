@@ -1,6 +1,6 @@
 """Unit tests for ee_crm.controllers.utils functions.
 
-Tests try to exhaust happy and sad path using pyytest parametrization.
+Tests try to exhaust happy and sad path using pytest parametrization.
 """
 from datetime import datetime
 

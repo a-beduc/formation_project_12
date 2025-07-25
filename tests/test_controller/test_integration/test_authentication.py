@@ -32,7 +32,7 @@ def mock_uow(mocker, in_memory_uow,
              init_db_table_contract,
              init_db_table_event):
     """Fixture to replace the Unit of Work class imported by the
-    authentication for one connected to the SQLite in-memory database.
+    module for one connected to the SQLite in-memory database.
 
     Autouse is set to True to avoid to forget to add it when testing.
     """
