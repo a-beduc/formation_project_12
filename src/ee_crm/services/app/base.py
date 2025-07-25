@@ -1,13 +1,12 @@
-"""Abstract service class for basic implementation of CRUD methods.
+"""Service class for basic implementation of CRUD methods.
 
 Classes
-    BaseService # Basic implementation of CRUD operation.
+    BaseService # Basic implementation of CRUD methods.
 """
-from abc import ABC
 
 
-class BaseService(ABC):
-    """Abstract service class for basic implementation of CRUD methods.
+class BaseService:
+    """Base service class for basic implementation of CRUD methods.
 
     Attributes
         uow (AbstractUnitOfWork): Unit of work exposing repositories.

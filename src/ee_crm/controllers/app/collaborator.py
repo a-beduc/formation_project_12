@@ -1,3 +1,15 @@
+"""Controller class for the Collaborator resource operations.
+
+Note: when calling for the CollaboratorManager.create method, it will
+create a new AuthUser and a new Collaborator at the same time and link
+them together.
+
+Classes
+    CollaboratorManager # It expands BaseManager to add collaborator
+                        # specific operations.
+"""
+from typing import override
+
 from ee_crm.controllers.app.base import BaseManager
 from ee_crm.controllers.auth.permission import permission
 from ee_crm.controllers.auth.predicate import is_management, is_self
@@ -10,6 +22,17 @@ from ee_crm.services.app.collaborators import CollaboratorService
 
 
 class CollaboratorManager(BaseManager):
+    """Controller for Collaborator resource.
+
+    Inherits from BaseManager, only public attributes differences are
+    documented below.
+
+    Attributes
+        label: "Collaborator"
+        error_cls: CollaboratorManagerError
+        service (ee_crm.services.app.collaborators.CollaboratorService):
+            The service class to start operations with.
+    """
     label = "Collaborator"
     _validate_types_map = {
         "id": verify_positive_int,
@@ -24,6 +47,11 @@ class CollaboratorManager(BaseManager):
     error_cls = CollaboratorManagerError
 
     def _validate_fields(self, fields):
+        """See BaseManager._validate_fields
+
+        Differences
+            * It add an extra verification for the role field.
+        """
         fields_dict = super()._validate_fields(fields)
         if 'role' in fields:
             fields_dict['role'] = self.service.role_sanitizer(fields['role'])
@@ -31,6 +59,18 @@ class CollaboratorManager(BaseManager):
 
     @staticmethod
     def _local_logging_db_action(action, result, resource_id, accountable_id):
+        """Local logging setup for logging collaborator resource
+        actions.
+
+        Args
+            action (str): The performed action. (ex: Update).
+            result (str): The result of the action.
+                (ex: Updated Collaborator).
+            resource_id (int): The id of the resource who was modified.
+                (ex: 6).
+            accountable_id (int): The id of the collaborator who
+                modified the resource. (ex: 6).
+        """
         logger = setup_file_logger(name=__name__, filename="ACID")
         logger.info(f'controller ::: Collaborator ::: {action} ::: '
                     f'By collaborator ({accountable_id}) ::: '
@@ -38,6 +78,20 @@ class CollaboratorManager(BaseManager):
 
     def _sentry_logging_db_action(self, action, resource_id, accountable_id,
                                   message, level="info", **kwargs):
+        """Sentry logging setup for logging collaborator resource
+        actions.
+
+        Args
+            action (str): The performed action. (ex: Update).
+            resource_id (int): The id of the resource who was modified.
+                (ex: 6).
+            accountable_id (int): The id of the collaborator who
+                modified the resource. (ex: 6).
+            message (str): The message to log.
+                (ex: Updated Collaborator).
+            level (str): The level of the log message.
+            **kwargs: extra arguments passed to the logger.
+        """
         tags = {
             "action": action,
             "resource": self.label.lower(),
@@ -48,8 +102,22 @@ class CollaboratorManager(BaseManager):
         log_sentry_message_event(message, level,
                                  tags=tags, extra=extra, user=user)
 
+    @override
     @permission("collaborator:create")
     def create(self, username, plain_password, **kwargs):
+        """Create a new collaborator and a new user. Override the
+        BaseManager.create method.
+
+        Args
+            username (str): The username of the user.
+            plain_password (str): The password of the user.
+            **kwargs: extra arguments passed to create the collaborator.
+
+        Returns
+            tuple[dataclass]: A tuple containing an immutable dataclass
+                instance exposing the created resource public
+                attributes.
+        """
         create_fields = {
             "last_name",
             "first_name",
@@ -81,13 +149,21 @@ class CollaboratorManager(BaseManager):
 
         return collaborator_dto
 
+    @override
     @permission("collaborator:read")
     def read(self, pk=None, filters=None, sort=None):
+        """See BaseManager.read"""
         return super().read(pk=pk, filters=filters, sort=sort)
 
+    @override
     @permission("collaborator:update_any", "collaborator:update_self",
                 abac=(is_management | is_self))
     def update(self, pk, **kwargs):
+        """See BaseManager.update
+
+        Differences
+            * limit accepted keyword parameters passed to the service.
+        """
         update_fields = {
             "last_name",
             "first_name",
@@ -110,9 +186,15 @@ class CollaboratorManager(BaseManager):
                                        accountable_id,
                                        "Collaborator updated")
 
+    @override
     @permission("collaborator:delete_any", "collaborator:delete_self",
                 abac=(is_management | is_self))
     def delete(self, pk, **kwargs):
+        """See BaseManager.delete
+
+        Differences
+            * Log action
+        """
         pk = self._validate_pk_type(pk)
         self.service.remove(collaborator_id=pk, user_id=pk)
 
@@ -130,6 +212,14 @@ class CollaboratorManager(BaseManager):
 
     @permission("collaborator:modify_role")
     def change_collaborator_role(self, pk, role, **kwargs):
+        """Method that pilot the role attribution of collaborators.
+
+        Args
+            pk (int): The primary key/ID of the collaborator.
+            role (int|str): The role of the collaborator.
+            **kwargs: extra arguments passed to log the user who
+                modified the collaborator.
+        """
         pk = self._validate_pk_type(pk)
         role = self.service.role_sanitizer(role, strict=True)
         self.service.assign_role(pk, role)
