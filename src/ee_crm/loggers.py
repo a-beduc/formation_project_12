@@ -1,3 +1,11 @@
+"""Function to handle the configuration of loggers.
+
+Functions
+    setup_file_logger           # Prepare the logger
+    init_sentry                 # Initialize sentry
+    log_sentry_traceback        # Add traceback to sentry logs
+    log_sentry_message_event    # Add information to the sentry logs
+"""
 import logging
 from datetime import date
 from pathlib import Path
@@ -9,6 +17,14 @@ from ee_crm.config import get_local_log_dir, get_sentry_dsn
 
 
 def _create_or_find_log_storage(filename=None):
+    """Private helper for creating the path of the logger.
+
+    Args
+        filename(str|None): Name of the specific log file to create.
+
+    Returns
+        Path: Path to the log file.
+    """
     log_path = f"{get_local_log_dir()}/{date.today()}_eecrm_{filename}.log"
     path = Path(log_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -16,6 +32,15 @@ def _create_or_find_log_storage(filename=None):
 
 
 def setup_file_logger(name="default", filename="default"):
+    """Prepare and set up the loggers.
+
+    Args
+        name(str): Name of the logger.
+        filename(str): Name of the log file to create.
+
+    Returns
+        Logger: Configured local logger.
+    """
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
@@ -35,6 +60,7 @@ def setup_file_logger(name="default", filename="default"):
 
 
 def init_sentry():
+    """Initialize the sentry logger."""
     sentry_dsn = get_sentry_dsn()
     if not sentry_dsn:
         return
@@ -53,10 +79,24 @@ def init_sentry():
 
 
 def log_sentry_traceback(error):
+    """Catch the traceback and send it to sentry.
+
+    Args
+        error(Exception): Exception raised by the logger.
+    """
     sentry_sdk.capture_exception(error)
 
 
 def log_sentry_message_event(message, level, tags=None, extra=None, user=None):
+    """
+
+    Args
+        message(str): Message to be logged.
+        level(str): Logging level.
+        tags(dict|None): Tags to add to the log.
+        extra(dict|None): Extra information to be logged.
+        user(str|None): User ID to be logged.
+    """
     if tags:
         for k, v in tags.items():
             sentry_sdk.set_tag(k, v)

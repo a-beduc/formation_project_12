@@ -1,6 +1,7 @@
-from ee_crm.cli_interface.utils import (
-    map_accepted_key, clean_sort, normalize_sort, normalize_fields,
-    clean_input_fields, normalize_remove_columns)
+"""Unit tests for ee_crm.cli_interface.utils"""
+from ee_crm.cli_interface.utils import map_accepted_key, clean_sort, \
+    normalize_sort, normalize_fields, clean_input_fields, \
+    normalize_remove_columns
 
 
 def test_map_accepted_key():
@@ -59,7 +60,7 @@ def test_normalize_sort():
         "role": "role"
     }
     sort_in = (("data:expected", False), ("unknown", False), ("fn", False),
-                ("last_name", False), ("role", True))
+               ("last_name", False), ("role", True))
     sort_out = (("first_name", False), ("last_name", False), ("role", True))
     assert normalize_sort(sort_in, mapped_keys) == sort_out
 

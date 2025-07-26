@@ -195,7 +195,6 @@ class SqlAlchemyRepository(AbstractRepository):
                 order_output.append(attr.desc())
             else:
                 order_output.append(attr.asc())
-        print(order_output[0])
         return tuple(order_output)
 
     def _add(self, model_obj):
