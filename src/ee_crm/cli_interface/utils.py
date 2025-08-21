@@ -1,12 +1,13 @@
 """Helpers functions to do basic data manipulation.
 
 Functions
-    map_accepted_key            #
-    clean_input_fields          #
-    clean_sort                  #
-    normalize_sort              #
-    normalize_fields            #
-    normalize_remove_columns    #
+    map_accepted_key            # Create dict of accepted pairs of input
+    clean_input_fields          # Transform list(tuple) into dict
+    clean_sort                  # Format sorting input
+    normalize_sort              # Evacuate unrecognized input
+    normalize_fields            # Evacuate unrecognized input
+    normalize_remove_columns    # Evacuate unrecognized input, and
+                                # remove columns
 """
 
 
@@ -29,8 +30,9 @@ def map_accepted_key(input_key_map):
 
 
 def clean_input_fields(fields):
-    """Helper to lower input keyword and transform a given iter of args
-    in a dict.
+    """Helper to lower input keyword and transform an iterable of tuples
+    in a dict where the first element of the tuple is the key, and the
+    second is the value.
 
     Args
         fields (iter[tuple[str, Any]]): iterable to transform input in
