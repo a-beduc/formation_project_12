@@ -67,6 +67,7 @@ class ErrorView(BaseView):
 
     @staticmethod
     def _normalize_chunks(chunks, width):
+    def _fill_last_chunks(chunks, width):
         last_chunk = chunks[-1]
         blanks = (width - 6) - len(last_chunk)
         if blanks > 0:
@@ -76,8 +77,14 @@ class ErrorView(BaseView):
     def _transform_row_to_lines(self, text, width):
         chunks = self._transform_text_to_chunks(text, width)
         return self._normalize_chunks(chunks, width)
+        return self._fill_last_chunks(chunks, width)
 
-    def _create_body(self, width):
+    def _add_border(self, lines):
+        border_left = self._create_border(side="left")
+        border_right = self._create_border(side="right")
+        return [f"{border_left}{line}{border_right}" for line in lines]
+
+    def _build_body_sections(self, width):
         err_name = f"{self.error_threat} name : {self.error_type}"
         err_threat = f"{self.error_threat} at the {self.error_level} level"
         err_message = f"Message : {self.error_msg}"
@@ -89,6 +96,38 @@ class ErrorView(BaseView):
         chunk_tips = self._transform_row_to_lines(err_tips, width)
 
         return [*chunk_name, *chunk_threat], [*chunk_message, *chunk_tips]
+
+    def _create_body(self, width):
+        err_name = f"{self.error_threat} name : {self.error_type}"
+        err_threat = f"{self.error_threat} at the {self.error_level} level"
+        err_message = f"Message : {self.error_msg}"
+        err_tips = f"Tips : {self.tips}"
+        first_lines, second_lines = self._build_body_sections(width)
+        first_block = self._add_border(first_lines)
+        second_block = self._add_border(second_lines)
+        blank_line = self._create_blank_line(width)
+        return [*first_block, blank_line, *second_block]
+
+    def _construct_error_window(self, width):
+
+        chunk_name = self._transform_row_to_lines(err_name, width)
+        chunk_threat = self._transform_row_to_lines(err_threat, width)
+        chunk_message = self._transform_row_to_lines(err_message, width)
+        chunk_tips = self._transform_row_to_lines(err_tips, width)
+
+        return [*chunk_name, *chunk_threat], [*chunk_message, *chunk_tips]
+        message_to_print = []
+
+        header = self._create_header(width)
+        message_to_print.extend(header)
+
+        body = self._create_body(width)
+        message_to_print.extend(body)
+
+        footer = self._create_footer(width)
+        message_to_print.extend(footer)
+
+        return message_to_print
 
     def display_error(self):
         width = self._calculate_width()
@@ -114,3 +153,6 @@ class ErrorView(BaseView):
         footer = self._create_footer(width)
         for elem in footer:
             self.display_func(elem)
+        message_to_print = self._construct_error_window(width)
+        for line in message_to_print:
+            self.display_func(line)
