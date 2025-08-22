@@ -62,11 +62,11 @@ def collaborator():
               help="Key-value pairs with collaborator data. "
                    "(ex: --data-collaborator email user@mail.com)")
 @click.option("-np", "--no-prompt", is_flag=True, default=False,
-              help="flag to turn off prompting to get additional data")
+              help="Disable interactive prompting for missing fields.")
 def create(data_collaborator, no_prompt):
     """Creates a new collaborator and a new user with mandatory username
-    and password. Display the new user information when transaction is
-    successful.
+    and password. Display the new collaborator information when
+    transaction is successful.
 
     Args:
         data_collaborator (iter(tuple[str, str])): the tuples contain
@@ -114,7 +114,7 @@ def create(data_collaborator, no_prompt):
               help="Keyword to hide columns from output. "
                    "(ex: --remove-column role)")
 def read(pk, filters, sorts, remove_columns):
-    """Queries collaborators and prints them in a formatted table.
+    """Queries collaborators and print them in a formatted table.
 
     Args:
         pk (int): The unique ID of the collaborator.
@@ -130,8 +130,7 @@ def read(pk, filters, sorts, remove_columns):
     CollaboratorCrudView().render(output, remove_col=remove_col)
 
 
-@click.command(help="Update a specific collaborators information in the "
-                    "database.")
+@click.command(help="Update a specific collaborators information.")
 @click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
               help="Collaborator's unique id, pk: INT >= 1")
@@ -159,12 +158,12 @@ def update(pk, data_collaborator, no_prompt):
 
 
 @click.command(help="Delete a specific collaborator and its associated "
-                    "user from the database.")
+                    "user.")
 @click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
               help="Collaborator's unique id, pk: INT >= 1")
 def delete(pk):
-    """Delete a specific collaborator from the database. It also delete
+    """Delete a specific collaborator from the database. It also deletes
     the associated user from the database.
 
     Args:

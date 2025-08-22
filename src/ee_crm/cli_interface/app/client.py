@@ -44,6 +44,7 @@ PROMPT_FIELDS = (
 
 @click.group(help="Commands to manage clients.")
 def client():
+    """Top level command group for client."""
     pass
 
 
@@ -110,7 +111,7 @@ def read(pk, filters, sorts, remove_columns):
     ClientCrudView().render(output, remove_col=remove_col)
 
 
-@click.command(help="Update a specific clients information in the "
+@click.command(help="Update a specific client information in the "
                     "database.")
 @click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
@@ -138,7 +139,7 @@ def update(pk, data_client, no_prompt):
     BaseView.success(f"Client successfully updated")
 
 
-@click.command(help="Delete a specific client")
+@click.command(help="Delete a specific client.")
 @click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
               help="Client's unique id, pk: INT >= 1")
@@ -186,7 +187,7 @@ def show_mine(filters, sorts, remove_columns):
     ClientCrudView().render(output, remove_col=remove_col)
 
 
-@click.command(help="Display clients without linked users")
+@click.command(help="Display clients without linked users.")
 @click.option("-f", "--filters", "--filter",
               type=click.STRING,
               nargs=2,
