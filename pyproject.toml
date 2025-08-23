@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ee-crm"
-version = "0.1.2"
+version = "1.0.1"
 description = "Epic Event CRM Project CLI"
 requires-python = ">=3.12"
 dependencies = [
@@ -23,6 +23,7 @@ dev = [
     "pytest-mock",
     "coverage",
     "pytest-cov",
+    "ruff>=0.12.10",
 ]
 
 [project.scripts]
@@ -37,10 +38,7 @@ pythonpath = "src"
 [tool.coverage.run]
 source = ["src/ee_crm"]
 omit = [
-    "tests/*",
-    "pyproject.toml",
-    "z_manual/*",
-    "__init__.py"
+    "__init__.py",
 ]
 branch = true
 

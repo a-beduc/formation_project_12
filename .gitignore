@@ -1,7 +1,7 @@
 .env
 .idea/
 .venv/
-tempo_sql_reset/commands.txt
+db_reset/commands.txt
 .storage/
 z_manual/
 .coverage
