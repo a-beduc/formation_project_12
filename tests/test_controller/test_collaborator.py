@@ -1,13 +1,22 @@
+"""Unit tests for ee_crm.controllers.app.collaborator
+
+Fixtures
+    fake_service
+        Mock a service class with crud methods.
+    bypass_permission_manager
+        Mock the permission manager JWT.
+"""
 import pytest
 
 from ee_crm.controllers.app.collaborator import CollaboratorManager
-from ee_crm.services.dto import CollaboratorDTO
-from ee_crm.domain.model import Role, CollaboratorDomainError
 from ee_crm.controllers.auth.permission import AuthorizationDenied
+from ee_crm.domain.model import Role, CollaboratorDomainError
+from ee_crm.services.dto import CollaboratorDTO
 
 
 @pytest.fixture(autouse=True)
 def mock_logger(mocker):
+    """Fixture to disable loggers during tests."""
     mock = mocker.Mock()
     mocker.patch('ee_crm.controllers.app.collaborator.setup_file_logger',
                  return_value=mock)
@@ -17,6 +26,7 @@ def mock_logger(mocker):
 
 @pytest.fixture
 def collaborators_dto():
+    """Fixture to be used to simulate the result of a query."""
     coll_a = CollaboratorDTO(
         id=1,
         last_name="ln_a",
@@ -47,7 +57,8 @@ def collaborators_dto():
     return coll_a, coll_b, coll_c
 
 
-def test_read_by_pk(fake_service, collaborators_dto, bypass_permission_manager):
+def test_read_by_pk(fake_service, collaborators_dto,
+                    bypass_permission_manager):
     controller = CollaboratorManager(fake_service)
     fake_service.retrieve.return_value = collaborators_dto[0]
     pk = 1
@@ -152,7 +163,7 @@ def test_create_collaborator_with_bad_role(fake_service,
                           role="BAD")
 
 
-def test_create_permission_denied(fake_service, mocker):
+def test_create_permission_denied(mocker, fake_service):
     mocker.patch("ee_crm.controllers.auth.permission.is_authenticated",
                  return_value={"sub": "user", "c_id": 13, "role": 5,
                                "name": "Bruce Banner"})

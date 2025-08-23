@@ -1,5 +1,10 @@
-import pytest
+"""Unit tests for ee_crm.controllers.utils functions.
+
+Tests try to exhaust happy and sad path using pytest parametrization.
+"""
 from datetime import datetime
+
+import pytest
 
 from ee_crm.controllers.utils import verify_positive_int, \
     verify_positive_float, verify_string, verify_bool, verify_datetime
@@ -37,9 +42,9 @@ def test_verify_positive_int_failure(value):
     "value, expected",
     [
         (3.5, 3.5),
-        (10, 10.0),
+        (10, 10),
         ("12.75", 12.75),
-        (0, 0.0)
+        (0, 0)
     ]
 )
 def test_verify_positive_float_success(value, expected):

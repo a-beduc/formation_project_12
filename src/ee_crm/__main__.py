@@ -1,3 +1,11 @@
+"""CLI entrypoint for ee_crm.
+
+Initialize the loggers, the ORM mappers and handle application specific
+errors.
+
+Function
+    __main__    # CLI entrypoint function
+"""
 from ee_crm.adapters.orm import start_mappers
 from ee_crm.cli_interface.commands import cli
 from ee_crm.cli_interface.views.view_errors import ErrorView
@@ -9,6 +17,14 @@ init_sentry()
 
 
 def main():
+    """Run the ee_crm CLI entrypoint.
+
+    Configure the logger, register the mappers, invoke the Click CLI,
+    handle the errors.
+
+    Raises
+        Exception: Any uncatch exception raised.
+    """
     logger = setup_file_logger(name=__name__, filename="ERRORS")
 
     try:

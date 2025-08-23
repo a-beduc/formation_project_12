@@ -1,21 +1,33 @@
+"""Unit tests for the ee_crm.services.app.contracts
+
+Fixture
+    fake_uow
+        Fake unit of work to interact with a faked persistence layer
+        in an in-memory dict.
+    fake_repo
+        Fake repository class, when called create an instance of a
+        FakeRepository that expose fake repositories for resources.
+"""
 import pytest
 
-from ee_crm.domain.model import (Collaborator, Client, Contract, Role,
-                                 ContractDomainError)
+from ee_crm.domain.model import Collaborator, Client, Contract, Role, \
+    ContractDomainError
 from ee_crm.domain.validators import ContractValidatorError
 from ee_crm.exceptions import ContractServiceError
 from ee_crm.services.app.contracts import ContractService
 
 
 @pytest.fixture
-def init_uow(uow, fake_repo):
+def init_uow(fake_uow, fake_repo):
+    """Fixture to initialize the data found in the fake persistence
+    layer."""
     coll_a = Collaborator(first_name="fn_a", last_name="ln_a",
                           _role_id=Role.SALES, _user_id=1)
     coll_b = Collaborator(first_name="fn_b", last_name="ln_b",
                           _role_id=Role.SALES, _user_id=2)
     coll_c = Collaborator(first_name="fn_c", last_name="ln_c",
                           _role_id=Role.MANAGEMENT, _user_id=3)
-    uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
+    fake_uow.collaborators = fake_repo(init=(coll_a, coll_b, coll_c))
 
     cli_a = Client(last_name="cl_ln_a", first_name="cl_fn_a", _salesman_id=1)
     cli_a.salesman = coll_a
@@ -32,7 +44,7 @@ def init_uow(uow, fake_repo):
     cli_e = Client(last_name="cl_ln_e", first_name="cl_fn_e", _salesman_id=2)
     cli_e.salesman = coll_b
 
-    uow.clients = fake_repo(
+    fake_uow.clients = fake_repo(
         init=(cli_a, cli_b, cli_c, cli_d, cli_e))
 
     con_a = Contract(_total_amount=100.00, _client_id=1)
@@ -42,10 +54,10 @@ def init_uow(uow, fake_repo):
     con_e = Contract(_total_amount=500.00, _client_id=4, _signed=True,
                      _paid_amount=200.00)
 
-    uow.contracts = fake_repo(
+    fake_uow.contracts = fake_repo(
         init=(con_a, con_b, con_c, con_d, con_e)
     )
-    return uow
+    return fake_uow
 
 
 def test_create_contract_success(init_uow):
@@ -72,6 +84,7 @@ def test_create_contract_failure_bad_price(init_uow):
                        match="Invalid price value, must be positive"):
         service.create(**data)
 
+
 def test_create_contract_failure_bad_client(init_uow):
     data = {
         "client_id": 13,
@@ -91,7 +104,6 @@ def test_sign_contract(init_uow):
 
     service.sign_contract(1)
 
-    # does nothing
     with pytest.raises(ContractServiceError,
                        match="This contract is already signed"):
         service.sign_contract(1)
@@ -115,8 +127,9 @@ def test_change_total_amount_after_signed_fail(init_uow):
     contract = service.retrieve(4)
     assert contract[0].total_amount == 400.00
 
-    with pytest.raises(ContractDomainError, match="Total amount cannot be changed "
-                                            "for signed contract"):
+    with pytest.raises(ContractDomainError,
+                       match="Total amount cannot be changed "
+                             "for signed contract"):
         service.modify_total_amount(4, 200)
 
 
@@ -138,8 +151,8 @@ def test_pay_amount_not_signed_fail(init_uow):
     assert contract[0].total_amount == 100.00
     assert contract[0].due_amount == 100.00
 
-    with pytest.raises(ContractDomainError, match="Payment can't be registered "
-                                            "before signature"):
+    with pytest.raises(ContractDomainError,
+                       match="Payment can't be registered before signature"):
         service.pay_amount(1, 100.00)
 
 
@@ -149,7 +162,8 @@ def test_paid_amount_negative_fail(init_uow):
     assert contract[0].total_amount == 400.00
     assert contract[0].due_amount == 400.00
 
-    with pytest.raises(ContractDomainError, match="Payment amount must be positive"):
+    with pytest.raises(ContractDomainError,
+                       match="Payment amount must be positive"):
         service.pay_amount(4, -100.00)
 
 
@@ -159,6 +173,7 @@ def test_paid_amount_exceed_total_fail(init_uow):
     assert contract[0].total_amount == 400.00
     assert contract[0].due_amount == 400.00
 
-    with pytest.raises(ContractDomainError, match="Payment : 500.0 exceed due. "
-                                            "Still due : 400.0"):
+    with pytest.raises(ContractDomainError,
+                       match="Payment : 500.0 exceed due. "
+                             "Still due : 400.0"):
         service.pay_amount(4, 500.00)

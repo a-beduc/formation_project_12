@@ -1,5 +1,25 @@
-import pytest
+"""Integration tests for ee_crm.controllers.app.contract
+
+Fixtures
+    in_memory_uow
+        Factory that returns a SqlAlchemyUnitOfWork instance linked to
+        the in-memory SQLite database.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    init_db_table_client
+        create and populate the table linked to the Client model.
+    init_db_table_contract
+        create and populate the table linked to the Contract model.
+    bypass_permission_manager
+        mock the payload returned by decoding a JWT representing a
+        specific MANAGER person.
+    bypass_permission_sales
+        mock the payload returned by decoding a JWT representing a
+        specific SALES person.
+"""
 from datetime import datetime
+
+import pytest
 
 from ee_crm.controllers.app.contract import ContractManager, \
     ContractManagerError
@@ -11,6 +31,7 @@ from ee_crm.services.dto import ContractDTO
 
 @pytest.fixture(autouse=True)
 def mock_logger(mocker):
+    """Fixture to disable the loggers during tests."""
     mock = mocker.Mock()
     mocker.patch('ee_crm.controllers.app.contract.setup_file_logger',
                  return_value=mock)
@@ -20,6 +41,11 @@ def mock_logger(mocker):
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
+    """Fixture to replace the Unit of Work class imported by the
+    module for one connected to the SQLite in-memory database.
+
+    Autouse is set to True to avoid to forget to add it when testing.
+    """
     mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
     mocker.patch("ee_crm.controllers.app.contract.DEFAULT_UOW",
@@ -27,7 +53,8 @@ def mock_uow(mocker, in_memory_uow):
 
 
 def test_read_all_contract(init_db_table_contract,
-                           bypass_permission_sales, in_memory_uow):
+                           bypass_permission_sales,
+                           in_memory_uow):
     controller = ContractManager(ContractService(in_memory_uow()))
     list_contract = controller.read()
 
@@ -48,7 +75,8 @@ def test_read_contract_from_pk(init_db_table_contract,
 
 
 def test_filter_contracts_signed(init_db_table_contract,
-                                 bypass_permission_sales, in_memory_uow):
+                                 bypass_permission_sales,
+                                 in_memory_uow):
     controller = ContractManager(ContractService(in_memory_uow()))
     filters = {"signed": "YES"}
     signed_contracts = controller.read(filters=filters)
@@ -59,7 +87,8 @@ def test_filter_contracts_signed(init_db_table_contract,
 
 
 def test_filter_contracts_unsigned(init_db_table_contract,
-                                   bypass_permission_sales, in_memory_uow):
+                                   bypass_permission_sales,
+                                   in_memory_uow):
     controller = ContractManager(ContractService(in_memory_uow()))
     filters = {"signed": "NO"}
     signed_contracts = controller.read(filters=filters)
@@ -70,7 +99,8 @@ def test_filter_contracts_unsigned(init_db_table_contract,
 
 
 def test_filter_contracts_total_amount(init_db_table_contract,
-                                       bypass_permission_sales, in_memory_uow):
+                                       bypass_permission_sales,
+                                       in_memory_uow):
     controller = ContractManager(ContractService(in_memory_uow()))
     filters = {"total_amount": 100.0}
     signed_contracts = controller.read(filters=filters)

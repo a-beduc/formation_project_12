@@ -1,3 +1,9 @@
+"""Define constants used for the Role Based Access Control (RBAC).
+
+Constants
+    RBAC    # The dictionary to declare the permissions tags.
+    PERMS   # The mapping between Role and Permissions.
+"""
 RBAC = {
     "BASE": {
         "user:whoami",
@@ -34,8 +40,8 @@ RBAC = {
         "contract:modify_total_own",
         "contract:pay_own",
         "event:create",
-        "event:update_unassigned",  # can update linked event without support
-        "event:delete_unassigned",  # can delete linked event without support
+        "event:update_unassigned",  # can update linked event w/o support
+        "event:delete_unassigned",  # can delete linked event w/o support
     },
     "SUPPORT": {
         "event:update_own",

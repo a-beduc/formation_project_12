@@ -1,3 +1,11 @@
+"""Click implementation of commands for the user resource using Click.
+
+Functions:
+    user            # click.group to organize commands under 'user'
+    read            # Query database and display a table
+    change_username # Start the modification of a user username
+    change_password # Start the modification of a user password
+"""
 import click
 
 from ee_crm.cli_interface.app.cli_func import cli_read
@@ -7,7 +15,6 @@ from ee_crm.cli_interface.views.view_base import BaseView
 from ee_crm.cli_interface.views.view_user import UserCrudView
 from ee_crm.controllers.app.user import UserManager
 
-
 _EXPAND_ACCEPTED_KEYS = {
     "id": {"id"},
     "username": {"us", "un", "user name", "username"}
@@ -15,12 +22,13 @@ _EXPAND_ACCEPTED_KEYS = {
 KEYS_MAP = map_accepted_key(_EXPAND_ACCEPTED_KEYS)
 
 
-@click.group()
+@click.group(help="Commands to manage users.")
 def user():
+    """Top level command group for user."""
     pass
 
 
-@click.command()
+@click.command(help="Read users from the database.")
 @click.option("-pk", "-PK",
               type=click.IntRange(min_open=1),
               help="Contract's unique id, pk: INT >= 1")
@@ -28,24 +36,39 @@ def user():
               type=click.STRING,
               nargs=2,
               multiple=True,
-              help="KEY VALUE pair to apply a filter")
+              help="Key-value pairs to apply filters. "
+                   "(ex: --filter username user_06)")
 @click.option("-s", "--sorts", "--sort",
               type=click.STRING,
               multiple=True,
               help="Ordered KEYs to apply a sort to the result of the query "
-                   "field:asc, field:desc")
+                   "(ex: field:asc, field:desc)")
 @click.option("-rc", "--remove-columns", "--remove-column",
               type=click.STRING,
               multiple=True,
-              help="Columns names to remove from result")
+              help="Keyword to hide columns from output. "
+                   "(ex: --remove-column username)")
 def read(pk, filters, sorts, remove_columns):
+    """Queries users and print them in a formatted table.
+
+    Args:
+        pk (int): The unique ID of the user.
+        filters (iter(tuple[str, str])): The tuples contain key-value
+            pairs where the key corresponds to the column name and value
+            is the filter to apply to the column.
+        sorts (tuple[str]): Ordered keyword to use for sorting.
+        remove_columns (tuple[str]): List of columns name to remove from
+            the table.
+    """
     output = cli_read(pk, filters, sorts, UserManager, KEYS_MAP)
     remove_col = normalize_remove_columns(remove_columns, KEYS_MAP)
     UserCrudView().render(output, remove_col=remove_col)
 
 
-@click.command("whoami")
+@click.command("whoami",
+               help="Display information about the logged user.")
 def who_am_i():
+    """Display information about the logged user."""
     controller = UserManager()
     user_dto, coll_dto = controller.who_am_i()
     BaseView.success(f'Logged in as uid:{user_dto.id} - {user_dto.username} !')
@@ -54,8 +77,10 @@ def who_am_i():
                      f'your role is {coll_dto.role}')
 
 
-@click.command("change-username")
+@click.command("change-username",
+               help="Start the modification process of a user username.")
 def change_username():
+    """Start the modification process of a user username."""
     controller = UserManager()
     old_username = click.prompt("Current username")
     plain_password = click.prompt('Password', hide_input=True)
@@ -69,8 +94,10 @@ def change_username():
     BaseView.success(f'Username successfully updated : {new_username}')
 
 
-@click.command("change-password")
+@click.command("change-password",
+               help="Start the modification process of a user password.")
 def change_password():
+    """Start the modification process of a user password."""
     controller = UserManager()
     username = click.prompt("Username")
     old_plain_password = click.prompt('Old password', hide_input=True)
@@ -81,13 +108,14 @@ def change_password():
     UserManager.verify_plain_password_match(new_plain_password,
                                             confirm_new_plain_password)
 
-    if not click.confirm(f'Confirm changing your password ?'):
+    if not click.confirm('Confirm changing your password ?'):
         raise controller.error_cls('Aborted')
 
     controller.update_username(username, old_plain_password, new_plain_password)
     BaseView.success("Password successfully updated")
 
 
+# User resource commands
 user.add_command(read)
 user.add_command(change_username)
 user.add_command(change_password)

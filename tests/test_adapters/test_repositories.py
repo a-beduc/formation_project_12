@@ -1,8 +1,35 @@
-from ee_crm.domain.model import AuthUser, Collaborator
+"""Unit test for ee_crm.adapters.repositories
+
+Tests to verify that the SQLAlchemy implementation of repositories
+functions as expected.
+
+These tests use a SQLite in-memory database, with a session created and
+populated for each test.
+
+When magic numbers as index of lists, you can find the reference of the
+index in the fixture init_db_table_resource found in tests.conftest
+
+Fixtures
+    session
+        SQLAlchemy session object bound to the in-memory test SQLite
+        database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    init_db_table_client
+        create and populate the table linked to the Client model.
+    init_db_table_contract
+        create and populate the table linked to the Contract model.
+    init_db_table_event
+        create and populate the table linked to the Event model.
+"""
 import ee_crm.adapters.repositories as repository
+from ee_crm.domain.model import AuthUser, Collaborator
 
 
 def test_repository_can_retrieve_user(session, init_db_table_users):
+    """Test to verify that repo can retrieve a user from pk."""
     expected = AuthUser(_username='user_one', _password='password_one')
     expected.id = 1
 
@@ -12,6 +39,7 @@ def test_repository_can_retrieve_user(session, init_db_table_users):
 
 
 def test_repository_can_retrieve_list_users(session, init_db_table_users):
+    """Test to verify that repo can retrieve all the users."""
     expected = [
         AuthUser(_username="user_one", _password="password_one"),
         AuthUser(_username="user_two", _password="password_two"),
@@ -27,6 +55,7 @@ def test_repository_can_retrieve_list_users(session, init_db_table_users):
 
 
 def test_repository_can_save_user(session, init_db_table_users):
+    """Test to verify that repo can save a user."""
     expected = AuthUser(_username='user_fiv', _password='password_fiv')
     expected.id = 5
 
@@ -38,6 +67,7 @@ def test_repository_can_save_user(session, init_db_table_users):
 
 
 def test_repository_can_delete_user(session, init_db_table_users):
+    """Test to verify that repo can delete a user."""
     expected = [
         AuthUser(_username="user_one", _password="password_one"),
         AuthUser(_username="user_thr", _password="password_thr"),
@@ -55,6 +85,7 @@ def test_repository_can_delete_user(session, init_db_table_users):
 
 
 def test_repository_can_update_user(session, init_db_table_users):
+    """Test to verify that repo can update a user."""
     expected = AuthUser(_username="modified_username",
                         _password="modified_password")
     expected.id = 2
@@ -68,11 +99,13 @@ def test_repository_can_update_user(session, init_db_table_users):
 
 
 def test_user_saved_and_loaded_are_equals(session, init_db_table_users):
+    """Test to verify that an object saved to database and the object in
+    memory have the same identity.
+    The object linked to the variable is the same that the one saved
+    in the database."""
     in_memory_user = AuthUser(_username='user_fiv', _password='password_fiv')
     repo = repository.SqlAlchemyUserRepository(session)
     repo.add(in_memory_user)
-
-    in_memory_user.id = 5
 
     assert repo.get(5) == in_memory_user
     assert id(repo.get(5)) == id(in_memory_user)
@@ -80,6 +113,7 @@ def test_user_saved_and_loaded_are_equals(session, init_db_table_users):
 
 def test_repository_can_get_user_from_username(session,
                                                init_db_table_users):
+    """Test to verify that repo can filter object AuthUser by username."""
     username = "user_one"
     repo = repository.SqlAlchemyUserRepository(session)
     user = repo.filter_one(username=username)
@@ -90,6 +124,7 @@ def test_repository_can_get_user_from_username(session,
 
 def test_repository_can_retrieve_collaborator(session,
                                               init_db_table_collaborator):
+    """Test to verify that repo can get a collaborator."""
     expected = Collaborator(last_name='col_ln_one',
                             first_name='col_fn_one',
                             email='col_email@one',
@@ -104,6 +139,7 @@ def test_repository_can_retrieve_collaborator(session,
 
 def test_collaborator_saved_and_loaded_are_equals(session,
                                                   init_db_table_users):
+    """Test to verify that repo can save a collaborator."""
     in_memory_collaborator = Collaborator(
         last_name='col_ln_fou', first_name='col_fn_fou',
         email='col_email@fou', phone_number='0000000004', _user_id=4)
@@ -118,6 +154,8 @@ def test_collaborator_saved_and_loaded_are_equals(session,
 def test_collaborator_can_be_filtered_by_role(session,
                                               init_db_table_users,
                                               init_db_table_collaborator):
+    """Test to verify that repo can filter a collaborator by one
+    attribute, test with role."""
     collaborator = Collaborator(last_name='col_ln_one',
                                 first_name='col_fn_one',
                                 email='col_email@one',
@@ -132,6 +170,8 @@ def test_collaborator_can_be_filtered_by_role(session,
 
 def test_collaborator_can_be_filtered_with_multiple_fields(
         session, init_db_table_users, init_db_table_collaborator):
+    """Test to verify that repo can filter collaborators by multiple
+    attributes, role, user_id."""
     collaborator = Collaborator(last_name='col_ln_one',
                                 first_name='col_fn_one',
                                 email='col_email@one',
@@ -146,6 +186,7 @@ def test_collaborator_can_be_filtered_with_multiple_fields(
 
 def test_collaborator_can_be_sorted_by_reverse_user_id(
         session, init_db_table_collaborator):
+    """Test to verify that repo can sort a list of collaborator."""
     repo = repository.SqlAlchemyCollaboratorRepository(session)
     expected = repo.list()[::-1]
     retrieved = repo.list(sort=(("user_id", True),))
@@ -153,6 +194,7 @@ def test_collaborator_can_be_sorted_by_reverse_user_id(
 
 
 def test_contract_can_be_sorted_by_signed(session, init_db_table_contract):
+    """Test to verify that repo can sort a list of contract."""
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
     expected = [base_list[2], base_list[3], base_list[0], base_list[1],
@@ -164,6 +206,7 @@ def test_contract_can_be_sorted_by_signed(session, init_db_table_contract):
 
 def test_contract_can_be_sorted_by_signed_then_by_reverse_id(
         session, init_db_table_contract):
+    """Test to verify that repo can sort a list of contract."""
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
     expected = [base_list[3], base_list[2], base_list[5], base_list[4],
@@ -175,6 +218,8 @@ def test_contract_can_be_sorted_by_signed_then_by_reverse_id(
 
 def test_contract_can_be_filtered_by_signed_reverse_id_sorted(
         session, init_db_table_contract):
+    """Test that repo can mix filter and sort when filtering
+    contract."""
     repo = repository.SqlAlchemyContractRepository(session)
     base_list = repo.list()
     expected = [base_list[5], base_list[4], base_list[1], base_list[0]]
@@ -185,6 +230,8 @@ def test_contract_can_be_filtered_by_signed_reverse_id_sorted(
 
 def test_can_retrieve_client_from_contract(
         session, init_db_table_client, init_db_table_contract):
+    """Test to verify that retrieved objets still possess the
+    dynamically created SQLAlchemy relationships."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     repo_client = repository.SqlAlchemyClientRepository(session)
     contract = repo_contract.get(2)
@@ -195,6 +242,8 @@ def test_can_retrieve_client_from_contract(
 def test_can_retrieve_client_from_event(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client):
+    """Test to verify that retrieved objets still possess the
+    dynamically created SQLAlchemy relationships."""
     repo_event = repository.SqlAlchemyEventRepository(session)
     repo_client = repository.SqlAlchemyClientRepository(session)
     event = repo_event.get(2)
@@ -205,6 +254,8 @@ def test_can_retrieve_client_from_event(
 def test_can_retrieve_contracts_from_collaborator(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client, init_db_table_collaborator):
+    """Test to verify that the specific methods to retrieve contracts
+    linked to a collaborator works as expected."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     collaborator_id = 2
     contracts = repo_contract.get_contracts_collaborator(collaborator_id)
@@ -214,6 +265,8 @@ def test_can_retrieve_contracts_from_collaborator(
 def test_can_retrieve_contracts_from_collaborator_only_unsigned(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client, init_db_table_collaborator):
+    """Test to verify that the specific methods to retrieve contracts
+    with flag unsigned turned on works."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     collaborator_id = 2
     contracts = repo_contract.get_contracts_collaborator(collaborator_id,
@@ -224,6 +277,8 @@ def test_can_retrieve_contracts_from_collaborator_only_unsigned(
 def test_can_retrieve_contracts_from_collaborator_only_unpaid(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client, init_db_table_collaborator):
+    """Test to verify that the specific methods to retrieve contracts
+    with flag unpaid turned on works."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     collaborator_id = 2
     contracts = repo_contract.get_contracts_collaborator(collaborator_id,
@@ -234,6 +289,8 @@ def test_can_retrieve_contracts_from_collaborator_only_unpaid(
 def test_can_retrieve_contracts_from_collaborator_only_no_event(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client, init_db_table_collaborator):
+    """Test to verify that the specific methods to retrieve contracts
+    with flag no_event turned on works."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     collaborator_id = 2
     contracts = repo_contract.get_contracts_collaborator(collaborator_id,
@@ -244,6 +301,8 @@ def test_can_retrieve_contracts_from_collaborator_only_no_event(
 def test_can_retrieve_contracts_from_collaborator_and_sort(
         session, init_db_table_event, init_db_table_contract,
         init_db_table_client, init_db_table_collaborator):
+    """Test to verify that the specific methods to retrieve contracts
+   accept sorts."""
     repo_contract = repository.SqlAlchemyContractRepository(session)
     collaborator_id = 2
     contracts = repo_contract.get_contracts_collaborator(collaborator_id,

@@ -1,10 +1,12 @@
 .env
 .idea/
 .venv/
-tempo_sql_reset/commands.txt
+db_reset/commands.txt
 .storage/
 z_manual/
 .coverage
 __pycache__.py
+__pycache__/
 htmlcov/
 .logs/
+ee_crm.egg-info/

@@ -1,3 +1,27 @@
+"""Integration tests for ee_crm.controllers.app.event
+
+Fixtures
+    in_memory_uow
+        Factory that returns a SqlAlchemyUnitOfWork instance linked to
+        the in-memory SQLite database.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    init_db_table_client
+        create and populate the table linked to the Client model.
+    init_db_table_contract
+        create and populate the table linked to the Contract model.
+    init_db_table_event
+        create and populate the table linked to the Event model.
+    bypass_permission_manager
+        mock the payload returned by decoding a JWT representing a
+        specific MANAGER person.
+    bypass_permission_sales
+        mock the payload returned by decoding a JWT representing a
+        specific SALES person.
+    bypass_permission_support
+        mock the payload returned by decoding a JWT representing a
+        specific SUPPORT person.
+"""
 import pytest
 
 from ee_crm.controllers.app.event import EventManager
@@ -9,6 +33,11 @@ from ee_crm.services.dto import EventDTO
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
+    """Fixture to replace the Unit of Work class imported by the
+    module for one connected to the SQLite in-memory database.
+
+    Autouse is set to True to avoid to forget to add it when testing.
+    """
     mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
     mocker.patch("ee_crm.controllers.app.event.DEFAULT_UOW",
@@ -98,11 +127,11 @@ def test_create_event_bad_date(init_db_table_collaborator,
 
 
 def test_create_event_bad_int(init_db_table_collaborator,
-                               init_db_table_client,
-                               init_db_table_contract,
-                               init_db_table_event,
-                               in_memory_uow,
-                               bypass_permission_sales):
+                              init_db_table_client,
+                              init_db_table_contract,
+                              init_db_table_event,
+                              in_memory_uow,
+                              bypass_permission_sales):
     controller = EventManager(EventService(in_memory_uow()))
     data = {"contract_id": "6",
             "attendee": "bad value"}

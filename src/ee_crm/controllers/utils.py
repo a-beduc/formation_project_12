@@ -4,6 +4,18 @@ from ee_crm.exceptions import InputError
 
 
 def verify_positive_int(value):
+    """Helper verify if given value can be converted to a positive
+    integer.
+
+    Args
+        value (Any): The value to be verified.
+
+    Returns
+        int: The value converted to a positive integer.
+
+    Raises
+        InputError: If the value is not a positive integer.
+    """
     if isinstance(value, int):
         value_int = value
     elif isinstance(value, str) and value.strip().isdigit():
@@ -22,6 +34,18 @@ def verify_positive_int(value):
 
 
 def verify_positive_float(value):
+    """Helper verify if given value can be converted to a positive
+    float.
+
+    Args
+        value (Any): The value to be verified.
+
+    Returns
+        int|float: The value converted to a positive float.
+
+    Raises
+        InputError: If the value is not a positive float.
+    """
     if isinstance(value, (float, int)):
         value_float = value
     elif isinstance(value, str):
@@ -46,10 +70,29 @@ def verify_positive_float(value):
 
 
 def verify_string(value):
+    """Helper verify if given value can be converted to a string
+
+    Args
+        value (Any): The value to be verified.
+
+    Returns
+        str: The value converted to a string.
+    """
     return str(value)
 
 
 def verify_bool(value):
+    """Helper verify if given value can be converted to a boolean.
+
+    Args
+        value (Any): The value to be verified.
+
+    Returns
+        bool: The value is a boolean.
+
+    Raises
+        InputError: If the value is not a boolean.
+    """
     if isinstance(value, bool):
         return value
     else:
@@ -59,6 +102,17 @@ def verify_bool(value):
 
 
 def verify_datetime(value):
+    """Helper verify if given value can be converted to a datetime.
+
+    Args
+        value (Any): The value to be verified.
+
+    Returns
+        datetime: The value converted to a datetime.
+
+    Raises
+        InputError: If the value can't be converted to a datetime.
+    """
     info = ('It must at least contains the year, month and day '
             'following this pattern : '
             '"YYYY-MM-DD". '

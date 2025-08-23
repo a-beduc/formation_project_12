@@ -1,22 +1,24 @@
 import pytest
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
+from ee_crm.adapters.orm import mapper_registry, start_mappers
 from ee_crm.adapters.orm import (user_table, role_table, collaborator_table,
                                  client_table, contract_table, event_table)
-from ee_crm.adapters.orm import mapper_registry, start_mappers
-
-
-from ee_crm.adapters.repositories import AbstractRepository, \
-    ContractAbstractRepository
+from ee_crm.adapters.repositories import AbstractRepository
 from ee_crm.services.unit_of_work import (AbstractUnitOfWork,
                                           SqlAlchemyUnitOfWork)
 
 
 @pytest.fixture
 def db_engine():
-    # remove the schema because SQLite doesn't accept 'auth.users' only 'users'
+    """SQLite in-memory database engine and schema creation.
+    Remove the PostgreSQL specific schemas ('auth.x', 'crm.x') that will
+    crash when using a in-memory SQLite database.
+
+    Yields:
+        sqlalchemy.engine.Engine: Configured engine.
+    """
     user_table.schema = None
     role_table.schema = None
     collaborator_table.schema = None
@@ -31,6 +33,16 @@ def db_engine():
 
 @pytest.fixture
 def connection(db_engine):
+    """Open a connection to the database and create a save-point.
+    The save-point is rolled back after the test, to avoid engine
+    configuration for each test.
+
+    Args:
+        db_engine (sqlalchemy.engine.Engine): Database engine to use.
+
+    Yields:
+        sqlalchemy.engine.Connection: Connection to database.
+    """
     start_mappers()
     with db_engine.connect() as connection:
         transaction_savepoint = connection.begin()
@@ -39,29 +51,67 @@ def connection(db_engine):
     clear_mappers()
 
 
-# see (https://docs.sqlalchemy.org/en/20/orm/session_transaction.html
-# #joining-a-session-into-an-external-transaction-such-as-for-test-suites)
 @pytest.fixture
 def session_factory(connection):
+    """Generate a sessionmaker factory, that will create Session objects
+    when called. It will use the given configurational arguments passed
+    as arguments of the 'sessionmaker'.
+
+    Args:
+        connection (sqlalchemy.engine.Connection): Configured and
+            Connected database.
+
+    Returns:
+        sqlalchemy.orm.sessionmaker: SqlAlchemy sessionmaker,
+            it will create Session objects when called.
+
+    References:
+        https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites
+    """
     return sessionmaker(bind=connection,
                         join_transaction_mode="create_savepoint")
 
 
 @pytest.fixture
+def session(session_factory):
+    """Create a Session object and initiate its context manager.
+    When a test is done, it comes back to this fixture, exit the Session
+    and rollback to the latest savepoint : see fixture 'connection'.
+
+    Args:
+        session_factory (sqlalchemy.orm.sessionmaker): SqlAlchemy
+            sessionmaker.
+
+    Yields:
+        sqlalchemy.orm.Session: SqlAlchemy Session with context manager
+            open.
+    """
+    with session_factory() as session:
+        yield session
+
+
+@pytest.fixture
 def in_memory_uow(session_factory):
+    """Factory that build a new SqlAlchemyUnitOfWork instance linked to
+    the in-memory SQLite database.
+
+    Args:
+        session_factory (sqlalchemy.orm.sessionmaker): SqlAlchemy
+            sessionmaker.
+
+    Returns:
+        Callable: This returned callable create new
+            SqlAlchemyUnitOfWork.
+    """
     def factory():
         return SqlAlchemyUnitOfWork(session_factory=session_factory)
     return factory
 
 
 @pytest.fixture
-def session(session_factory):
-    with session_factory() as session:
-        yield session
-
-
-@pytest.fixture
 def init_db_table_users(session):
+    """Insert four rows of AuthUser datas, ID 1-4, in the in-memory
+    database."""
     stmt = text(
         "INSERT INTO users (username, password) VALUES "
         "('user_one', 'password_one'), "
@@ -75,6 +125,8 @@ def init_db_table_users(session):
 
 @pytest.fixture
 def init_db_table_collaborator(session):
+    """Insert four rows of Collaborator datas, ID 1-4, in the in-memory
+    database."""
     stmt = text(
         "INSERT INTO collaborator (last_name, first_name, email, "
         "phone_number, role_id, user_id) VALUES"
@@ -92,6 +144,8 @@ def init_db_table_collaborator(session):
 
 @pytest.fixture
 def init_db_table_client(session):
+    """Insert four rows of Client datas, ID 1-4, in the in-memory
+    database."""
     stmt = text(
         "INSERT INTO client (last_name, first_name, email, phone_number,"
         "company, created_at, updated_at, salesman_id) VALUES"
@@ -110,6 +164,8 @@ def init_db_table_client(session):
 
 @pytest.fixture
 def init_db_table_contract(session):
+    """Insert six rows of Contract datas, ID 1-6, in the in-memory
+    database."""
     stmt = text(
         "INSERT INTO contract (total_amount, paid_amount, created_at, "
         "signed, client_id) VALUES"
@@ -126,6 +182,8 @@ def init_db_table_contract(session):
 
 @pytest.fixture
 def init_db_table_event(session):
+    """Insert four rows of Events datas, ID 1-4, in the in-memory
+    database."""
     stmt = text(
         "INSERT INTO event (title, start_time, end_time, location, notes, "
         "supporter_id, contract_id) VALUES"
@@ -143,6 +201,12 @@ def init_db_table_event(session):
 
 
 class FakeRepository(AbstractRepository):
+    """Dictionary in-memory implementation of AbstractRepository.
+    No DB needed. Used for unit tests.
+
+    Args:
+        init (tuple[obj]): optional initial data.
+    """
     def __init__(self, init=()):
         super().__init__()
         self._store = {}
@@ -153,6 +217,16 @@ class FakeRepository(AbstractRepository):
 
     @staticmethod
     def _apply_sort(sort, list_to_sort):
+        """Sort a list of data.
+
+        Args:
+            sort (list[str, bool]): list of fields and direction to
+                sort data.
+            list_to_sort (list[obj]): list of objects to sort.
+
+        Returns:
+            list: sorted list.
+        """
         for field, is_desc in sort[::-1]:
             list_to_sort = sorted(list_to_sort,
                                   key=lambda x: getattr(x, field),
@@ -160,25 +234,62 @@ class FakeRepository(AbstractRepository):
         return list_to_sort
 
     def _add(self, model_obj):
+        """Add a model object to the stored data.
+        Used its id attribute as a key.
+
+        Args:
+            model_obj (obj): instance of the obj to add.
+        """
         if getattr(model_obj, "id", None) is None:
             self._pk += 1
             model_obj.id = self._pk
         self._store[model_obj.id] = model_obj
 
     def _get(self, obj_pk):
+        """Retrieve an object from the stored data.
+
+        Args:
+            obj_pk (int): key linked to the object to retrieve.
+
+        Returns:
+            obj: instance of the obj retrieved.
+        """
         return self._store.get(obj_pk, None)
 
     def _delete(self, obj_pk):
+        """Delete an object from the stored data.
+
+        Args:
+            obj_pk (int): key linked to the object to delete.
+        """
         self._store.pop(obj_pk, None)
 
     def _list(self, sort=None):
+        """List all objects in the stored data.
+
+        Args:
+            sort (list[str, bool]): list of fields and direction to
+                sort data.
+
+        Returns:
+            list: list of objects.
+        """
         storage = list(self._store.values())
         if sort is not None:
-            if sort is not None:
-                storage = self._apply_sort(sort, storage)
+            storage = self._apply_sort(sort, storage)
         return storage
 
     def _filter(self, sort=None, **filters):
+        """Filter out objects in the stored data.
+
+        Args:
+            sort (list[str, bool]): list of fields and direction to
+                sort data.
+            filters (dict[str, obj]): filters to apply.
+
+        Returns:
+            list: list of objects.
+        """
         filtered = [obj for obj in self._store.values()
                     if all(getattr(obj, attr, None) == value
                            for attr, value in filters.items())]
@@ -187,6 +298,16 @@ class FakeRepository(AbstractRepository):
         return filtered
 
     def _filter_one(self, **filters):
+        """Retrieve the first object that correspond to the filter.
+
+        Args:
+            sort (list[str, bool]): list of fields and direction to
+                sort data.
+            filters (dict[str, obj]): filters to apply.
+
+        Returns:
+            list: list of objects.
+        """
         return next(
             (obj for obj in self._store.values()
              if all(getattr(obj, attr, None) == value
@@ -194,10 +315,16 @@ class FakeRepository(AbstractRepository):
             None
         )
 
-
-class FakeContractRepository(FakeRepository, ContractAbstractRepository):
-    def retrieve_collaborator_contracts(self, collaborator_id):
-        return True
+#
+# class FakeContractRepository(FakeRepository, ContractAbstractRepository):
+#     """unused as of 2025-07-18"""
+#     def get_contracts_collaborator(self,
+#                                    collaborator_id,
+#                                    only_unpaid=False,
+#                                    only_unsigned=False,
+#                                    only_no_event=False,
+#                                    sort=None, **filters):
+#         return True
 
 
 class MockSession:
@@ -207,6 +334,8 @@ class MockSession:
 
 # init empty interface, add tuples of objects to FakeRepos to init with datas
 class FakeUnitOfWork(AbstractUnitOfWork):
+    """In memory implementation of AbstractUnitOfWork, for unit testing,
+    no SQLAlchemy, no I/O."""
     def __init__(self):
         self.commited = False
         self.users = FakeRepository()
@@ -231,16 +360,19 @@ class FakeUnitOfWork(AbstractUnitOfWork):
 
 @pytest.fixture(scope='function')
 def fake_repo():
+    """Fixture for the fake repository Class."""
     return FakeRepository
 
 
 @pytest.fixture(scope='function')
-def uow():
+def fake_uow():
+    """Create a new instance of the FakeUnitOfWork class."""
     return FakeUnitOfWork()
 
 
 @pytest.fixture
 def fake_service(mocker):
+    """Mock service object CRUD methods."""
     service = mocker.Mock()
     service.create.return_value = tuple()
     service.retrieve.return_value = tuple()
@@ -251,6 +383,7 @@ def fake_service(mocker):
 
 @pytest.fixture
 def bypass_permission_manager(mocker):
+    """Mock permission manager JWT."""
     mocker.patch("ee_crm.controllers.auth.permission.is_authenticated",
                  return_value={"sub": "user_a", "c_id": 1,
                                "role": 3, "name": "fn_a ln_a"})
@@ -258,6 +391,7 @@ def bypass_permission_manager(mocker):
 
 @pytest.fixture
 def bypass_permission_sales(mocker):
+    """Mock permission sales JWT."""
     mocker.patch("ee_crm.controllers.auth.permission.is_authenticated",
                  return_value={"sub": "user_b", "c_id": 2,
                                "role": 4, "name": "fn_b ln_b"})
@@ -265,6 +399,7 @@ def bypass_permission_sales(mocker):
 
 @pytest.fixture
 def bypass_permission_support(mocker):
+    """Mock permission support JWT."""
     mocker.patch("ee_crm.controllers.auth.permission.is_authenticated",
                  return_value={"sub": "user_c", "c_id": 3,
                                "role": 5, "name": "fn_c ln_c"})

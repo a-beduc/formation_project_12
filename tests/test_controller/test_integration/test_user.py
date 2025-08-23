@@ -1,12 +1,32 @@
+"""Integration test for ee_crm.controllers.app.user
+
+Fixture
+    in_memory_uow
+        Factory that returns a SqlAlchemyUnitOfWork instance linked to
+        the in-memory SQLite database.
+    init_db_table_users
+        create and populate the table linked to the AuthUser model.
+    init_db_table_collaborator
+        create and populate the table linked to the Collaborator model.
+    bypass_permission_manager
+        mock the payload returned by decoding a JWT representing a
+        specific MANAGER person.
+
+"""
 import pytest
 
 from ee_crm.controllers.app.user import UserManager, UserManagerError
-from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
 from ee_crm.services.app.users import UserService
+from ee_crm.services.dto import AuthUserDTO, CollaboratorDTO
 
 
 @pytest.fixture(autouse=True)
 def mock_uow(mocker, in_memory_uow):
+    """Fixture to replace the Unit of Work class imported by the
+    module for one connected to the SQLite in-memory database.
+
+    Autouse is set to True to avoid to forget to add it when testing.
+    """
     mocker.patch("ee_crm.controllers.auth.permission.DEFAULT_UOW",
                  return_value=in_memory_uow())
     mocker.patch("ee_crm.controllers.app.user.DEFAULT_UOW",
@@ -15,6 +35,7 @@ def mock_uow(mocker, in_memory_uow):
 
 @pytest.fixture
 def bypass_password(mocker):
+    """Fixture to bypass the Argon2 password hasher."""
     mocker.patch("ee_crm.domain.model.AuthUser.verify_password",
                  return_value=True)
 
