@@ -313,3 +313,31 @@ Whenever a log is created, it also sent the exception or message to Sentry.
 ### Documentation
 A detailed documentation : [DOC.md](DOC.md)
 
+### Users
+
+When the database is populated, you can log in the crm with the credentials:
+
+| #  | Username | Password   | Role       |
+|----|----------|------------|------------|
+| 1  | user_01  | Password1  | SUPPORT    |
+| 2  | user_02  | Password2  | SUPPORT    |
+| 3  | user_03  | Password3  | SALES      |
+| 4  | user_04  | Password4  | SUPPORT    |
+| 5  | user_05  | Password5  | SUPPORT    |
+| 6  | user_06  | Password1  | MANAGEMENT |
+| 7  | user_07  | Password2  | MANAGEMENT |
+| 8  | user_08  | Password3  | MANAGEMENT |
+| 9  | user_09  | Password4  | SALES      |
+| 10 | user_10  | Password10 | SALES      |
+| 11 | user_11  | Password11 | SUPPORT    |
+| 12 | user_12  | Password12 | SUPPORT    |
+| 13 | user_13  | Password13 | MANAGEMENT |
+| 14 | user_14  | Password14 | SALES      |
+| 15 | user_15  | Password15 | MANAGEMENT |
+| 16 | user_16  | Password16 | SALES      |
+| 17 | user_17  | Password17 | SALES      |
+| 18 | user_18  | Password18 | SALES      |
+| 19 | user_19  | Password19 | SUPPORT    |
+| 20 | user_20  | Password20 | SALES      |
+
+
