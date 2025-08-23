@@ -179,12 +179,12 @@ class AuthUserValidator(BaseValidator):
         """
         if not isinstance(plain_password, str):
             err = "Password must be a string"
-            tips = f"The password \"*******\" isn't valid."
+            tips = "The password \"*******\" isn't valid."
             cls._raise(err, tips)
         if cls.is_too_long(plain_password):
             err = "Password too long"
-            tips = (f"The password \"*******\" is too long, it must not "
-                    f"exceed 255 characters.")
+            tips = ("The password \"*******\" is too long, it must not "
+                    "exceed 255 characters.")
             cls._raise(err, tips)
         if not (
                 len(plain_password) >= 8 and
@@ -193,10 +193,10 @@ class AuthUserValidator(BaseValidator):
                 search(r"\d", plain_password)
         ):
             err = "password too weak"
-            tips = (f"The password \"*******\" is too weak, it must meet the"
-                    f"following requirements : at least 8 characters, at "
-                    f"least 1 number, at least one uppercase, at least one "
-                    f"lowercase.")
+            tips = ("The password \"*******\" is too weak, it must meet the"
+                    "following requirements : at least 8 characters, at "
+                    "least 1 number, at least one uppercase, at least one "
+                    "lowercase.")
             cls._raise(err, tips)
 
 

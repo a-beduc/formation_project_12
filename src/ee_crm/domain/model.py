@@ -121,7 +121,7 @@ class AuthUser:
         try:
             ph.verify(self._password, plain_password)
         except exceptions.VerifyMismatchError:
-            err = AuthUserDomainError(f"Password mismatch")
+            err = AuthUserDomainError("Password mismatch")
             err.tips = ("The provided password doesn't match with the password"
                         " saved in database for this user. Verify your input "
                         "and try again.")

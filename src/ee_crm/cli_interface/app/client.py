@@ -136,7 +136,7 @@ def update(pk, data_client, no_prompt):
     """
     cli_update(pk, data_client, no_prompt, ClientManager,
                PROMPT_FIELDS, KEYS_MAP)
-    BaseView.success(f"Client successfully updated")
+    BaseView.success("Client successfully updated")
 
 
 @click.command(help="Delete a specific client.")
@@ -150,7 +150,7 @@ def delete(pk):
         pk (int): The unique ID of the client.
     """
     cli_delete(pk, ClientManager)
-    BaseView.success(f"Client successfully deleted")
+    BaseView.success("Client successfully deleted")
 
 
 @click.command(help="Display the information of clients linked to the user.")

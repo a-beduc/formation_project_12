@@ -154,7 +154,7 @@ def update(pk, data_collaborator, no_prompt):
     """
     cli_update(pk, data_collaborator, no_prompt, CollaboratorManager,
                PROMPT_UPDATE, KEYS_MAP)
-    CollaboratorCrudView().success(f"Collaborator successfully updated")
+    CollaboratorCrudView().success("Collaborator successfully updated")
 
 
 @click.command(help="Delete a specific collaborator and its associated "
@@ -170,7 +170,7 @@ def delete(pk):
         pk (int): The unique ID of the collaborator.
     """
     cli_delete(pk, CollaboratorManager)
-    BaseView.success(f"Collaborator successfully deleted")
+    BaseView.success("Collaborator successfully deleted")
 
 
 @click.command(help="Assign a new role to a collaborator. The roles must be"

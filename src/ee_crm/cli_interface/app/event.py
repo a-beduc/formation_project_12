@@ -147,7 +147,7 @@ def update(pk, data_event, no_prompt):
     """
     cli_update(pk, data_event, no_prompt, EventManager,
                PROMPT_UPDATE, KEYS_MAP)
-    BaseView.success(f"Event successfully updated")
+    BaseView.success("Event successfully updated")
 
 
 @click.command(help="Delete a specific event.")
@@ -161,7 +161,7 @@ def delete(pk):
         pk (int): The unique ID of the event.
     """
     cli_delete(pk, EventManager)
-    BaseView.success(f"Event successfully deleted")
+    BaseView.success("Event successfully deleted")
 
 
 @click.command("assign-support",

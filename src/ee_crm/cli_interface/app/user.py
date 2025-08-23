@@ -108,7 +108,7 @@ def change_password():
     UserManager.verify_plain_password_match(new_plain_password,
                                             confirm_new_plain_password)
 
-    if not click.confirm(f'Confirm changing your password ?'):
+    if not click.confirm('Confirm changing your password ?'):
         raise controller.error_cls('Aborted')
 
     controller.update_username(username, old_plain_password, new_plain_password)

@@ -123,7 +123,7 @@ def delete(pk):
         pk (int): The unique ID of the contract.
     """
     cli_delete(pk, ContractManager)
-    BaseView.success(f"Contract successfully deleted.")
+    BaseView.success("Contract successfully deleted.")
 
 
 @click.command(help="Sign an unsigned contract.")

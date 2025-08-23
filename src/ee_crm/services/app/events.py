@@ -43,7 +43,7 @@ class EventService(BaseService):
         with self.uow:
             contract = self.uow.contracts.get(contract_id)
             if contract is None:
-                err = EventServiceError(f"No contract found.")
+                err = EventServiceError("No contract found.")
                 err.tips = (f"The contract_id {contract_id} isn't linked to a "
                             f"contract in the database.")
                 raise err
